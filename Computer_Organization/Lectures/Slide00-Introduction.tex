@@ -1,0 +1,152 @@
+\documentclass[UTF8]{ctexbeamer}
+\usepackage{latexsym}
+\usepackage{amsmath,amssymb}
+\usepackage{color,xcolor}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{amsthm}
+
+\usetheme{AnnArbor}
+\usefonttheme[onlymath]{serif}
+\usecolortheme{crane}
+
+\title{Computer System Architecture}
+\subtitle{--- Lectures from Dannie Sanchez, MIT}
+
+% \author[chhzh123]{陈鸿峥}
+\date[Dec 1, 2018]{December, 2018}
+
+\keywords{}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\tableofcontents[subsectionstyle=show]
+\end{frame}
+
+\section{课程简介}
+\begin{frame}
+\sectionpage
+\end{frame}
+
+\begin{frame}{课程简介}
+Daniel Sanchez (MIT)
+\begin{itemize}
+	\item 6.004 Computation Structures
+	\item 6.823 Computer System Architecture
+\end{itemize}
+\end{frame}
+
+\begin{frame}{每节基本内容}
+6.004 Computation Structures\\
+重在工程实践，理论部分比较少
+\begin{itemize}
+	\only<1>{
+	\item L01: 计算机层次结构、现代硬件设计流、数电与模电简介
+	\item L02: 组合电路（真值表、布尔代数、基本门电路）
+	\item L03: 原码加法、半加器、全加器、BSV初步
+	\item L04: 数的表示（补码）、补码加减法、原码乘法、前瞻加法器
+	\item L05: BSV实现加法器、乘法器
+	\item L06: 时序电路（触发器、模4计数器实现、gcd实现）、有限状态机简介
+	}
+	\only<2>{
+	\item L07: BSV IO接口
+	\item L08: BSV复杂组合电路设计
+	\item L09: 冯诺依曼模型、指令集(RISC-V)（讲了不同类型指令，但是没讲数据流！）
+	\item L10: 改写HLL程序为RISC-V（包括过程调用、堆栈）
+	\item L11: 指令译码（单周期CPU）
+	\item L12: 2周期CPU
+	}
+	\only<3>{
+	\item L13: 内存层次结构（局部性、cache直接映射与全相连）、SRAM与DRAM
+	\item L14: cache的映射、替换策略（写回写穿写分配写不分配）、cache的实施
+	\item L15: 流水线简介
+	\item L16: 流水线中的冒险
+	\item L17: 流水线实施
+	\item L18: 流水线CPU实施
+	}
+	\only<4>{
+	\item L19: 虚拟化、异常
+	\item L20: 虚拟内存
+	\item L21: IO设备
+	}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{每节基本内容}
+6.823 Computer System Architecture\\
+谈及现代技术，但都讲得不够细；章节之间连续性不强，更像一个seminar，每次一个专题
+\begin{itemize}
+	\only<1>{
+	\item L01: 计算机历史、指令集发展
+	\item L02: MIPS、数据通路
+	\item L03: 内存层次结构、cache映射替换策略
+	\item L04: 内存管理（内存碎片、页表）
+	\item L05: 现代虚存系统
+	\item L06: 指令流水与冒险
+	}
+	\only<2>{
+	\item L07: 指令冒险解决方案
+	\item L08: 复杂流水简介
+	\item L09: 复杂流水(OOO)与异常
+	\item L10: 分支预测
+	\item L11: 预测执行
+	\item L12: 现代内存的操作
+	}
+	\only<3>{
+	\item L13: 多线程
+	\item L14: cache一致性
+	\item L15: directory-based cache coherence
+	\item L16: 内存一致性模型
+	\item L17: 片上网络（拓扑结构与流控制）
+	\item L18: 片上网络（布局布线）
+	}
+	\only<4>{
+	\item L19: reliable architectures
+	\item L20: 微指令与VLIW
+	\item L21: 向量机
+	\item L22: GPU
+	\item L23: 事务内存
+	\item L24: 虚拟机
+	}
+\end{itemize}
+\end{frame}
+
+\section{课程设置}
+\begin{frame}
+\sectionpage
+\end{frame}
+
+\begin{frame}{课程设置}
+数字电路：
+\begin{itemize}
+	\item 数字与模拟
+	\item 布尔代数（SOP、POS、Karnaugh图）
+	\item 组合电路（比较器、译码器、编码器、选择器、分配器；加法器）
+	\item 时序电路（锁存器、触发器；分频计数器）
+	\item 电路设计（有限状态机、驱动转移方程）
+\end{itemize}
+\end{frame}
+
+\begin{frame}{课程设置}
+计算机组成原理：
+\begin{itemize}
+	\item 计算模型与计算机的发展
+	\item 总体框架、数的表示（进制、原反补移码、浮点数）
+	\item 指令集（CISC与RISC、指令格式）%ILP
+	\item 中央处理器(CPU)
+	\begin{itemize}
+		\item 单周期数据通路
+		\item 多周期数据通路
+		\item 流水线、冒险的出现与解决
+	\end{itemize}
+	\item 存储器层次结构
+\end{itemize}
+略过Computer Arithmetic
+\end{frame}
+
+\end{document}
