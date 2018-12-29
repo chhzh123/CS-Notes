@@ -1,0 +1,38 @@
+% !TEX root = main.tex
+
+\section{总线}
+% 高阻态
+总线速度影响因素
+\begin{itemize}
+	\item 长度
+	\item 连接元件数目
+\end{itemize}
+总线的分类
+\begin{itemize}
+	\item 芯片内总线
+	\item 系统总线
+	\begin{itemize}
+		\item 控制线：强弱、适应性
+		\item 数据线：一次能传送数据的位数/能力
+		\item 地址线：最大寻址空间
+	\end{itemize}
+	\item 通信总线
+\end{itemize}
+总线主设备
+\begin{itemize}
+	\item 总线使用请求信号$\to$总线使用应答信号$\to$
+	\item 中断请求信号$\to$中断相应信号和中断向量$\to$等待CPU处理
+	\item DMA请求信号$\to$DMA应答信号$\to$数据交换$\to$撤销DMA请求信号
+\end{itemize}
+总线控制器
+\[\text{总线带宽}=\text{总线宽度}/8b\times\text{总线时钟频率}\]
+总线带宽/数据传输率
+\par总线仲裁(arbiter)：总线主设备请求并获得总线控制权的过程
+\begin{itemize}
+	\item 串行
+	\item 定时方式
+	\begin{itemize}
+		\item 同步：时钟偏移，长度不能很长，按最慢的设置
+		\item 异步：请求应答时间长
+	\end{itemize}
+\end{itemize}

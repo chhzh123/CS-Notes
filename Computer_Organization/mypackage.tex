@@ -1,0 +1,107 @@
+\usepackage{geometry,setspace}
+\usepackage{amsthm,amsmath,amsfonts,amssymb} %\because\therefore
+\usepackage{tikz,tikz-cd,pgfplots}
+\usepackage{mathtools,gensymb,extarrows,bm} %underset
+\usepackage{cancel}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{array,multirow}
+\usepackage{verbatim} %comment
+\usepackage{url}
+\usepackage[unicode=true, %本行非常重要 支持中文目录hyperref CJKbookmarks对二级目录没用
+	colorlinks,
+	linkcolor=black,
+	anchorcolor=black,
+	citecolor=black,
+	CJKbookmarks=false]{hyperref}
+\usepackage{datetime}
+\newdateformat{builddatemonth}{\THEYEAR.\twodigit{\THEMONTH}}
+\newdateformat{builddate}{\THEYEAR\twodigit{\THEMONTH}\twodigit{\THEDAY}}
+
+\newtheorem{theorem}{定理}
+\newtheorem{proposition}{命题}
+\newtheorem{definition}{定义}
+\newtheorem{example}{例} %*去除编号
+\newtheorem*{analysis}{分析}
+\newtheorem{corollary}{推论}
+\newtheorem*{corollary2}{推论}
+\newtheorem{exercise}{练习}
+\newtheorem{myalgorithm}{算法}
+\geometry{top=20mm,bottom=20mm,left=20mm,right=20mm}
+\pagestyle{plain} %删除页眉
+
+\def\ssim{{\scriptstyle{\sim}}}
+\renewcommand{\mod}{\mathrm{mod}\;}
+
+\def\zz{\mathbb{Z}}
+\def\rr{\mathbb{R}}
+\def\diff{\,\mathrm{d}}
+\def\sgn{\mathrm{sgn}\,}
+\def\mmid{\enspace\Big|\enspace}
+\def\eps{\varepsilon}
+\def\disp{\displaystyle}
+\def\delx{\Delta x}
+\def\eps{\varepsilon}
+\def\ee{\mathrm{e}}
+
+\def\vx{\mathbf{x}}
+\def\vy{\mathbf{y}}
+\def\vv{\mathbf{v}}
+\def\vu{\mathbf{u}}
+\def\vbb{\bm{\beta}}
+\def\rn{\mathbb{R}^n}
+\def\dim{\mathrm{dim}\,}
+\def\rank{\mathrm{rank}\,}
+\def\Span{\mathrm{Span}\,} % be careful with `span' in tabular
+\def\col{\mathrm{Col}\,}
+\def\nul{\mathrm{Nul}\,}
+\def\row{\mathrm{Row}\,}
+\def\sgn{\mathrm{sgn}\,}
+\def\tv{\mathrm{TVar}\,}
+\def\tr{\mathrm{tr}\,}
+\def\ker{\mathrm{Ker}\,}
+\def\ii{\mathrm{i}}
+\def\aff{\mathrm{aff}\,}
+\def\conv{\mathrm{conv}\,}
+
+\newcommand{\ddx}[1][]{\dfrac{\diff #1}{\diff x}}
+\newcommand{\ddxs}[1][]{\dfrac{\diff^2 #1}{\diff x^2}}
+\newcommand{\ssum}[1]{\displaystyle\sum_{n=1}^{\infty}#1}
+\newcommand{\ssumz}[1]{\displaystyle\sum_{n=0}^{\infty}#1}
+\newcommand{\ssumk}[1]{\displaystyle\sum_{k=1}^{\infty}#1}
+\newcommand{\ssumkn}[1]{\displaystyle\sum_{k=1}^{n}#1}
+\newcommand{\limtoinf}[1]{\displaystyle\lim_{n\to\infty}#1}
+\newcommand{\intab}[4][x]{\displaystyle\int_{#1}^{#2}{#3}\,\diff #4}
+\newcommand{\intabu}[4]{\displaystyle\int_{#1}^{#2}{#3}\,\diff #4}
+\newcommand{\intinf}[2][x]{\displaystyle\int_{-\infty}^{+\infty}#2\diff #1}
+\newcommand{\inpro}[1]{\langle #1\rangle}
+\newcommand{\lrp}[1]{\left(#1\right)}
+\newcommand{\lra}[1]{\left|#1\right|}
+\newcommand{\nums}[1]{\{#1\}}
+\newcommand{\floor}[1]{\lfloor#1\rfloor}
+\newcommand{\dnf}[1]{f^{(#1)}}
+
+\newcommand{\proj}[1]{\mathrm{proj}_{#1}}
+\newcommand{\inp}[2]{\langle #1,#2 \rangle}
+\newcommand{\vb}[1]{\mathbf{#1}}
+\newcommand{\bmat}[2]{\begin{bmatrix}{#1}&\cdots&{#2}\end{bmatrix}}
+\newcommand{\setenu}[2]{\{#1,\dots,#2\}}
+\newcommand{\underwrite}[3][]{% \underwrite[<thickness>]{<numerator>}{<denominator>}
+  \genfrac{}{}{#1}{}{\textstyle #2}{\scriptstyle #3}
+}
+\newcommand{\xdownarrow}[1]{%
+  {\left\downarrow\vbox to #1{}\right.\kern-\nulldelimiterspace}
+}
+\newcommand{\xuparrow}[1]{%
+  {\left\uparrow\vbox to #1{}\right.\kern-\nulldelimiterspace}
+}
+
+\newcommand{\ol}[1]{\mathop{\overline{#1}}}
+\newcommand{\pr}[1]{\mathbb{P}\left(#1\right)}
+\newcommand{\prc}[2]{\mathbb{P}\left(#1\mid #2\right)}
+\newcommand{\E}[1]{\mathbb{E}\left(#1\right)}
+\newcommand{\Var}[1]{\mathrm{Var}\left(#1\right)}
+\newcommand{\Cov}[1]{\mathrm{Cov}\left(#1\right)}
+
+\setenumerate[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+\setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}

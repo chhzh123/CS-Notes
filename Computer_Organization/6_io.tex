@@ -1,0 +1,116 @@
+% !TEX root = main.tex
+
+\section{输入输出系统}
+\subsection{IO接口}
+IO接口是主机与IO设备之间数据交换的界面，它屏蔽了IO设备的差异，提供了一致的访问界面。
+功能如下
+\begin{enumerate}
+	\item 数据格式（串并）转换和电平变换
+	\item 数据缓存（速度不匹配）
+\end{enumerate}
+IO端口：IO接口中的各类寄存器\\
+寄存器编址
+\begin{itemize}
+	\item 统一编址，与主存统一编址，可以用访存指令去访问外设中的存储器
+	\item 独立编址，对IO端口单独编号，需要专门的IO指令
+\end{itemize}
+% IO设备的连接
+
+\subsection{磁盘存储器}
+磁盘组织：磁道、扇区、柱面\\
+道(track)密度：垂直于磁道方向上（半径方向）单位长度磁介质所容纳的磁道数\\
+位(bit)密度：单位长度磁道上所能记录的二进制信息位数
+面(surface)密度：单位面积上记录的二进制信息位数=道密度$\times$位密度\\
+存取时间$t$=寻道时间$t_s$+旋转等待时间$t_w$+数据传输时间($t_{WR}$)\\
+最大旋转延迟=1/磁盘转速*60s/1min\\
+平均旋转延迟=最大旋转延迟/2
+
+\subsection{闪存存储器}
+电可擦写、可编程只读存储器(EEPROM)
+\begin{itemize}
+	\item NOR：随机，可以直接按字节访问，主要用于存储程序代码(code)
+	\item NAND：块级IO访问，主要用于存储数据(data)
+\end{itemize}
+读快、写慢（块擦）\\
+通过损耗均衡(wear leveling)减少块的磨损\\
+固态盘SSD即为闪存
+
+% 光存储器
+
+\subsection{IO控制方式}
+\subsubsection{程序查询方式}
+IO完全由CPU指令控制，数据传输再CPU的寄存器与外设及其接口的数据缓冲寄存器之间进行，IO不直接访问内存
+\par 完全串行工作
+
+\subsubsection{程序中断/中断驱动方式}
+由外设主动通知CPU，可以处理异常事件
+\begin{enumerate}
+	\item 当外设准备好时，向CPU发中断请求
+	\item CPU响应后，中止线性程序执行，转入“中断服务程序”进行输入/输出操作
+	\item 中断服务程序执行完，CPU返回程序断点继续执行，外设和CPU并行工作
+\end{enumerate}
+中断响应的条件
+\begin{itemize}
+	\item CPU处于开中断状态
+	\item 在一条指令\textbf{执行完}（区别“异常”是在指令执行过程中）
+	\item 至少要有一个未被屏蔽的中断请求
+\end{itemize}
+中断响应过程
+\begin{itemize}
+	\item 关中断
+	\item 保护断点和程序状态
+	\item 识别中断源
+\end{itemize}
+中断判优：在同时出现的若干个中断请求中找出级别最高的，以便进行相应的中断服务
+\begin{itemize}
+	\item 软件判优：轮询法
+	\item 硬件判优
+	\begin{itemize}
+		\item 串行判优：链式查询
+		\item 并行判优：独立请求
+	\end{itemize}
+\end{itemize}
+优先级
+\begin{itemize}
+	\item 中断响应的优先级由硬件排队线路决定
+	\item 中断处理优先级由软件设置屏蔽码决定
+\end{itemize}
+缺点
+\begin{itemize}
+	\item 对IO请求相应慢
+	\item 数据传送速度慢
+\end{itemize}
+
+\subsubsection{直接存储器(DMA)访问方式}
+直接存储器存取(Direct Memory Access)：
+\begin{itemize}
+	\item 独立于处理器、能在高速外设和主存之间直接传送数据
+	\item 由专门硬件（DMA控制器）控制总线进行传输
+	\item 高速设备（磁盘光盘等），成批数据交换，且单位数据间的时间间隔较短
+\end{itemize}
+\begin{itemize}
+\item 采用“请求--响应”方式
+\begin{itemize}
+	\item 每当高速设备准备好数据，就进行一次“DMA请求”，DMA控制器接收到DMA请求后，申请总线使用权
+	\item DMA控制器的总线使用优先级比CPU高
+\end{itemize}
+\item 与中断控制方式结合使用
+\begin{itemize}
+	\item DMA传送前， “寻道”“旋转” 等操作结束时， 通过“中断” 告知CPU
+	\item DMA控制器控制总线传送数据时， CPU执行其他程序
+	\item DMA传送结束时， 要通过“DMA结束中断” 告知CPU
+\end{itemize}
+\end{itemize}
+\par CPU对DMA请求的响应时间可以发生在每个总线周期结束时
+\par DMA请求的优先级高于中断请求
+IO数据一致性：OS维护
+\begin{itemize}
+	\item IO读操作：cache置为无效
+	\item IO写操作：cache flush（刷新），强迫cache中被更新的数据写回内存
+\end{itemize}
+
+\subsubsection{RAID盘阵}
+廉价磁盘冗余阵列(Redundant Array of Inexpensive Disks)
+增加容量
+并行工作提高数据传输速度
+冗余进行错误恢复提高系统可靠性

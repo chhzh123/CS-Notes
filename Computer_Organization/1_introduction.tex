@@ -1,0 +1,85 @@
+% !TEX root = main.tex
+
+\section{导论}
+\subsection{基本概念}
+表示计算机通信带宽时
+\begin{center}
+\begin{tabular}{ccccccc}\hline
+KB(yte) & MB & GB & TB & PB & EB & ZB\\\hline
+$10^3$ & $10^6$ & $10^9$ & $10^{12}$ & $10^{15}$ & $10^{18}$ & $10^{21}$\\\hline
+\end{tabular}
+\end{center}
+表示计算机存储二进制时
+\begin{center}
+\begin{tabular}{ccccccc}\hline
+KiB(yte) & MiB & GiB & TiB\\\hline
+$2^{10}$ & $2^{20}$ & $2^{30}$ & $2^{40}$\\\hline
+\end{tabular}
+\end{center}
+\begin{itemize}
+	\item 位(bit/b)：计算机处理、存储、传输信息的最小单位
+	\item 字节(Byte/B) $1\text{ Byte}=8\text{ bit}$：现代计算机主存按字节编制，字节是最小可寻址单位
+	\item 字(Word)：表示被处理信息的单位，用来度量数据类型的宽度\footnote{字长是指CPU中数据通路的宽度，等于CPU内部总线的宽度或运算器的位数或通用寄存器的宽度；字和字长的宽度可以一样，也可以不同，通常是字节的整数倍}
+\end{itemize}
+\par 一台32位的电脑，一个字等于4个字节，字长为32位；若字长为16位，则一个字等于2字节.
+
+\subsection{程序到电子信号}
+\begin{center}
+\begin{tikzcd}
+\text{高级语言}\quad\arrow{r}{\text{预编译、编译}} & \quad\text{汇编语言}\arrow{r}{\text{汇编}} & \text{机器语言}\arrow{r}{\text{链接}} & \text{可执行文件}\arrow{d}{\text{加载}}\\
+& & \text{电路上的电信号}\quad & \quad\text{二进制机器指令流（存储器）}\arrow[swap]{l}{\text{CPU取指译码}}
+\end{tikzcd}
+\end{center}
+计算机内部工作过程：逐条执行加载到内存中的二进制机器指令流的过程
+指令执行分为两个阶段，周期性重复性进行：
+\begin{itemize}
+	\item 取指阶段：CPU从内存中读取指令，程序计数器(PC)保存要被要被取出的\textbf{下一条}指令的地址，除非遇跳转指令，否则都加一个增量\footnote{程序计数器（Program Counter）是一个实际存在的寄存器吗？ - Belleve的回答 - 知乎 \url{https://www.zhihu.com/question/22609253/answer/21965180} PC每次增加\textbf{一条指令的长度/寻址粒度}，在MIPS中一条指令长4字节，寻址粒度1字节，故每次PC加4；而x86体系指令长度不定，每次增加量会变化}
+	\item 执行阶段：对取出的指令译码后执行
+\end{itemize}
+
+\subsection{功能部件}
+\subsubsection{中央处理器(CPU)}
+核心组成：
+\begin{itemize}
+	\item 控制单元(Control unit)：对指令进行译码，产生控制信号
+	\item 数据通路(Datapath)：完成指令执行，ALU+寄存器
+\end{itemize}
+寄存器分类：
+\begin{itemize}
+	\item 通用寄存器(GRS, General Register Set)：存放操作数和中间结果
+	\item 程序计数器(PC, Program Counter)：存放下条要执行的指令
+	\item 指令寄存器(IR, Instruction Register)：存放当前指令
+\end{itemize}
+
+\subsubsection{存储器}
+层次化结构(Hierarchies)
+\begin{itemize}
+	\item 内存(Primary)：高速缓存(Cache)、主存(MM, Main Memory)
+	\item 外存(Secondary)：磁盘、光盘、闪存等
+\end{itemize}
+
+\subsection{计算机结构的八个想法}
+\begin{enumerate}
+	\item 摩尔(Moore)定律：集成电路资源每$18-24$个月翻倍
+	\item 抽象(abstraction)：简化设计
+	\item 加速常用操作(Make common case fast)：见定理\ref{thm:amdahl}
+	\item 并行(parallelism)
+	\item 流水线(pipelining)
+	\item 预测(prediction)
+	\item 内存等级制(hierarchy)
+	\item 冗余实现可靠性(redundancy)：检测故障及解决
+\end{enumerate}
+
+\subsection{性能评价}
+\label{subsec:performance}
+\[\text{计算机的性能(Performance)}=1/\text{执行时间(Execution time)}\]
+按照单位（量纲）进行换算即可
+\[\begin{aligned}
+\text{CPU执行时间(s)}&=\text{执行程序所需CPU时钟周期(cyc)}\times\text{时钟周期s/cyc)}\\
+&=\text{指令数目(ins)}\times\text{CPI(cyc/ins)}\times\text{时钟周期(s/cyc)}
+\end{aligned}\]
+程序性能对执行事件的影响：
+\begin{itemize}
+	\item 算法、编程语言、编译器都对指令数和CPI产生直接影响
+	\item 指令集体系结构则同时对指令数、CPI、时钟频率产生影响
+\end{itemize}

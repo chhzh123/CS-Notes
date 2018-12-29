@@ -1,0 +1,79 @@
+% !TEX root = main.tex
+
+\section{计算机的运算}
+\subsection{基本运算}
+\subsubsection{位运算}
+位运算针对二进制数，逻辑运算针对表达式的值
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multirow{2}*{无符号数} & 逻辑左移 & 高位移出，低位补0\\
+\cline{2-3} & 逻辑右移 & 低位移出，高位补0\\
+\hline
+\multirow{2}*{有符号数} & 算术左移 & 高位移出，低位补0\\
+\cline{2-3} & 算术右移 & 低位移出，高位补\textbf{符号位}\\
+\hline
+\end{tabular}
+\end{center}
+移位符号\verb'<<'和\verb'>>'不区分算术还是逻辑移位，只由参与运算的数值决定\\
+算术左移溢出判断：若移出的位不等于新的符号位，即$CF\oplus SF=1$，则溢出
+
+\subsubsection{位扩展和位截断}
+\begin{itemize}
+	\item 位扩展：如\verb'float'变\verb'double'；数据存入寄存器时也要扩展，\verb'lb'
+	\begin{itemize}
+		\item 无符号数：0扩展，即前面补0
+		\item 有符号整数：符号扩展，即前面补符号
+	\end{itemize}
+	\item 位截断：如\verb'double'变\verb'int'；强行丢弃长数的高位，可能溢出或数据不正确
+\end{itemize}
+
+\subsubsection{加减法}
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+原码 & 补码 & 移码\\\hline
+符号与数值单独运算 & 符号与数值一起运算 & 符号与数值一起运算\\\hline
+同号相加进位溢出 & \begin{tabular}{c}变形两位补码\\01正溢出，10负溢出\end{tabular} & 两加数和和数符号都相同则溢出\\\hline
+$A\pm B=A\pm B$
+&$\begin{aligned}
+[A+B]_c&=[A]_c+[B]_c\\
+[A-B]_c&=[A]_c+[-B]_c
+\end{aligned}$
+&$\begin{aligned}
+[A]_b+[B]_b&=[A+B]_{\textcolor{red}{c}}\\
+[A]_b-[B]_b&=[A]_b+[-[B]_b]_c=[A-B]_{\textcolor{red}{c}}
+\end{aligned}$\\\hline
+浮点数尾数 & 定点数 & 浮点数阶码\\\hline
+\end{tabular}
+\end{center}
+% 符号位位1，结果为补码
+
+注意进位和溢出的区别，在模$2^n$意义下，加负数进位相当于回到原点；而只有同号运算才可能溢出
+
+C不考虑溢出的异常处理
+\begin{itemize}
+	\item unsigned整型溢出：模运算
+	\item signed整型溢出：undefined behavior
+	\item MIPS上的C编译器会选用无符号的算术运算指令，如\verb'addu'、\verb'addiu'、\verb'subu'
+\end{itemize}
+
+全加器实现
+\[\begin{aligned}
+S_i&=A_i\oplus B_i\oplus C_{i-1}\\
+C_i&=(A_i\oplus B_i)C_{i-1}+A_iB_i
+\end{aligned}\]
+
+并行加法器：
+\begin{itemize}
+	\item 若$A_iB_i=1$，则$C_{\text{out}}=1$与$C_{\text{in}}$无关（进位生成）
+	\item 若$A_i+B_i=1$，则$C_{\text{out}}=1$与$C_{\text{in}}$相同（进位传递）
+\end{itemize}
+
+组内并行，组间串或并行
+
+BCLA(成组先行进位)芯片
+
+
+\subsubsection{乘法}
+
+\subsubsection{除法}
