@@ -16,7 +16,7 @@
 \usecolortheme{crane}
 
 \title{C语言理论知识总览}
-% \subtitle{Week 16}
+\subtitle{Week 17}
 
 \author[chhzh123]{陈鸿峥}
 \date[Dec, 2018]{December, 2018}
@@ -381,7 +381,7 @@ e.g.\\
 
 \begin{frame}[fragile]{算术 - 逻辑}
 \begin{itemize}[<+->]
-	\item 逻辑与逻辑非都有\textbf{短路}运算，前者为1或0，可判断时将不会执行后续操作
+	\item 逻辑与逻辑或都有\textbf{短路}运算，前者为0或1，可判断时将不会执行后续操作
 	\item 0为假，非零值均为真；但逻辑表达式的返回值只会是0或1
 	\item 按位取反\verb'~'包括符号位也要取反，故\verb'~0=-1'区别于\verb'!0=1'
 	\item 移位，左移乘2，右移除以2（向下取整）；注意对于有符号数来说是\textbf{算术}右移（符号位扩展）
@@ -567,7 +567,7 @@ qsort(a,10,sizeof(int),&cmp1);
 \verb'a[i][j]' $\to$ \verb'*(ki+j)'，第二维是分配内存的长度，第一维是分配内存的倍数
 \begin{itemize}
 	\item \verb'void f(int n, int a[][10])'
-	\item \verb'void f(int n, int (*a) [10]'
+	\item \verb'void f(int n, int (*a) [10])'
 	\item \verb'void f(int n, int **a)'
 \end{itemize}
 \end{frame}

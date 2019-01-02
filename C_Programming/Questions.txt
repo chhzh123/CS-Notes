@@ -1,0 +1,481 @@
+追分大作战-C程序设计理论
+
+题目大部分原创，部分修改自sanfoundry的题目，题目描述均全英。
+理论考试禁止使用编译器，为避免误打误撞的情况，本测试主要以填空题为主，若无特殊说明则直接填写程序输出。
+程序编译错误请填写CE，运行错误请填写RE，未定义行为请填写UB，无输出请填写NOTHING（注意全是大写）。
+注意不要输入多余空格或其他字符。
+
+1. 您的名字（只是作为标识，想填什么都行）： [填空题] *
+_________________________________
+
+2. The suffix of the objective file on Linux is? (exe, o, obj, c, cpp, etc.) [单选题] *
+exe
+c
+o(正确答案)
+obj
+cpp
+etc.
+
+3. In which stage are the macros included into the program? [单选题] *
+preprocess(正确答案)
+compile
+assemble
+link
+
+4. The compiler can directly execute the high-level language programs. [单选题] *
+T
+F(正确答案)
+
+5. CPU can directly execute byte codes. [单选题] *
+T
+F(正确答案)
+
+6. Decimal number 10 is ____ in C? [单选题] *
+A、0b11
+B、024
+C、0x13
+D、012(正确答案)
+
+7. Represent decimal number 1.25 in binary. [填空题] *
+_________________________________(答案：1.01)
+
+8. Represent decimal number -5 in 4-bit two's complement. [填空题] *
+_________________________________(答案：1011)
+
+9. Chinese characters are encoded in? [单选题] *
+A. ASCII
+B. BCD
+C. Unicode(正确答案)
+D. Hamming
+
+10. The length of the variable name in C is not bounded. [单选题] *
+T(正确答案)
+F
+
+11. C89 allows ________ of characters at most as an internal identifier. (Enter an integer) [填空题] *
+_________________________________(答案：31)
+
+12. There are ______ characters in total which can be used in C's variable names. (Enter an integer) [填空题] *
+_________________________________(答案：63)
+
+13. C allows the variable name below.
+    _abBBBA1 [单选题] *
+T(正确答案)
+F
+
+14. #include<stdio.h>
+int main()
+{
+    int i;
+    for (i = 0; i < 10; i++)
+        int b = 1;
+    printf("%d",b);
+} [填空题] *
+_________________________________(答案：CE)
+
+15. #include<stdio.h>
+int main()
+{
+    int i;
+    extern int b;
+    {
+    for (i = 0; i < 10; i++)
+        i++;
+        int b = 10;
+    }
+    printf("%d %d",b,i);
+    return 0;
+}
+
+int b;
+[填空题] *
+_________________________________(答案：0 10)
+
+16. 
+#include<stdio.h>
+int foo (){
+    static int a;
+    a++;
+}
+
+int main()
+{
+    int i;
+    for (i = 0; i < 10; ++i)
+        foo();
+    printf("%d",a);
+}
+[填空题] *
+_________________________________(答案：CE)
+
+17. 
+#include<stdio.h>
+int foo (){
+    static int a;
+    auto b = 5;
+    a++;
+    b++;
+    printf("%d %d ", a, b);
+}
+
+int main()
+{
+    int i;
+    for (i = 0; i < 2; ++i)
+        foo();
+}
+[填空题] *
+_________________________________(答案：1 6 2 6)
+
+18. In computer, data and programs are stored in _____. [单选题] *
+binary(正确答案)
+decimal
+octal
+hexdecimal
+
+19. Uninitialized global variables are store in? [单选题] *
+code segment
+data segment
+BSS segment(正确答案)
+stack segment
+heap segment
+
+20. The following code defines and declares a variable.
+      auto int i = 15; [单选题] *
+T(正确答案)
+F
+
+21. There are _____ kinds of constructive data types in C. (Enter an integer) [填空题] *
+_________________________________(答案：4)
+
+22. sizeof(long) is ______ and sizeof(double) is ______ when the program is compiled by 64-bit compiler for 32-bit machine. (Enter two integers. Please separate these two numbers by ONE space) [填空题] *
+_________________________________(答案：4 8)
+
+23. 
+#include<stdio.h>
+struct point
+{
+    int index;
+    double x,y;
+};
+
+union data
+{
+    int index[10];
+    point p[5];
+};
+
+int main()
+{
+    point p; data d;
+    printf("%d %d", sizeof(p),sizeof(d));
+}
+[填空题] *
+_________________________________(答案：24 120)
+
+24. 
+#include<stdio.h>
+union data
+{
+    int index;
+    char c;
+}
+
+int main()
+{
+    data d;
+    printf("%d", sizeof(d));
+}
+[填空题] *
+_________________________________(答案：CE)
+
+25. #include<stdio.h>
+int main()
+{
+    float x = 1.5;
+    printf("%d", x);
+}
+[填空题] *
+_________________________________(答案：UB)
+
+26. #include<stdio.h>
+int main()
+{
+    int x = 1.5;
+    printf("%.1f", x);
+}
+[填空题] *
+_________________________________(答案：0.0)
+
+27. 
+#include<stdio.h>
+int main()
+{
+    const char x;
+    printf("%d", x);
+}
+[填空题] *
+_________________________________(答案：CE)
+
+28. The value of (-7)/4 in C is? [填空题] *
+_________________________________(答案：-1)
+
+29. 
+#include <stdio.h>
+int main()
+{
+    int ch = 1;
+    switch (ch, ch + 1)
+    {
+    case 1:
+        printf("1");
+        break;
+    case 2:
+    case 3:
+        printf("3");
+        break;
+    }
+    return 0;
+}
+[填空题] *
+_________________________________(答案：3)
+
+30. #include <stdio.h>
+int main()
+{
+    int x = 0;
+    if (x++)
+        printf("true");
+    else if (x = 2)
+        printf("false");
+    else
+        printf("nothing");
+}
+[填空题] *
+_________________________________(答案：false)
+
+31. #include <stdio.h>
+    int main()
+    {
+        int a = 1;
+        if (a)
+            printf("A");
+            printf("B");
+        else
+            printf("C");
+    }
+[填空题] *
+_________________________________(答案：CE)
+
+32. 
+#include <stdio.h>
+int main()
+{
+    if (printf("0"))
+        printf("1");
+    else
+    printf("0");
+}
+[填空题] *
+_________________________________(答案：01)
+
+33. #include <stdio.h>
+int main()
+{
+    int x = 0;
+    if (++x || ++x || x++)
+        printf("%d", x);
+}
+[填空题] *
+_________________________________(答案：1)
+
+34. What's the value of ~0 and !0 in C? (Separate your answer by ONE space) [填空题] *
+_________________________________(答案：-1 1)
+
+35. #include<stdio.h>
+int main()
+{
+    printf("%d %d %d", 5 << 2, 5 >> 2, -5 >> 2);
+}
+[填空题] *
+_________________________________(答案：20 1 -2)
+
+36. What is the output of this C code?
+#include <stdio.h>
+int main()
+{
+    int y = 1, x = 0;
+    int l = (y++, x++) ? y : x;
+    printf("%d", l);
+} [填空题] *
+_________________________________(答案：1)
+
+37. 
+#include <stdio.h>
+    void main()
+    {
+        int k = 0;
+        for (k < 3; k++)
+            printf("Hello");
+    }
+[填空题] *
+_________________________________(答案：CE)
+
+38. 
+#include <stdio.h>
+int main()
+{
+    int i = 0;
+    for (i++; i == 1; i = 2)
+        printf("A");
+        printf("B");
+}
+[填空题] *
+_________________________________(答案：AB)
+
+39. #include <stdio.h>
+    int main()
+    {
+        int x = 1, y = 2;
+        if (x && y == 1)
+            printf("true");
+        else
+            printf("false");
+    }
+[填空题] *
+_________________________________(答案：false)
+
+40. #include <stdio.h>
+    int main()
+    {
+        int x = 2, y = 0;
+        int z = x && y = 1;
+        printf("%d", z);
+    }
+[填空题] *
+_________________________________(答案：CE)
+
+41. 
+#include<stdio.h>
+int main()
+{
+    int a[10], i;
+    for (i = 0; i < 10; ++i)
+        a[i] = i;
+    int* p = a + 5;
+    printf("%d", *p++);
+}
+[填空题] *
+_________________________________(答案：5)
+
+42. 
+What will be the data type returned for the following C function?
+
+    foo()
+    {
+        return (double)(char)5.0;
+    }
+[单选题] *
+double
+char
+int(正确答案)
+void
+
+43. Comment on the following?
+    const int *ptr; [单选题] *
+A. You may or maynot change the value pointed by ptr
+B. You cannot change the value pointed by ptr(正确答案)
+C. You cannot change the pointer ptr itself
+D. You can change the pointer as well as the value pointed by it
+
+44. #include <stdio.h>
+    int main()
+    {
+        int *ptr, a = 10;
+        ptr = &a;
+        *ptr += 1;
+        printf("%d,%d", *ptr, a);
+    }
+[填空题] *
+_________________________________(答案：11 11)
+
+45. 
+What's the output of the following program? (Compiled for 64-bit machine)
+#include <stdio.h>
+int main()
+{
+    int* pi;
+    char* pc;
+    double* pd;
+    printf("%d %d %d", sizeof(pi), sizeof(pc), sizeof(pd));
+}
+[填空题] *
+_________________________________(答案：8 8 8)
+
+46. 
+#include <stdio.h>
+int myfoo(int);
+int (*fooptr)(int);
+int (*foo(int))(int);
+
+int main(){
+    fooptr = foo(0);
+    fooptr(10);
+}
+int (*foo(int i))(int){
+    return myfoo;
+}
+int myfoo(int i){
+    printf("%d", i + 1);
+}
+[填空题] *
+_________________________________(答案：11)
+
+47. 
+#include <stdio.h>
+int main()
+{
+    int *p = 0;
+    if (p == NULL)
+        printf("NULL");
+    else
+       printf("%d", *p);
+}
+[填空题] *
+_________________________________(答案：NULL)
+
+48. With regard to
+       int *(*p)[10];
+which comment is true? [单选题] *
+p is a pointer pointing to an array with 10 pointers to int(正确答案)
+p is a pointer pointing to a pointer to 10 ints
+p is an array of 10 pointers who point to int pointer
+
+49. 
+#include <stdio.h>
+int main()
+{
+    int arr[3][4] = {5,6,7,8,9,10};
+    printf("%d", 1[arr][0]);
+}
+[填空题] *
+_________________________________(答案：9)
+
+50. 
+#include <stdio.h>
+int main()
+{
+int arr[4] = {1,2,3,4};
+int *p = arr + 3;
+printf("%03d", p[-2]);
+}
+[填空题] *
+_________________________________(答案：002)
+
+51. Which instruction below is used to show all of the major directories filed under a given file system in Linux. [单选题] *
+dir
+ls(正确答案)
+lsdir
+cd
+
+
