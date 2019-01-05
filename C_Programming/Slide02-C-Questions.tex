@@ -58,9 +58,9 @@
 前12题请翻阅上次课件\\
 名词解释:
 \begin{itemize}
-	\item objective file: 目标文件
-	\item macro: 宏
-	\item 4-bit two's complement: 4位补码
+	\item Q1: objective file: 目标文件
+	\item Q3: macro: 宏
+	\item Q8: 4-bit two's complement: 4位补码
 \end{itemize}
 \end{frame}
 
@@ -79,6 +79,7 @@ b不在作用域，编译报错(CE)
 \end{frame}
 
 \begin{frame}[fragile]{Q14}
+\fontsm
 \begin{lstlisting}
 #include<stdio.h>
 int main()
@@ -97,7 +98,7 @@ int main()
 int b;
 \end{lstlisting}
 内部b不在循环体内，但只在中间的大括号作用域内\\
-printf内的b看的是外部变量b，因其位全局变量，默认初始化为0\\
+printf内的b看的是外部变量b，因其为全局变量，默认初始化为0\\
 i++只会影响循环次数，不会影响最终结果
 \end{frame}
 
@@ -126,8 +127,7 @@ int main()
 int foo (){
     static int a;
     auto b = 5;
-    a++;
-    b++;
+    a++; b++;
     printf("%d %d ", a, b);
 }
 
@@ -138,8 +138,7 @@ int main()
         foo();
 }
 \end{lstlisting}
-静态变量与自动变量\\
-1 6 2 6
+静态变量与自动变量\quad1 6 2 6 (space!)
 \end{frame}
 
 \begin{frame}{Q17-Q20}
@@ -175,7 +174,14 @@ int main()
     printf("%d %d", sizeof(p),sizeof(d));
 }
 \end{lstlisting}
-24 120，涉及到对齐问题，详情可见\footnote{\url{https://stackoverflow.com/questions/119123/why-isnt-sizeof-for-a-struct-equal-to-the-sum-of-sizeof-of-each-member}}
+忘加关键字了，以及是64位机...24 120，涉及到对齐问题，详情可见\footnote{\url{https://stackoverflow.com/questions/119123/why-isnt-sizeof-for-a-struct-equal-to-the-sum-of-sizeof-of-each-member}}
+\end{frame}
+
+\begin{frame}{Q22}
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{fig/aligned.pdf}
+\end{figure}
 \end{frame}
 
 \begin{frame}[fragile]{Q23}
@@ -201,6 +207,7 @@ int main()
 \end{frame}
 
 \begin{frame}[fragile]{Q28}
+\fontsm
 \begin{lstlisting}
 #include <stdio.h>
 int main()
@@ -255,21 +262,6 @@ int main()
     }
 \end{lstlisting}
 CE，千万不要被缩进误导！
-\end{frame}
-
-\begin{frame}[fragile]{Q31}
-\begin{lstlisting}
-#include <stdio.h>
-int main()
-{
-    if (printf("0"))
-        printf("1");
-    else
-    	printf("0");
-}
-\end{lstlisting}
-01\\
-printf和scanf都有返回值，字符类型非0为真
 \end{frame}
 
 \begin{frame}[fragile]{Q31}
@@ -345,7 +337,7 @@ int main()
 \begin{frame}{Q38-40}
 运算符优先级，见上次课件\\
 \begin{center}
-\Large\textbf{单算移关羽，异或逻条赋}
+\Large\textbf{单算移关与，异或逻条赋}
 \end{center}
 \end{frame}
 
