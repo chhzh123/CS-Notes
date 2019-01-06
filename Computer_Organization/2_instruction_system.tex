@@ -1,6 +1,19 @@
 % !TEX root = main.tex
 
 \section{指令系统}
+IS处在软件和硬件的交界面上，能同时被硬件设计者和系统程序员看到\\
+从硬件设计者角度看
+\begin{itemize}
+	\item IS为CPU提供功能需求
+	\item IS设计目标：易于硬件逻辑设计
+\end{itemize}
+从系统程序员角度看
+\begin{itemize}
+	\item 通过IS使用硬件资源
+	\item IS设计目标：易于编写编译器
+\end{itemize}
+IS设计的好坏决定了计算机的性能和成本
+
 \subsection{概述}
 \begin{center}
 \begin{tabular}{|m{8cm}|m{8cm}|}
@@ -8,10 +21,10 @@
 \multicolumn{1}{|c|}{复杂指令集计算机} & \multicolumn{1}{c|}{精简指令集计算机} \\\hline
 CISC, Complex Instruction Set Computer & RISC, Reduce Instruction Set Computer\\\hline
 出现较早，大而全 & 小而精 \\\hline
-指令周期长，专用寄存器，微程序控制，难编译优化生成高效目标代码，效率低(二八定律，简单指令使用频率高) & 指令周期短，大量通用寄存器，组合逻辑电路控制，优化编译系统\\\hline
+指令周期长，专用寄存器，微程序控制，难编译优化生成高效目标代码，效率低(二八定律，简单指令使用频率高) & 指令周期短，\textbf{大量通用寄存器}，组合逻辑电路控制，优化编译系统，简单寻址方式\\\hline
 变长指令字 & 定长指令字 \\\hline
 借鉴思想 & 现在多用 \\\hline
-x86 & ARM, MIPS,SPARC \\\hline
+x86 & ARM, MIPS, SPARC \\\hline
 \end{tabular}
 \end{center}
 
@@ -60,37 +73,48 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 存储器间接寻址 & 存储器中的内容是操作数的地址，需二次寻址 & \\\hline
 寄存器直接寻址 & 直接给出寄存器编号，无需访存速度快，地址范围有限，可用通用寄存器较少，使用最多，提高性能常用手段 & MOV AX, BX\\\hline
 寄存器间接寻址 & 寄存器中的内容是操作数的地址，二次寻址 & MOV AX, [BX]\\\hline
-相对寻址（偏移） & 相对当前指令(PC)位移量为A的单元 & EA=(PC)+A\\\hline
-基址寻址（偏移） & 相对基址(B)位移量为A的单元 & EA=(B)+A \\\hline
-变址寻址（偏移） & 相对形式地址A（数组基址）位移量为(I)的单元 & EA=(I)+A, I=(I)$\pm$X \\\hline
-堆栈寻址 & 从寄存器到堆栈或反过来，指令短 & EA=栈顶\\\hline
+相对寻址（偏移） & 相对\textbf{当前指令(PC)}位移量为A的单元，跳转指令 & EA=(PC)+A\\\hline
+基址寻址（偏移） & 相对基址(B)位移量为A的单元，\textbf{OS页面（重定位）}，面向系统，程序逻辑空间与存储器物理空间的无关性 & EA=(B)+A \\\hline
+变址寻址（偏移） & 相对形式地址A（数组基址）位移量为(I)的单元，X为数组元素大小，面向用户 & EA=(I)+A, I=(I)$\pm$X \\\hline
+堆栈寻址 & 从寄存器到堆栈或反过来，指令短 & EA=栈顶(SP)\\\hline
 复合寻址 & 间接寻址+相对/变址寻址 & 间接相对EA=(PC)+A, 相对间接EA=((PC)+A)\\\hline
 \end{tabular}
+* (X)代表X地址/寄存器内的内容，如((X))代表寄存器间接寻址
 \end{center}
 寻址方式的确定
 \begin{itemize}
 	\item 操作码中给定寻址方式：MIPS
 	\item 专门寻址方式：x86（0-1字节）
 \end{itemize}
+\begin{itemize}
+	\item 指令总数取决于操作码位数
+	\item 寄存器决定了编码位数
+	\item 地址寄存器(MAR)的位数取决于主存地址空间大小
+	\item 数据寄存器(MDR)取决于机器字长
+\end{itemize}
+注意看是按\textbf{字}编址还是按\textbf{字节}编址\\
+但从80年代开始，几乎所有机器都采用字节编址(byte addressing)
 
 \subsection{数据表示}
 \subsubsection{进制(system)}
+\[\text{进位计数制}=\text{基数}+\text{位权}\]
 二进制(binary)、八进制(octonary)、十进制(decimal)、十六进制(hexadecimal)
 \begin{itemize}
 	\item 十进制转二进制：整数部分除以2取余，小数部分乘2取整
-	\item 二进制转十六进制：四位四位统计
+	\item 二进制转八进制：从整数最低位开始，三位三位统计
+	\item 二进制转十六进制：从整数最低位开始，四位四位统计
 \end{itemize}
 
 \subsubsection{符号数}
 \begin{enumerate}
-\item 二进制
+\item 二进制（真值$\to$机器数）
 \begin{itemize}
 	\item 符号数值(sign-magnitude)形式（原码）：首位0为正数，1为负数，将符号位一起考虑有以下表示
 	\[A=\begin{cases}
 	A & A\in[0,2^{n-1})\\
 	2^{n-1}-A & A\in(-2^{n-1},0]
 	\end{cases}\]
-	\item 反码(1's complement)$\ssim A$：除符号位不变，其他位取反
+	\item 反码(1's complement)$\ssim A$：除符号位不变，其他位取反；同理小数
 	\[\ssim A=\begin{cases}
 	A & A\in[0,2^{n-1})\\
 	(2^n-1)+A & A\in (-2^{n-1},0]
@@ -100,7 +124,7 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 	\[\ssim A=(2^n-1)-A=(11\ldots 1)_2-A_2\]
 	即在$\mod 2^{n}-1$意义下的运算
 	\end{analysis}
-	\item 补码(2's complement)$[A]_c$：反码+1，按照原来十进制转二进制方法即可得对应有符号十进制数，由于没有正负0，故表示的数多了一位，补码的补码为原码
+	\item 补码(2's complement)$[A]_c$：反码+1，按照原来十进制转二进制方法即可得对应有符号十进制数，由于没有正负0，故表示的数多了一位，补码的补码为原码；同理小数
 	\[[A]_c=\begin{cases}
 	A & A\in[0,2^{n-1})\\
 	2^n+A & A\in \textcolor{red}{[-2^{n-1},0)}
@@ -112,14 +136,20 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 	\[[A]_c=2^n-A=((2^n-1)-A)+1=\ssim A+1\]
 	即在$\mod 2^n$意义下的运算，以4位二进制为例
 	\[(5)_{10}=(0101)_2\implies (5)_c=2^4-5=11=(10000)_2-(0101)_2=(1011)_2\]
+	由$[A]_c$求$[-A]_c$要连同符号位一起取反加1
 	\end{analysis}
 	\item 移码(bias)$[A]_b$：补码的符号位取反，引入目的是保证浮点数的机器零
 	\[[A]_b=A+2^{n-1}\,,A\in(-2^{n-1},2^{n-1})\]
 	\begin{analysis}
-	相当于把正数移到负数的部分，负数移到正数的部分
+	相当于把正数移到负数的部分，负数移到正数的部分\\
+	注意区别移码的定义($2^{n-1}$)和具体浮点数阶码($2^{n-1}-1$)的实施\footnote{原因可见\url{https://blog.angularindepth.com/the-mechanics-behind-exponent-bias-in-floating-point-9b3185083528}}
 	\end{analysis}
 \end{itemize}
-\item 十进制：用ASCII码或BCD码表示
+\item 十进制：
+\begin{itemize}
+	\item ASCII码
+	\item BCD码：四位表示一位十进制数
+\end{itemize}
 \end{enumerate}
 
 \subsubsection{小数表示}
@@ -127,7 +157,7 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 \item 定点数，首位符号位
 \begin{itemize}
 	\item 定点整数：小数点固定在最低位右边，$0\leq|x|\leq 2^n-1$
-	\item 定点小数：小数点固定在数值部分最高位的左边，$0\leq|x|\leq 1-2^{-n}$
+	\item 定点小数：小数点固定在\textbf{数值部分}最高位的左边，$0\leq|x|\leq 1-2^{-n}$
 \end{itemize}
 \item 浮点数(IEEE 754)
 \begin{center}
@@ -136,7 +166,8 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 \\\hline
 \end{tabular}
 \end{center}
-移码偏置常数为127（单精度）、1023（双精度）
+规格化数，即令小数点前面必为1，隐含表示\\
+移码偏置常数为127（单精度）、1023（双精度），作用为简化比较
 \[(-1)^S\times1.F\times 2^{E-127}\]
 \end{itemize}
 \begin{example}
@@ -181,7 +212,6 @@ double & 8 \\\hline
 
 
 \subsection{数据存储}
-从80年代开始，几乎所有机器都采用字节编址（4字节32位二进制8位十六进制）
 \begin{itemize}
 	\item 大端方式(Big Endian)：最高有效位(MSB)所在地址为数的地址，MIPS，Photoshop、JPEG
 	\item 小端方式(Little Endian)：最低有效位(LSB)所在地址为数的地址，x86，GIF、RTF
@@ -191,7 +221,13 @@ double & 8 \\\hline
 
 
 \subsection{数据纠错}
-冗余校验：奇偶校验码
+冗余校验思想，增添校验位
+\begin{itemize}
+	\item 奇偶校验码：$P=b_{n-1}\oplus b_{n-2}\oplus\cdots\oplus b_0\oplus 1$与结果的$P'$再取异或，为1则奇数位错\\
+	只能发现奇数位出错，且不具有纠错能力
+	\item 海明码
+	\item 循环码
+\end{itemize}
 
 
 \subsection{MIPS指令系统}
@@ -210,7 +246,6 @@ I-Type & \begin{tabular}{ll}
 J-Type & 无条件跳转 j target & 按字对齐的伪直接寻址 & $32=6(op)+26(\text{target address})$ \\\hline
 \end{tabular}
 \end{table}
-
 注：J-Type中伪直接寻址含义：PC高4位拼上26位直接目标地址，最后添2个0（相当于乘4）为32位目标地址\\
 指令字段含义
 \begin{itemize}
@@ -247,11 +282,21 @@ J-Type & 无条件跳转 j target & 按字对齐的伪直接寻址 & $32=6(op)+2
 三个特殊寄存器：HI、LO、PC\par
 存储器数据指定：
 \begin{itemize}
-	\item 32位机$\to$可访问空间 $2^{32}bytes=4GB$
+	\item 31个32位通用寄存器(GPR)，零寄存器$r_0=0$
+	\item 32个32位浮点寄存器($f_0-f_{31}$)
+	\item 3个特殊寄存器：HI、LO、PC
+	\item 32位机$\to$可访问空间 $2^{32}bytes=4GB$（按字节编址）
 	\item 大端方式
-	\item 访存地址通过一个32位寄存器内容加16位偏移量得到
-	\item 16位偏移量为有符号整数（补码表示）
-	\item 按边界对齐
+	\item 只可通过load/store指令访问存储器（不像x86算术运算也可直接访存）
+	\item 访存地址通过一个32位寄存器内容加16位偏移量（有符号补码）得到
+	\item 数据按边界对齐
+\end{itemize}
+函数调用：
+\begin{itemize}
+	\item 若过程调用参数多余4个，返回值超过2个，则需要保存到寄存器的栈区中
+	\item 上方是调用程序压栈(pushed by caller)，保存在调用程序帧中，返回地址上方连续区域
+	\item 被调程序使用(used by callee)，相对于帧指针(\%ebp)的访问
+	\item 栈向下增长至堆，堆向上增长至栈
 \end{itemize}
 
 \begin{table}[htbp]
@@ -285,16 +330,3 @@ J-Type & 无条件跳转 j target & 按字对齐的伪直接寻址 & $32=6(op)+2
 \hline
 \end{tabular}%
 \end{table}
-
-
-\subsection{标志位}
-\begin{tabular}{|c|c|c|}\hline
-NF(SF) & negative & 符号\\\hline
-OF(VF) & overflow & 溢出\\\hline
-CF & carry & 进借位\\\hline
-ZF & zero & 零\\\hline
-\end{tabular}
-\begin{itemize}
-	\item 进/借位CF：\textbf{无符号数}运算结果是否超出范围，即使超出结果仍对
-	\item 溢出OF：\textbf{有符号数}运算结果是否超出范围，若超出则结果不对
-\end{itemize}
