@@ -24,7 +24,7 @@
 			\item 透明式刷新：每访存一次刷新一次
 		\end{itemize}
 	\end{itemize}
-	\item 只读存储器(ROM)：BIOS(Basic Input Output System)\\
+	\item 只读存储器(ROM)：都采用随机存取方式进行访问；BIOS(Basic Input Output System)\\
 	正常工作时只读，能随机读出，不能随机写入
 	\begin{itemize}
 		\item MROM：掩模式，只读
@@ -74,6 +74,13 @@
 \begin{analysis}
 $1024B=2^{10}B$，故需10条地址线，8位则8条数据线，外加1条片选信号和1条读写控制线，共20条
 \end{analysis}
+\begin{example}[2014全国统考]
+某容量为256MB的存储器由若干4M$\times$8位的DRAM芯片构成，该DRAM芯片的地址引脚和数据引脚总数是？
+\end{example}
+\begin{analysis}
+片选信号不需理，$4MB=2^{22}B$，故需22条地址线，又其为DRAM地址复用，故只需11条\\
+加上8条数据线，共19条
+\end{analysis}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.4\linewidth]{fig/Memory-Double_Decode.pdf}
@@ -102,6 +109,13 @@ $1024B=2^{10}B$，故需10条地址线，8位则8条数据线，外加1条片选
 		\item 交叉编址（低位交叉）：以存储体个数（质数）为模交叉编址，把连续几个地址保存到不同存储器中；CPU同时送出m个地址，高位作为存储器地址，低位负责选择数据；由存储器分时使用数据总线进行信息传递（流水线）
 	\end{itemize}
 \end{itemize}
+\begin{example}[2017全国统考]
+某计算机主存按字节编址，由4个64M$\times$8位的DRAM芯片用交叉编址方式构成，并与宽度为32位的存储器总线相连，主存每次最多读写32位数据。若double型变量x的主存地址为804001AH，则读取x需要的存储周期数为？
+\end{example}
+\begin{analysis}
+低位交叉编址，没有对齐\\
+因有4个存储体，故看地址最低两位，为10，即最初由2号存储体开始存，8个字节则2,3,0,1,2,3,0,1，一次可同时读0,1,2,3四个，故需3个周期才读完
+\end{analysis}
 主存空间的划分
 \begin{enumerate}
 	\item ROM区：存放系统程序、标准子程序
@@ -215,6 +229,8 @@ cache内存放的内容是主存的一个子集，因此给出一个主存地址
 \centering
 \includegraphics[width=0.8\linewidth]{fig/Cache-combine.pdf}
 \end{figure}
+* 不要忘记块内寻址\\
+地址映射表指前面的tag和有效位部分
 
 \begin{example}
 某一直接映射的cache容量为8K字，每块内有16个字，主存容量为512K字
@@ -356,8 +372,9 @@ Cache全硬件管理，而虚存由硬件和OS共同管理
 不可能页表miss了，快表hit了，因为页表缺失，信息一定不在主存页不在cache
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/Cache-page.pdf}
+\includegraphics[width=0.6\linewidth]{fig/Cache-page.pdf}
 \end{figure}
+Tag即为虚拟页号=$\lceil$地址/页大小$\rceil$\\
 TLB指标
 \begin{itemize}
 	\item 多用全相联：命中率高
@@ -371,7 +388,7 @@ TLB指标
 \end{itemize}
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.6\linewidth]{fig/Cache-page_address.pdf}
+\includegraphics[width=0.5\linewidth]{fig/Cache-page_address.pdf}
 \end{figure}
 
 \subsubsection{存储保护}

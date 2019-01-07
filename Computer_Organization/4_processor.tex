@@ -2,7 +2,7 @@
 
 \section{处理器}
 \subsection{处理器概述}
-计算机五大组成部分：[控制器+数据通路（运算器）]处理器、存储器、输入、输出
+计算机五大组成部分：[控制器+数据通路/运算器](处理器)、存储器、输入、输出
 \begin{itemize}
 	\item 操作元件：组合逻辑电路，所有操作元件都必须从状态元件接受输入，并并将输出写入状态元件
 	\item 状态元件：时序逻辑电路，只有状态元件可以存储信息
@@ -10,14 +10,13 @@
 \begin{definition}[寄存器组(Register File)]
 包含
 \begin{enumerate}
-\item 两个读端口（组合逻辑）：busA和busB读入地址，经过一个取数时间(AccessTime)后，两条线有效
-\item 一个写端口（时序逻辑）：写使能为1且时钟边沿到达
+	\item 两个读端口（组合逻辑）：busA和busB读入地址，经过一个取数时间(AccessTime)后，两条线有效
+	\item 一个写端口（时序逻辑）：写使能为1且时钟边沿到达
 \end{enumerate}
 要输入信号在寄存器的输出端才有效
 \end{definition}
-一个时钟周期就是一个节拍
-\par PC和指令寄存器的位数分别取决于存储器的容量和指令字长
-
+\par 一个时钟周期就是一个节拍。
+\par PC和指令寄存器的位数分别取决于存储器的容量和指令字长。
 
 \subsection{数据通路的建立}
 CPU执行指令主要分为两个阶段
@@ -44,8 +43,7 @@ CPU执行指令主要分为两个阶段
 \includegraphics[width=\linewidth]{fig/Datapath_All.pdf}
 \caption{MIPS基本数据通路}
 \end{figure}
-MIPS中三类基本指令：R-type、I-type、J-type\\
-七条指令
+\par MIPS中三类基本指令：R-type、I-type、J-type，基本数据通路如下
 \begin{enumerate}
 	\item 加减 \verb'add/sub rd,rs,rt'
 \begin{figure}[htbp]
@@ -87,23 +85,19 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 \end{enumerate}
 
 \subsection{多周期}
-五个阶段：取指(IF)、译码(ID)、执行(EXE)、访存(MEM)、写回(WB)\\
+五个阶段：取指(IF)、译码(ID)、执行(EXE)、访存(MEM)、写回(WB)
 \begin{itemize}
 	\item 每个周期都在下个时钟到来时结束（此时存储元件被更新）
 	\item 取指结束时PC+4开始写入PC，下个周期时，PC已被更新，置IRWr=0
 	\item ALU空闲可用来投机计算转移地址
-\end{itemize}
-\begin{itemize}
-	\item 有限状态机：通过组合逻辑硬连线(PLA)实现\\
-	下一状态时当前状态和操作码的函数
-	\item 微程序：用ROM存放微程序实现
 \end{itemize}
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.5\linewidth]{fig/Datapath-Multi-cycle.pdf}
 \caption{多周期CPU状态转移表}
 \end{figure}
-实际机器的寄存器组和存储器情况：
+\par 注意beq3周期、lw5周期、sw4周期，而课本上jump为3周期（因将DR放在扩展器后）
+\par 然而实际机器的寄存器组和存储器不一定用时钟边缘触发：
 \begin{itemize}
 	\item 寄存器有时钟输入，存储器可能无时钟输入
 	\item 写操作不是由时钟边缘触发，而是一个组合电路：Din稳定，写使能为1，经过Write Access时间，才进行写入；会存在竞争问题
@@ -111,16 +105,18 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 
 \subsection{流水线}
 \subsubsection{概述}
-提升工作主频：\\
-减少每个流水级执行时间$\to$减少每个流水级的任务量$\to$任务再分解$\to$增加流水线级数\\
-副作用：
+提升工作主频：
+\begin{center}
+减少每个流水级执行时间$\to$减少每个流水级的任务量$\to$任务再分解$\to$增加流水线级数
+\end{center}
+\par 副作用：
 \begin{itemize}
 	\item 寄存器开销(overhead)：收益下降
 	\item 非均匀延迟(Nonuniform delays)：吞吐率受限于最慢栈的时间，但很难将ALU和存储器划分成更小的栈
 \end{itemize}
-单个任务执行时间没有缩短，但是总的吞吐率增加了\\
-时钟周期等于最长阶段花费时间$t$，N条指令执行时间$(5+N-1)\times t$\\
-利于流水线执行的指令集
+\par 流水线不能缩短时钟周期，但能减少CPI（吞吐率提升）
+\par 时钟周期等于最长阶段花费时间$t$，N条指令执行时间$(5+N-1)\times t$
+\par 利于流水线执行的指令集(RISC)
 \begin{itemize}
 	\item 指令长度一致：简化取指和指令译码
 	\item 指令格式少，且源寄存器位置相同：利于在指令未知时预取操作数
@@ -133,12 +129,12 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 	\item 结构冒险/资源冲突：一个功能部件同时被多条指令使用产生，如Load和R-type同时要写回
 	\begin{itemize}
 		\item 通过加空操作(NOP)延迟写操作（每条指令都有五个阶段）
-		\item 设置多个部件（比如多个端口、寄存器读写口分开），避免冲突
+		\item 设置多个部件（比如多个端口、寄存器读写口分开，L1级数据和指令Cache分开），避免冲突
 	\end{itemize}
 	\item 控制冒险/分支冒险/转移冒险：在jump/beq之前已有几条指令被取出
 	\begin{itemize}
 		\item 阻塞、NOP
-		\item 分支预测
+		\item 分支预测 % 预测执行通常会发生错误，且带来很高的恢复执行代价，错的
 		\begin{itemize}
 			\item 静态：总是预测条件不满足，或加启发式规则
 			\item 动态：根据历史情况(Branch History Table, BHT)进行调整（微型强化学习）
@@ -147,7 +143,7 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 	\end{itemize}
 	\item 数据冒险/数据相关：写后读
 	\begin{itemize}
-		\item 转发(forwarding/bypassing)：将数据从流水段寄存器中直接渠道ALU的输入端，如果在Data Memory读出则无法转发(Load-use数据冒险)
+		\item 转发(forwarding/bypassing)：将数据从流水段寄存器(EXE)/内存(MEM)中直接取到ALU的输入端（半转发/全转发），如果在Data Memory读出则无法转发(Load-use数据冒险)
 		\item 阻塞(stall)：插入Bubble或插入NOP
 		\item 静态指令调度：编译优化指令顺序，拉大具有数据冒险指令的距离，减少流水线可能产生的停顿（可以解决load-use）；也即先把后面无关的操作调到前面来执行；或者说利用闲置资源先干后面的事情（乱序执行）% 只有在半并行（流水线）才会出现？
 		\begin{figure}[htbp]
@@ -165,7 +161,7 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 	\item 数据相关：RAW、WAR、WAW（注意中英文顺序区别）
 	\item 控制相关
 \end{itemize}
-指令级并行(ILP)技术
+\par 指令级并行(ILP)技术
 \begin{itemize}
 	\item 静态多发射：在执行前，由编译器帮助封装多条指令并处理冒险
 	\begin{itemize}
@@ -180,13 +176,13 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 		\item 动态流水线调度：对指令进行重新排序以避免阻塞的硬件支持
 	\end{itemize}
 \end{itemize}
-线程级并行(TLP)技术
+\par 线程级并行(TLP)技术
 \begin{itemize}
 	\item 对于MIMD（多指令流多数据流），每个处理器执行自己的指令流
 	\item 为了加大程序执行的并行力度，将程序划分为多个单一控制的执行流，每个执行流称之为一个线程。同一个进程中的不同线程共享数据空间，拥有自己的执行堆栈和程序计数器
 	\item 提高系统整体的吞吐量
 \end{itemize}
-主要技术
+\par 主要技术
 \begin{itemize}
 	\item 超线程(Hyper-Threading)技术
 	\begin{itemize}
@@ -220,7 +216,7 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 	\end{itemize}
 	\item 外部中断：CPU外发生的特殊事件，外界发送中断请求信号，如打印机缺纸、外设准备好、DMA传输结束等
 \end{itemize}
-检测到异常时，处理器需进行以下操作
+\par 检测到异常时，处理器需进行以下操作
 \begin{itemize}
 	\item 关中断：使处理器处于禁止中断状态
 	\item 保护断点和程序状态：堆栈或特定寄存器
@@ -233,6 +229,13 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 		用专门的硬件查询电路按优先级顺序识别异常，得到“中断类型号”，到中断向量表中读取对应的中断服务程序的入口地址\\
 		中断向量地址=中断类型号$\times$4
 	\end{itemize}
+\end{itemize}
+\par 流水线中的异常处理
+\begin{itemize}
+	\item 在PC前的MUX加入多路输入，每路输入时一种异常程序的地址
+	\item 在流水线的合适阶段（如译码、执行）添加异常检测
+	\item 异常检测的输出应能控制PC前的MUX要选哪路作为输入
+	\item 将出现异常的指令之后的指令全部置为NOP
 \end{itemize}
 
 \subsection{控制器}
@@ -250,8 +253,8 @@ MIPS中三类基本指令：R-type、I-type、J-type\\
 \begin{center}
 \begin{tikzcd}
 \text{微程序（固件firmware）}\arrow{d}& \\
-\text{微指令（一个状态）}\arrow{d} & \\
-\text{微命令（控制信号）}\arrow{r} & \text{微操作（执行部件）}
+\text{微指令（一个状态, microinstruction）}\arrow{d} & \\
+\text{微命令（控制信号, microcode）}\arrow{r} & \text{微操作（执行部件）}
 \end{tikzcd}
 \end{center}
 微程序设计
@@ -292,7 +295,12 @@ Wilkes模型(1951)：输入指令寄存器IR中的操作码和机器状态标志
 		\item 最短编码法：将所有微命令统一编码每条微指令只包含一个微命令，每次只产生一个微操作，通过译码器产生微操作控制信号；微程序长，大量译码电路，速度慢
 	\end{itemize}
 \end{itemize}
-微指令地址产生方法：
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{fig/microinstruction.png}
+\end{figure}
+若机器指令共$n$条，则对应的微程序数至少$n+1$个（加一个取指微程序）
+\par 微指令地址产生方法：
 \begin{itemize}
 	\item 顺序转移（计数器）法：下条微指令地址隐含在微程序计数器$\mu$PC中
 	\item 断定（下址字段）法： 当前微指令中显式指定下条微指令地址

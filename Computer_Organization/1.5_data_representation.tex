@@ -1,0 +1,160 @@
+% !TEX root = main.tex
+
+\section{数据的表示与存储}
+\subsection{基本指标}
+\begin{itemize}
+	\item 位(bit/b)：计算机处理、存储、传输信息的最小单位
+	\item 字节(Byte/B) $1\text{ Byte}=8\text{ bit}$：现代计算机主存按字节编制，字节是最小可寻址单位
+	\item 字(Word)：表示被处理信息的单位，用来度量数据类型的宽度\footnote{字长是指CPU中\textbf{数据通路的宽度}，也指计算机一次能处理的二进制的长度，等于CPU内部总线的宽度或运算器的位数或通用寄存器的宽度；字和字长的宽度可以一样，也可以不同，通常是字节的整数倍}
+\end{itemize}
+\par 一台32位的电脑，一个字等于4个字节，字长为32位；若字长为16位，则一个字等于2字节。
+注意4字节相当于8位的16进制编码。
+
+表示计算机通信带宽时
+\begin{center}
+\begin{tabular}{ccccccc}\hline
+KB(yte) & MB & GB & TB & PB & EB & ZB\\\hline
+$10^3$ & $10^6$ & $10^9$ & $10^{12}$ & $10^{15}$ & $10^{18}$ & $10^{21}$\\\hline
+\end{tabular}
+\end{center}
+
+表示计算机存储容量时
+\begin{center}
+\begin{tabular}{ccccccc}\hline
+KiB(yte) & MiB & GiB & TiB\\\hline
+$2^{10}$ & $2^{20}$ & $2^{30}$ & $2^{40}$\\\hline
+\end{tabular}
+\end{center}
+
+\subsection{进制}
+\[\text{进位计数制(system)}=\sum\text{位权}\cdot\text{基数}^\text{指数}\]
+\par在计算机中主要考虑以下几种进制系统：二进制(binary)、八进制(octonary)、十进制(decimal)、十六进制(hexadecimal)。
+\begin{itemize}
+	\item 十进制转二进制：整数部分除以2取余，小数部分乘2取整
+	\item 二进制转八进制：从整数最低位开始，三位三位统计
+	\item 二进制转十六进制：从整数最低位开始，四位四位统计
+\end{itemize}
+
+\subsection{符号数}
+\begin{enumerate}
+\item 二进制（真值$\to$机器数）
+\begin{itemize}
+	\item 符号数值(sign-magnitude)形式（原码）：首位0为正数，1为负数，将符号位一起考虑有以下表示
+	\[A=\begin{cases}
+	A & A\in[0,2^{n-1})\\
+	2^{n-1}-A & A\in(-2^{n-1},0]
+	\end{cases}\]
+	\item 反码(1's complement)$\ssim A$：除符号位不变，其他位取反；同理小数
+	\[\ssim A=\begin{cases}
+	A & A\in[0,2^{n-1})\\
+	(2^n-1)+A & A\in (-2^{n-1},0]
+	\end{cases}\]
+	\begin{analysis}
+	反码是全1的补数
+	\[\ssim A=(2^n-1)-A=(11\ldots 1)_2-A_2\]
+	即在$\mod 2^{n}-1$意义下的运算
+	\end{analysis}
+	\item 补码(2's complement)$[A]_c$：反码+1，按照原来十进制转二进制方法即可得对应有符号十进制数，由于没有正负0，故表示的数多了一位，补码的补码为原码；同理小数
+	\[[A]_c=\begin{cases}
+	A & A\in[0,2^{n-1})\\
+	2^n+A & A\in \textcolor{red}{[-2^{n-1},0)}
+	\end{cases}\]
+	\begin{analysis}
+	补码的设计非常关键，理解补码的由来对于后面的四则运算有着很大帮助。
+	之所以要有补码，是因为希望能做到\textbf{减去一个数等于加上某个数}，而这在模$2^n$的意义下即可实现。\\
+	那么就有
+	\[[A]_c=2^n-A=((2^n-1)-A)+1=\ssim A+1\]
+	即在$\mod 2^n$意义下的运算，以4位二进制为例
+	\[(5)_{10}=(0101)_2\implies (5)_c=2^4-5=11=(10000)_2-(0101)_2=(1011)_2\]
+	由$[A]_c$求$[-A]_c$要连同符号位一起取反加1
+	\end{analysis}
+	\item 移码(bias)$[A]_b$：补码的符号位取反，引入目的是保证浮点数的机器零
+	\[[A]_b=A+2^{n-1}\,,A\in(-2^{n-1},2^{n-1})\]
+	\begin{analysis}
+	相当于把正数移到负数的部分，负数移到正数的部分\\
+	注意区别移码的定义($2^{n-1}$)和具体浮点数阶码($2^{n-1}-1$)的实施\footnote{原因可见\url{https://blog.angularindepth.com/the-mechanics-behind-exponent-bias-in-floating-point-9b3185083528}}
+	\end{analysis}
+\end{itemize}
+\item 十进制：
+\begin{itemize}
+	\item ASCII码
+	\item BCD码：四位表示一位十进制数
+\end{itemize}
+\end{enumerate}
+
+\subsection{小数表示}
+\subsubsection{定点小数}
+首位符号位（同样有原码补码表示之分\footnote{16位机器，定点补码小数可表示$-1\thicksim (1-2^{-15})$}）
+\begin{itemize}
+	\item 定点整数：小数点固定在最低位右边，$0\leq|x|\leq 2^n-1$
+	\item 定点小数：小数点固定在\textbf{数值部分}最高位的左边，$0\leq|x|\leq 1-2^{-n}$
+\end{itemize}
+
+\subsubsection{浮点数(IEEE 754)}
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+符号S,1 & 阶码E,8,移码 & 尾数F,23,原码
+\\\hline
+\end{tabular}
+\end{center}
+其中，移码偏置常数为127（单精度）、1023（双精度），用以简化比较。
+\par 规格化数，类似于科学记数法，即令小数点前面必为1，隐含表示，以增加数据表示精度。
+\par 故浮点数可表示为
+\[(-1)^S\times1.F\times 2^{E-127}\]
+\begin{example}
+\[1\;0110\;1001\;0001=1.0110\;1001\;0001\times 2^{(12)_{10}}\]
+\par 指数：$12+127=139\to 1000\;1011$
+\par 尾数：$011\;0100\;1000\;1000\;0000\;0000$ 左对齐，因为有小数点
+\begin{center}
+\begin{tabular}[htbp]{|c|c|c|}
+\hline
+符号S & 指数E(exponent) & 尾数F(mantissa)\\\hline
+$0$ & $1000\;1011$ & $011\;0100\;1000\;1000\;0000\;0000$\\\hline
+1位 & 8位 & 23位\\\hline
+\end{tabular}
+\end{center}
+\end{example}
+\par 用两侧的极端值用来表示特殊值
+\begin{center}
+\begin{tabular}{ccc}
+阶码（移码） & 尾数 & 数据类型\\\hline
+$1\thicksim 254$ & 任何值 & 规格化数\\
+0 & 0 & 0\\
+0 & 非零数 & 非规格化数\\
+255 & 0 & $+\infty/-\infty$\\
+255 & 非零数 & NAN, Not A Number
+\end{tabular}
+\end{center}
+\par 浮点数单精度可表示范围$[10^{-38},10^{+38}]$，双精度$[10^{-308},10^{+308}]$
+
+\subsection{数据存储方式}
+数据在计算机中都是分段存储，故有以下两种存储方式：
+\begin{itemize}
+	\item 大端方式(Big Endian)：最高有效位(MSB)所在地址为数的地址，MIPS，Photoshop、JPEG
+	\item 小端方式(Little Endian)：最低有效位(LSB)所在地址为数的地址，x86，GIF、RTF
+\end{itemize}
+\par 如果遇到存储方式不同的两台机器，则要发生字节交换，即对大端小端进行互换。
+
+下面是C语言中数据类型大小，都以字节为单位。
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+类型 & 数据长度\\\hline
+char & 1 \\\hline
+short & 2 \\\hline
+int & 4 \\\hline
+long & 4/8 \\\hline
+float & 4 \\\hline
+double & 8 \\\hline
+\end{tabular}
+\end{center}
+\par 具体存储中会遇到数据边界对齐的问题，特别是结构体(struct)的实现。
+按字地址对齐（4的倍数，二进制后两位为0），有利于减少访存次数。
+
+\subsection{数据纠错}
+冗余校验思想，通过增添校验位来实现纠错。
+\begin{itemize}
+	\item 奇偶校验码：$P=b_{n-1}\oplus b_{n-2}\oplus\cdots\oplus b_0\oplus 1$与结果的$P'$再取异或，为1则奇数位错\\
+	只能发现奇数位出错，且不具有纠错能力
+	\item 海明码
+	\item 循环码
+\end{itemize}

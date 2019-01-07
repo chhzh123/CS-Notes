@@ -1,20 +1,12 @@
 % !TEX root = main.tex
 
 \section{指令系统}
-IS处在软件和硬件的交界面上，能同时被硬件设计者和系统程序员看到\\
-从硬件设计者角度看
-\begin{itemize}
-	\item IS为CPU提供功能需求
-	\item IS设计目标：易于硬件逻辑设计
-\end{itemize}
-从系统程序员角度看
-\begin{itemize}
-	\item 通过IS使用硬件资源
-	\item IS设计目标：易于编写编译器
-\end{itemize}
-IS设计的好坏决定了计算机的性能和成本
+指令集(Instruction Set, IS)处在软件和硬件的交界面上，能同时被硬件设计者和系统程序员看到。
+它为CPU提供功能需求（需要易于硬件逻辑设计），也给系统程序员提供使用硬件资源的方式（需要易于编写编译器）。
+指令集设计的好坏直接决定了计算机的性能和成本，故是至关重要的一环。
 
 \subsection{概述}
+目前主要有CISC和RISC两种指令集计算机。
 \begin{center}
 \begin{tabular}{|m{8cm}|m{8cm}|}
 \hline
@@ -29,22 +21,26 @@ x86 & ARM, MIPS, SPARC \\\hline
 \end{center}
 
 \subsection{指令格式}
-指令一般由\textbf{操作码}和\textbf{地址码}（包括操作数和寻址方式）决定
-
-\subsubsection{操作码设计}
-\begin{itemize}
-	\item 关注程序代码长度时：变长指令字、变长操作码
-	\item 关注性能时：定长指令字、定长操作码
-\end{itemize}
-扩展操作码：使用频率高的指令用短的操作码，频率低的指令用长的操作码
+指令一般由\textbf{操作码}和\textbf{地址码}（包括操作数和寻址方式）决定。
 \begin{itemize}
 	\item 零地址指令：空操作、停机、堆栈
 	\item 一地址指令：取反、取负、累加器
 	\item 二地址指令（最常用）：分别存放双目运算中两个源操作数地址，并将其中一个地址作为结果地址
 	\item 三地址指令（RISC）：双目运算中两个源操作数地址和一个结果地址
 \end{itemize}
+
+指令系统的影响如下
+\begin{itemize}
+	\item 指令总数取决于操作码位数
+	\item 寄存器决定了编码位数
+	\item 地址寄存器(MAR)的位数取决于主存地址空间大小
+	\item 数据寄存器(MDR)取决于机器字长
+\end{itemize}
+
+\subsubsection{操作码设计}
+当关注程序代码长度时，采用变长指令字、变长操作码；当关注性能时，采用定长指令字、定长操作码。
 \begin{example}
-36位长的指令系统，设计一个扩展操作码，使之能表示以下指令
+36位长的指令系统，设计一个扩展操作码（使用频率高的指令用短的操作码，频率低的指令用长的操作码），使之能表示以下指令
 \begin{itemize}
 	\item 7条两个14位地址和一个5位地址的指令
 	\item 600条一个14位地址和一个5位地址的指令
@@ -64,9 +60,10 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 \end{analysis}
 
 \subsubsection{寻址方式}
-通常特指操作数寻址（对应的是指令寻址，PC增值和跳转），目的是扩大访存范围，提高访问数据的灵活性和有效性
+通常特指操作数寻址（对应的是指令寻址，PC增值和跳转），目的是扩大访存范围，提高访问数据的灵活性和有效性。
+MIPS直接在操作码中给出寻址方式，而x86有专门的寻址方式。
 \begin{center}
-\begin{tabular}{|m{3cm}|m{8cm}|m{4cm}|}
+\begin{tabular}{|m{3cm}|m{8cm}|m{4.2cm}|}
 \hline
 立即数寻址 & 直接给出操作数本身，无需访存快速，操作数大小受地址字段长度限制，大量使用 & MOV AX, 1000H\\\hline
 存储器直接寻址 & 操作数在存储器中，直接给出操作数在存储器中的地址，寻址空间受指令地址字段长度限制，较少使用 & MOV AX, [1000H]\\\hline
@@ -77,191 +74,64 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 基址寻址（偏移） & 相对基址(B)位移量为A的单元，\textbf{OS页面（重定位）}，面向系统，程序逻辑空间与存储器物理空间的无关性 & EA=(B)+A \\\hline
 变址寻址（偏移） & 相对形式地址A（数组基址）位移量为(I)的单元，X为数组元素大小，面向用户 & EA=(I)+A, I=(I)$\pm$X \\\hline
 堆栈寻址 & 从寄存器到堆栈或反过来，指令短 & EA=栈顶(SP)\\\hline
-复合寻址 & 间接寻址+相对/变址寻址 & 间接相对EA=(PC)+A, 相对间接EA=((PC)+A)\\\hline
+复合寻址 & 间接寻址+相对/变址寻址 & \begin{tabular}{l}间接相对EA=(PC)+A\\相对间接EA=((PC)+A)\end{tabular}\\\hline
 \end{tabular}
-* (X)代表X地址/寄存器内的内容，如((X))代表寄存器间接寻址
 \end{center}
-寻址方式的确定
-\begin{itemize}
-	\item 操作码中给定寻址方式：MIPS
-	\item 专门寻址方式：x86（0-1字节）
-\end{itemize}
-\begin{itemize}
-	\item 指令总数取决于操作码位数
-	\item 寄存器决定了编码位数
-	\item 地址寄存器(MAR)的位数取决于主存地址空间大小
-	\item 数据寄存器(MDR)取决于机器字长
-\end{itemize}
-注意看是按\textbf{字}编址还是按\textbf{字节}编址\\
-但从80年代开始，几乎所有机器都采用字节编址(byte addressing)
+注意，(X)代表X地址/寄存器内的内容，如((X))代表寄存器间接寻址。
+注意看题目中是按\textbf{字}编址还是按\textbf{字节}编址。但从80年代开始，几乎所有机器都采用字节编址(byte addressing)。
 
-\subsection{数据表示}
-\subsubsection{进制(system)}
-\[\text{进位计数制}=\text{基数}+\text{位权}\]
-二进制(binary)、八进制(octonary)、十进制(decimal)、十六进制(hexadecimal)
-\begin{itemize}
-	\item 十进制转二进制：整数部分除以2取余，小数部分乘2取整
-	\item 二进制转八进制：从整数最低位开始，三位三位统计
-	\item 二进制转十六进制：从整数最低位开始，四位四位统计
-\end{itemize}
 
-\subsubsection{符号数}
-\begin{enumerate}
-\item 二进制（真值$\to$机器数）
-\begin{itemize}
-	\item 符号数值(sign-magnitude)形式（原码）：首位0为正数，1为负数，将符号位一起考虑有以下表示
-	\[A=\begin{cases}
-	A & A\in[0,2^{n-1})\\
-	2^{n-1}-A & A\in(-2^{n-1},0]
-	\end{cases}\]
-	\item 反码(1's complement)$\ssim A$：除符号位不变，其他位取反；同理小数
-	\[\ssim A=\begin{cases}
-	A & A\in[0,2^{n-1})\\
-	(2^n-1)+A & A\in (-2^{n-1},0]
-	\end{cases}\]
-	\begin{analysis}
-	反码是全1的补数
-	\[\ssim A=(2^n-1)-A=(11\ldots 1)_2-A_2\]
-	即在$\mod 2^{n}-1$意义下的运算
-	\end{analysis}
-	\item 补码(2's complement)$[A]_c$：反码+1，按照原来十进制转二进制方法即可得对应有符号十进制数，由于没有正负0，故表示的数多了一位，补码的补码为原码；同理小数
-	\[[A]_c=\begin{cases}
-	A & A\in[0,2^{n-1})\\
-	2^n+A & A\in \textcolor{red}{[-2^{n-1},0)}
-	\end{cases}\]
-	\begin{analysis}
-	补码的设计非常关键，理解补码的由来对于后面的四则运算有着很大帮助。
-	之所以要有补码，是因为希望能做到\textbf{减去一个数等于加上某个数}，而这在模$2^n$的意义下即可实现。\\
-	那么就有
-	\[[A]_c=2^n-A=((2^n-1)-A)+1=\ssim A+1\]
-	即在$\mod 2^n$意义下的运算，以4位二进制为例
-	\[(5)_{10}=(0101)_2\implies (5)_c=2^4-5=11=(10000)_2-(0101)_2=(1011)_2\]
-	由$[A]_c$求$[-A]_c$要连同符号位一起取反加1
-	\end{analysis}
-	\item 移码(bias)$[A]_b$：补码的符号位取反，引入目的是保证浮点数的机器零
-	\[[A]_b=A+2^{n-1}\,,A\in(-2^{n-1},2^{n-1})\]
-	\begin{analysis}
-	相当于把正数移到负数的部分，负数移到正数的部分\\
-	注意区别移码的定义($2^{n-1}$)和具体浮点数阶码($2^{n-1}-1$)的实施\footnote{原因可见\url{https://blog.angularindepth.com/the-mechanics-behind-exponent-bias-in-floating-point-9b3185083528}}
-	\end{analysis}
-\end{itemize}
-\item 十进制：
-\begin{itemize}
-	\item ASCII码
-	\item BCD码：四位表示一位十进制数
-\end{itemize}
-\end{enumerate}
-
-\subsubsection{小数表示}
-\begin{itemize}
-\item 定点数，首位符号位
-\begin{itemize}
-	\item 定点整数：小数点固定在最低位右边，$0\leq|x|\leq 2^n-1$
-	\item 定点小数：小数点固定在\textbf{数值部分}最高位的左边，$0\leq|x|\leq 1-2^{-n}$
-\end{itemize}
-\item 浮点数(IEEE 754)
+\subsection{MIPS指令格式}
+MIPS中所有指令都是32位宽，按字节编址，且按字地址对齐。
 \begin{center}
-\begin{tabular}{|c|c|c|}\hline
-符号S,1 & 阶码E,8,移码 & 尾数F,23,原码
-\\\hline
-\end{tabular}
-\end{center}
-规格化数，即令小数点前面必为1，隐含表示\\
-移码偏置常数为127（单精度）、1023（双精度），作用为简化比较
-\[(-1)^S\times1.F\times 2^{E-127}\]
-\end{itemize}
-\begin{example}
-\[1\;0110\;1001\;0001=1.0110\;1001\;0001\times 2^{(12)_{10}}\]
-\par 指数：$12+127=139\to 1000\;1011$
-\par 尾数：$011\;0100\;1000\;1000\;0000\;0000$ 左对齐，因为有小数点
-\begin{center}
-\begin{tabular}[htbp]{|c|c|c|}
-\hline
-符号S & 指数E(exponent) & 尾数F(mantissa)\\\hline
-$0$ & $1000\;1011$ & $011\;0100\;1000\;1000\;0000\;0000$\\\hline
-1位 & 8位 & 23位\\\hline
-\end{tabular}
-\end{center}
-\end{example}
-特殊值表示
-\begin{center}
-\begin{tabular}{ccc}
-阶码（移码） & 尾数 & 数据类型\\\hline
-$1\thicksim 254$ & 任何值 & 规格化数\\
-0 & 0 & 0\\
-0 & 非零数 & 非规格化数\\
-255 & 0 & $+\infty/-\infty$\\
-255 & 非零数 & NAN, Not A Number
-\end{tabular}
-\end{center}
-单精度可表示范围$[10^{-38},10^{+38}]$，双精度$[10^{-308},10^{+308}]$
-
-\subsubsection{C语言数据类型}
-C语言中数据类型大小以字节为单位
-\begin{center}
-\begin{tabular}{|c|c|c|}\hline
-声明 & 数据长度(32位机，Byte)\\\hline
-char & 1 \\\hline
-short & 2 \\\hline
-int & 4 \\\hline
-long & 4 \\\hline
-float & 4 \\\hline
-double & 8 \\\hline
-\end{tabular}
-\end{center}
-
-
-\subsection{数据存储}
-\begin{itemize}
-	\item 大端方式(Big Endian)：最高有效位(MSB)所在地址为数的地址，MIPS，Photoshop、JPEG
-	\item 小端方式(Little Endian)：最低有效位(LSB)所在地址为数的地址，x86，GIF、RTF
-\end{itemize}
-字节交换：大端小端互换\\
-数据边界对齐：减少访存次数，按字地址对齐（4的倍数，二进制后两位为0）
-
-
-\subsection{数据纠错}
-冗余校验思想，增添校验位
-\begin{itemize}
-	\item 奇偶校验码：$P=b_{n-1}\oplus b_{n-2}\oplus\cdots\oplus b_0\oplus 1$与结果的$P'$再取异或，为1则奇数位错\\
-	只能发现奇数位出错，且不具有纠错能力
-	\item 海明码
-	\item 循环码
-\end{itemize}
-
-
-\subsection{MIPS指令系统}
-所有指令都是32位宽，按字地址对齐
-\begin{table}[htbp]
-\caption{三种指令格式}
 \begin{tabular}{|c|c|c|c|}
 \hline
 R-Type & 用于寄存器 sub rd,rs,rt & 寄存器寻址 & $\begin{aligned}32&=6(op)+5(rs)+5(rt)\\
 &+5(rd)+5(shamt)+6(funct)\end{aligned}$ \\\hline
 I-Type & \begin{tabular}{ll}
-运算指令： & ori rt,rs,imm16\\
-存储指令： & lw rt,rs,imm16\\
-条件分支： & beq rs,rt,imm16
-\end{tabular} & 立即数、基址(PC)寻址 & $\begin{aligned}32&=6(op)+5(rs)\\&+5(rt)+16(\text{immediate})\end{aligned}$ \\\hline
+运算指令:& ori rt,rs,imm16\\
+存储指令:& lw rt,rs,imm16\\
+条件分支:& beq rs,rt,imm16
+\end{tabular} & 立即数、相对寻址 & $\begin{aligned}32&=6(op)+5(rs)\\&+5(rt)+16(\text{immediate})\end{aligned}$ \\\hline
 J-Type & 无条件跳转 j target & 按字对齐的伪直接寻址 & $32=6(op)+26(\text{target address})$ \\\hline
 \end{tabular}
-\end{table}
-注：J-Type中伪直接寻址含义：PC高4位拼上26位直接目标地址，最后添2个0（相当于乘4）为32位目标地址\\
-指令字段含义
+\end{center}
+注：J-Type中伪直接寻址含义：PC高4位拼上26位直接目标地址，最后添2个0（相当于乘4）为32位目标地址。
+
+MIPS指令各字段含义如下：
 \begin{itemize}
-	\item 操作码(op)
+	\item 操作码(op)：不同编码定义了不同的含义，若操作码相同时，再用不同功能码区分
 	\item 第一个源操作数寄存器(rs)，5位32个
 	\item 第二个源操作数寄存器(rt)
 	\item 结果寄存器(rd)
 	\item 移位指令的位移量(shamt)
+	\item 功能码(funct)
 \end{itemize}
-操作码的不同编码定义了不同的含义，若操作码相同时，再用不同功能码区分
 
+指令系统一般还有特权指令，但不提供给用户。
 
-\subsection{MIPS语法表}
-\begin{table}
-\centering
-\caption{通用寄存器}
+\subsection{MIPS语法表及规范}
+存储器数据指定：
+\begin{itemize}
+	\item 31个32位通用寄存器(GPR)，零寄存器$r_0=0$
+	\item 32个32位浮点寄存器($f_0-f_{31}$)
+	\item 3个特殊寄存器：HI、LO、PC\footnote{反汇编程序员仅可见PC，其他如MAR、MDR、IR均不可见}
+	\item 32位机$\to$可访问空间 $2^{32}B=4GB$（按字节编址）
+	\item 大端方式
+	\item 只可通过load/store指令访问存储器（不像x86算术运算也可直接访存）
+	\item 访存地址通过一个32位寄存器内容加16位偏移量（有符号补码）得到
+	\item 数据按边界对齐
+\end{itemize}
+\par 函数调用：
+\begin{itemize}
+	\item 若过程调用参数多于4个，返回值超过2个，则需要保存到寄存器的栈区中
+	\item 上方是调用程序压栈(pushed by caller)，保存在调用程序帧中，返回地址上方连续区域
+	\item 被调程序使用(used by callee)，相对于帧指针(\%ebp)的访问
+	\item 栈向下增长至堆，堆向上增长至栈
+\end{itemize}
+
+\begin{center}
+MIPS寄存器作用\\
 \begin{tabular}{|c|c|c|}
 \hline
 寄存器 & 名称 & 用途\\\hline
@@ -278,30 +148,10 @@ J-Type & 无条件跳转 j target & 按字对齐的伪直接寻址 & $32=6(op)+2
 \$30 & \$fp & 帧指针(Frame Pointer)\\\hline
 \$31 & \$ra & 函数调用返回地址(return address)\\\hline
 \end{tabular}
-\end{table}
-三个特殊寄存器：HI、LO、PC\par
-存储器数据指定：
-\begin{itemize}
-	\item 31个32位通用寄存器(GPR)，零寄存器$r_0=0$
-	\item 32个32位浮点寄存器($f_0-f_{31}$)
-	\item 3个特殊寄存器：HI、LO、PC
-	\item 32位机$\to$可访问空间 $2^{32}bytes=4GB$（按字节编址）
-	\item 大端方式
-	\item 只可通过load/store指令访问存储器（不像x86算术运算也可直接访存）
-	\item 访存地址通过一个32位寄存器内容加16位偏移量（有符号补码）得到
-	\item 数据按边界对齐
-\end{itemize}
-函数调用：
-\begin{itemize}
-	\item 若过程调用参数多余4个，返回值超过2个，则需要保存到寄存器的栈区中
-	\item 上方是调用程序压栈(pushed by caller)，保存在调用程序帧中，返回地址上方连续区域
-	\item 被调程序使用(used by callee)，相对于帧指针(\%ebp)的访问
-	\item 栈向下增长至堆，堆向上增长至栈
-\end{itemize}
+\end{center}
 
-\begin{table}[htbp]
-\centering
-\caption{MIPS指令}
+\begin{center}
+MIPS语法表\\
 \begin{tabular}{|c|l|l|l|}
 \hline
 \multirow{6}*{算术} & 加法    & add \$s1,\$s2,\$s3 & \$s1=\$s2+\$s3 \\
@@ -328,5 +178,5 @@ J-Type & 无条件跳转 j target & 按字对齐的伪直接寻址 & $32=6(op)+2
 \cline{2-4}      & switch/函数返回 & jr \$ra & goto \$ra \\
 \cline{2-4}      & 函数调用  & jal 10000 & \$ra=PC+4;goto 10000 \\
 \hline
-\end{tabular}%
-\end{table}
+\end{tabular}
+\end{center}
