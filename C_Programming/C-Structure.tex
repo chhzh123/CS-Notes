@@ -1,0 +1,229 @@
+\documentclass[11pt,UTF8]{ctexart}
+\input{mypackage}
+\usepackage{bigstrut}
+\usepackage{titling}
+\usepackage{float}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\lstset{language=c++,basicstyle=\small,escapechar=`}
+
+\setlength{\droptitle}{-55pt}%减少标题与页眉距离
+\title{C结构体大小计算总结}
+\author{陈鸿峥}
+\postauthor{\end{tabular}\par\end{center}\vspace{-40pt}}
+\date{}
+
+\begin{document}
+
+\maketitle
+\section{基本概念}
+\label{sec:introduction}
+以下几个单位需要懂得区分，字的概念可以暂时不理。
+\begin{itemize}
+	\itemsep -3pt
+	\item 位(bit/b)：计算机处理、存储、传输信息的最小单位
+	\item 字节(Byte/B) $1\text{ Byte}=8\text{ bit}$：现代计算机主存按\textbf{字节编址}，字节是最小可寻址单位
+	\item 字(Word)：表示被处理信息的单位，用来度量数据类型的宽度\footnote{字长是指CPU中\textbf{数据通路的宽度}，也指计算机一次能处理的二进制的长度，等于CPU内部总线的宽度或运算器的位数或通用寄存器的宽度；字和字长的宽度可以一样，也可以不同，通常是字节的整数倍}
+\end{itemize}
+\par 一台32位的电脑，一个字等于4个字节，字长为32位。
+\par C语言的\verb'sizeof'返回的是数据类型的\textbf{字节}大小，如\verb'sizeof(int)=4'，而不是32，不要搞混了。
+
+\section{结构体大小的计算}
+结构体的大小不是简单的内部数据大小之后，而是要依据一些基本原则进行存储：
+\begin{enumerate}
+	\itemsep -3pt
+	\item 数据成员对齐规则：结构体的\textbf{第一个}数据成员放在偏移量(offset)为0的地方，之后每个数据成员存储的起始位置要从\textbf{该}成员大小的整数倍开始
+	\item 结构体作为成员：如果一个结构里有某些结构体成员，则结构体成员要从其内部最大元素大小的整数倍地址开始存储
+	\item 收尾工作：结构体的总大小，必须是其内部最大成员的整数倍，不足的要补齐
+\end{enumerate}
+
+上次的例子解释有误，在此重新解释。
+\begin{example}
+\begin{lstlisting}
+struct point
+{
+    int index; // [0]...[3]
+    double x; // [8]...[15]
+    double y; // [16]...[24]
+};
+\end{lstlisting}
+\end{example}
+\begin{analysis}
+\begin{itemize}
+	\itemsep -3pt
+	\item index占4字节。
+	\item x由原则1从double大小(8)的整数倍(8)开始存储，占8字节；index的后四字节补齐。
+	\item y占8字节。
+	\item 故一共24字节，且不因32位机和64位机而异。
+\end{itemize}
+\end{analysis}
+
+\begin{example}
+\label{eg:2}
+\begin{lstlisting}
+struct data
+{
+    int id;         // [0]...[3]
+    double weight;  // [8]...[15]
+    float height;   // [16]...[19]
+};
+\end{lstlisting}
+\end{example}
+\begin{analysis}
+\begin{itemize}
+	\itemsep -3pt
+	\item id占4字节。
+	\item weight由原则1从double大小(8)的整数倍(8)开始存储，占8字节。
+	\item height占接下来4字节。
+	\item 最后由原则3，总大小要为最大成员double的整数倍(24)，补齐最后4个字节，总共24字节。
+\end{itemize}
+\end{analysis}
+
+\begin{example}
+\begin{lstlisting}
+struct data2
+{
+    char name[2];   // [0],[1]
+    int id;         // [4]...[7]
+    double score;   // [8]...[15]
+    short grade;    // [16],[17]
+    struct data d;  // [24]......[47]
+    int last;       // [48]...[51]
+};
+\end{lstlisting}
+\end{example}
+\begin{analysis}
+\begin{itemize}
+	\itemsep -3pt
+	\item char占1字节，数组则$\times$2。
+	\item 由原则1，id从int大小(4)的整数倍(4)开始存储，占4字节。
+	\item 由原则1，score从double大小(8)的整数倍(8)开始存储，占8字节。
+	\item short占2字节。
+	\item 由原则2，struct要从内部元素最大的一个(double)的整数倍(24)开始存放，由例\ref{eg:2}占24字节。
+	\item int占接下来4字节。
+	\item 由原则3，总大小要为最大成员double（单独考虑数组和结构体内元素）的整数倍，故总共56字节。
+\end{itemize}
+\end{analysis}
+
+\begin{example}
+\begin{lstlisting}
+struct s1
+{   
+    char c1; // [0]
+    int i;   // [4]...[7]
+    char c2; // [8]
+};
+
+struct s2
+{  
+    char c1; // [0]
+    char c2; // [1]
+    int i;   // [4]...[7]
+};
+\end{lstlisting}
+\end{example}
+\begin{analysis}
+同理之前的分析，s1大小为12，s2大小为8，由本例中可以看出结构体内数据的顺序也是会影响结构体的大小的。
+\end{analysis}
+
+\section{位域}
+位域用来\textbf{显性地}声明一个数据的存储\textbf{位}大小，声明方法如下：
+\begin{center}
+\verb'<type><variable>:<bit size>'
+\end{center}
+如\verb'int a: 1'表示只用1位存储int类型。
+
+涉及到位域(bit field)的问题则会更加复杂，但这很大程度上与编译器的实现有关。
+如按照百度百科上给出的VC的准则是：
+\begin{enumerate}
+	\itemsep -3pt
+	\item 如果相邻位域字段的类型相同，且其位宽之和小于类型的大小，则后面的字段将紧邻前一个字段存储，直到不能容纳为止
+	\item 如果相邻位域字段的类型相同，但其位宽之和大于类型的大小，则后面的字段将从新的存储单元开始，其偏移量为该类型大小的整数倍
+	\item 如果相邻的位域字段的类型不同，则各编译器的具体实现有差异，VC6采取不压缩方式（不同位域字段存放在不同的位域类型字节中），Dev-C++和GCC都采取压缩方式
+\end{enumerate}
+\begin{example}
+\begin{lstlisting}
+// A structure without forced alignment 
+struct test1 
+{ 
+   unsigned int x: 5; 
+   unsigned int y: 8; 
+}; 
+  
+// A structure with forced alignment 
+struct test2 
+{ 
+   unsigned int x: 5; //[0]...[3]
+   unsigned int: 0; 
+   unsigned int y: 8; //[4]...[8]
+};
+\end{lstlisting}
+\end{example}
+\begin{analysis}
+前者相邻字段类型相同，紧邻存储，共13位，向上补齐为4字节(32位)；
+后者多了一个0位域，用来强制对齐边界，即x存完5位后强制对齐为32位，而后从第4个字节开始存储y，故一共8个字节。
+\end{analysis}
+
+\begin{example}
+\begin{lstlisting}
+struct test
+{
+    int a : 20;          // [0]...[2]
+    char b : 3;          // [3]
+    char c : 0;          // new [4]
+    unsigned char c : 5; // [4],[5]
+};
+\end{lstlisting}
+\end{example}
+\begin{analysis}
+\begin{itemize}
+	\itemsep -3pt
+	\item a占20位，向上补齐即3字节(24位)
+	\item int和char不同类型，不压缩，新开一个字节存储
+	\item 0位域相当于新开一个字节，用来强制对齐边界
+	\item c占5位，向上补齐即2字节(8位)
+	\item 由原则3，int的整数倍，故一共8字节
+\end{itemize}
+\end{analysis}
+
+\begin{example}
+\begin{lstlisting}
+struct test
+{
+    int a : 1;
+    int b : 2;
+    inc c : 4;
+    ind d : 4;
+};
+\end{lstlisting}
+\end{example}
+\begin{analysis}
+a,b,c,d都可以被压缩存储，共占11位，向上对齐为4字节(32位)
+\end{analysis}
+
+关于位域的其他小知识
+\begin{itemize}
+	\itemsep -3pt
+	\item 由第\ref{sec:introduction}部分提到的，现在的机器都采用字节编址，而位域的加入，使得数据的地址可能不是字节的整数倍，因而也就不能用指针进行访问，如\verb'&test.a'是被禁止的。
+	\item 对于超出位域大小的赋值，编译器往往会报error或warning，如a字段仅1位，赋值\verb'a=2'会被警告
+	\item 对于超出位域大小的声明，编译器同样会报error或warning，如\verb'int a : 33'是不被允许的
+	\item 位域不能被声明为静态变量，也不能是数组
+\end{itemize}
+
+\section{总结}
+上面所展示的内容很多都是与编译器具体实施相关的，记住基本原则，然后不要太较真就好。
+遇到不确定的情况，最好自己写程序验证一下，在自己机器上跑跑就知道结果了。
+面向32位机器的编译可以在编译时添加\verb'-m32'指令，面向64位机器则添加\verb'-m64'，这样就可以在一台机子上同时验证两种情况。
+
+\section{参考资料}
+\begin{enumerate}
+	\itemsep -3pt
+	\item c/c++ struct的大小以及sizeof用法, \url{https://www.cnblogs.com/dingxiaoqiang/p/8059329.html}
+	\item Bit field, \url{https://en.cppreference.com/w/cpp/language/bit_field}
+	\item 位域, \url{https://baike.baidu.com/item/%E4%BD%8D%E5%9F%9F/9215688?fr=aladdin}
+	\item Bit Fields in C, \url{https://www.geeksforgeeks.org/bit-fields-c/}
+\end{enumerate}
+
+
+\end{document}
