@@ -1,13 +1,14 @@
 \usepackage{geometry,setspace}
 \usepackage{amsthm,amsmath,amsfonts,amssymb} %\because\therefore
 \usepackage{tikz,tikz-cd,pgfplots}
-\usepackage{mathtools,gensymb,extarrows,bm} %underset
+\usepackage{mathtools,gensymb,extarrows,bm,yhmath,esint} %underset, oiint
 \usepackage{cancel}
-\usepackage{enumerate}
-\usepackage{enumitem}
-\usepackage{array,multirow}
+\usepackage{enumerate}%,enumitem
+\usepackage{multicol,array,multirow,bigstrut}
 \usepackage{verbatim} %comment
+\usepackage{float}
 \usepackage{url}
+\usepackage{listings}
 \usepackage[unicode=true, %本行非常重要 支持中文目录hyperref CJKbookmarks对二级目录没用
 	colorlinks,
 	linkcolor=black,
@@ -30,9 +31,6 @@
 \geometry{top=20mm,bottom=20mm,left=20mm,right=20mm}
 \pagestyle{plain} %删除页眉
 
-\def\ssim{{\scriptstyle{\sim}}}
-\renewcommand{\mod}{\mathrm{mod}\;}
-
 \def\zz{\mathbb{Z}}
 \def\rr{\mathbb{R}}
 \def\diff{\,\mathrm{d}}
@@ -43,16 +41,43 @@
 \def\delx{\Delta x}
 \def\eps{\varepsilon}
 \def\ee{\mathrm{e}}
+\def\exp{\mathrm{exp}}
+\def\div{\mathrm{div}\,}
+\def\grad{\mathrm{grad}\,}
+\def\rot{\mathrm{rot}\,}
 
+% vector
+\def\va{\mathbf{a}}
+\def\vc{\mathbf{c}}
+\def\vd{\mathbf{d}}
+\def\ve{\mathbf{e}}
+\def\vf{\mathbf{f}}
+\def\vg{\mathbf{g}}
+\def\vi{\mathbf{i}}
+\def\vj{\mathbf{j}}
+\def\vk{\mathbf{k}}
+\def\vr{\mathbf{r}}
+\def\vs{\mathbf{s}}
 \def\vx{\mathbf{x}}
 \def\vy{\mathbf{y}}
 \def\vv{\mathbf{v}}
 \def\vu{\mathbf{u}}
+\def\vzero{\mathbf{0}}
+\def\vF{\mathbf{F}}
+\def\vS{\mathbf{S}}
+\def\vtau{\bm{\tau}}
+
+% matrix
+% \def\+#1{\mathbf{#1}}
+\def\mC{\mathbf{C}}
+\def\mH{\mathbf{H}}
+
 \def\vbb{\bm{\beta}}
+\def\T{\mathrm{T}}
 \def\rn{\mathbb{R}^n}
 \def\dim{\mathrm{dim}\,}
 \def\rank{\mathrm{rank}\,}
-\def\Span{\mathrm{Span}\,} % be careful with `span' in tabular
+\def\Span{\mathrm{Span}\,} % 避免与表格的span冲突
 \def\col{\mathrm{Col}\,}
 \def\nul{\mathrm{Nul}\,}
 \def\row{\mathrm{Row}\,}
@@ -66,13 +91,19 @@
 
 \newcommand{\ddx}[1][]{\dfrac{\diff #1}{\diff x}}
 \newcommand{\ddxs}[1][]{\dfrac{\diff^2 #1}{\diff x^2}}
+\newcommand{\pd}[2]{\dfrac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\dfrac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\pddxy}[3]{\dfrac{\partial^2 #1}{\partial #2\partial #3}}
+\newcommand{\pddd}[4]{\dfrac{\partial^#1 #2}{\partial #3\partial #4}}
 \newcommand{\ssum}[1]{\displaystyle\sum_{n=1}^{\infty}#1}
 \newcommand{\ssumz}[1]{\displaystyle\sum_{n=0}^{\infty}#1}
 \newcommand{\ssumk}[1]{\displaystyle\sum_{k=1}^{\infty}#1}
 \newcommand{\ssumkn}[1]{\displaystyle\sum_{k=1}^{n}#1}
 \newcommand{\limtoinf}[1]{\displaystyle\lim_{n\to\infty}#1}
-\newcommand{\intab}[4][x]{\displaystyle\int_{#1}^{#2}{#3}\,\diff #4}
+\newcommand{\limxy}[3]{\displaystyle\lim_{\substack{x\to #1\\y\to #2}}#3}
+\newcommand{\intab}[3]{\displaystyle\int_{#1}^{#2}{#3}\,\diff x}
 \newcommand{\intabu}[4]{\displaystyle\int_{#1}^{#2}{#3}\,\diff #4}
+\newcommand{\intint}[5]{\displaystyle\int_{-\infty}^{#1}\int_{-\infty}^{#2}#3\,\diff #4\,\diff #5}
 \newcommand{\intinf}[2][x]{\displaystyle\int_{-\infty}^{+\infty}#2\diff #1}
 \newcommand{\inpro}[1]{\langle #1\rangle}
 \newcommand{\lrp}[1]{\left(#1\right)}
@@ -80,11 +111,13 @@
 \newcommand{\nums}[1]{\{#1\}}
 \newcommand{\floor}[1]{\lfloor#1\rfloor}
 \newcommand{\dnf}[1]{f^{(#1)}}
+\newcommand{\arc}[1]{\wideparen{#1}}
 
 \newcommand{\proj}[1]{\mathrm{proj}_{#1}}
 \newcommand{\inp}[2]{\langle #1,#2 \rangle}
 \newcommand{\vb}[1]{\mathbf{#1}}
 \newcommand{\bmat}[2]{\begin{bmatrix}{#1}&\cdots&{#2}\end{bmatrix}}
+\newcommand{\vmat}[1]{\begin{vmatrix}#1\end{vmatrix}}
 \newcommand{\setenu}[2]{\{#1,\dots,#2\}}
 \newcommand{\underwrite}[3][]{% \underwrite[<thickness>]{<numerator>}{<denominator>}
   \genfrac{}{}{#1}{}{\textstyle #2}{\scriptstyle #3}
@@ -95,13 +128,14 @@
 \newcommand{\xuparrow}[1]{%
   {\left\uparrow\vbox to #1{}\right.\kern-\nulldelimiterspace}
 }
+\newcommand{\Bigbr}[2]{\begin{cases}#1\\#2\end{cases}}
 
 \newcommand{\ol}[1]{\mathop{\overline{#1}}}
 \newcommand{\pr}[1]{\mathbb{P}\left(#1\right)}
 \newcommand{\prc}[2]{\mathbb{P}\left(#1\mid #2\right)}
 \newcommand{\E}[1]{\mathbb{E}\left(#1\right)}
-\newcommand{\Var}[1]{\mathrm{Var}\left(#1\right)}
+\newcommand{\Var}[1]{\mathbb{D}\left(#1\right)}
 \newcommand{\Cov}[1]{\mathrm{Cov}\left(#1\right)}
 
-\setenumerate[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
-\setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+% \setenumerate[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+% \setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}

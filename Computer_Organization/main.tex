@@ -1,7 +1,8 @@
-\documentclass[11pt,UTF8]{ctexart}
-\input{mypackage}
-\usepackage{bigstrut}
-\usepackage{float}
+\documentclass{note}
+\usepackage[bigstrut]{mypackage}
+
+\def\ssim{{\scriptstyle{\sim}}}
+\renewcommand{\mod}{\mathrm{mod}\;}
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
@@ -21,8 +22,8 @@
 \bigskip\bigskip
 本课程使用的教材为David A.Patterson (UCB), John L.Hennessy (Stanford), 《计算机组成与设计（硬件软件接口）》.
 
-\input{1_introduction}
-\input{1.5_data_representation}
+\input{0_introduction}
+\input{1_data_representation}
 \input{2_instruction_system}
 \input{3_arithmetic}
 \input{4_processor}

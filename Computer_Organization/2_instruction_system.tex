@@ -8,7 +8,7 @@
 \subsection{概述}
 目前主要有CISC和RISC两种指令集计算机。
 \begin{center}
-\begin{tabular}{|m{8cm}|m{8cm}|}
+\begin{tabular}{|p{8cm}|p{8cm}|}
 \hline
 \multicolumn{1}{|c|}{复杂指令集计算机} & \multicolumn{1}{c|}{精简指令集计算机} \\\hline
 CISC, Complex Instruction Set Computer & RISC, Reduce Instruction Set Computer\\\hline
@@ -63,7 +63,7 @@ $00,0000,0000,0000\thicksim 00,0010,0101,0111\,((0)_{10}\thicksim(599)_{10})$共
 通常特指操作数寻址（对应的是指令寻址，PC增值和跳转），目的是扩大访存范围，提高访问数据的灵活性和有效性。
 MIPS直接在操作码中给出寻址方式，而x86有专门的寻址方式。
 \begin{center}
-\begin{tabular}{|m{3cm}|m{8cm}|m{4.2cm}|}
+\begin{tabular}{|p{3cm}|p{8cm}|p{4.2cm}|}
 \hline
 立即数寻址 & 直接给出操作数本身，无需访存快速，操作数大小受地址字段长度限制，大量使用 & MOV AX, 1000H\\\hline
 存储器直接寻址 & 操作数在存储器中，直接给出操作数在存储器中的地址，寻址空间受指令地址字段长度限制，较少使用 & MOV AX, [1000H]\\\hline
