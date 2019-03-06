@@ -1,0 +1,55 @@
+% !TEX root = main.tex
+
+\section{物理层}
+\subsection{通信系统}
+信息能够被解释为数据(msg/data)，用符号(sign)记录，用信号(signal)传递(transmit)，用熵(entropy)测量
+
+\begin{itemize}
+	\item 信号：光、电、广播
+	\item 模拟信号：连续取值
+	\item 数字信号/跳变信号：离散取值
+	\item 模拟传输：模拟信号、放大器(amplifier)
+	\item 数字传输：数字信号、中继器(repeater)
+\end{itemize}
+
+\subsection{编码方式}
+载波信号(carrier)一般采用正弦波信号：角频率$\omega$、频率$f$、周期$T$、振幅$A$、相位($\varphi$)
+\begin{itemize}
+	\item 频移键控(frequency-shift keying, FSK)：通过不同频率表示不同信息0/1
+	\item 幅移键控(amplitude-shift keying, ASK)
+	\item 相移键控(phase-shift keying, PSK)
+	\item 正交调幅(QAM-quadrature amplitude modulation)：用不同的振幅/频率表示不同的多位信息$000\thicksim 111$
+\end{itemize}
+
+\begin{enumerate}
+\item 单极编码(unipolar)：0V即0，$+E$V为1，但是会产生
+\begin{itemize}
+	\item 时钟漂移：不同的时钟会有差别，一定要有跳变
+	\item 基线漂移：线很长会有（积累很多电荷，以为是1），一定要有变化/正负
+\end{itemize}
+\item 不归零编码/双极编码(non-return-to-zero/bipolar, NRZ) ：$-E$为0，$+E$为1，解决基线漂移问题（平衡01）；全是0或全是1，还是没法区分
+\item 不归零编码反转(Inverted, NRZI)：\textbf{差分}码波形，相邻码元的电位改变表示1，而电位不改变表示0；也可以反过来。 该表示方法与码元本身电位或极性无关，而仅与相邻码元的电位变化有关
+\item 曼彻斯特(Manxhester)编码：从相邻时刻的中间起$降-E\thicksim +E$，$0\to 10, 1\to 01$，可克服时钟漂移和基线漂移；频率高，传输有问题，对传输介质要求高
+\item 差分曼彻斯特编码：在每一位开始时间如果跳变则为0，否则为1
+\item 4B/5B编码：用5比特代表4比特，多一位冗余；每个编码没有多于1个前导零和多于2个末端零
+\end{enumerate}
+
+\subsection{物理介质}
+非屏蔽双绞线(unshielded twisted pair, UTP)：四对线（绿绿白、橙橙白、蓝蓝白、棕棕白）
+屏蔽双绞线(STP)
+同轴电缆(coaxial cable)
+光导纤维(optical fiber)
+\begin{itemize}
+	\item 单模光纤
+	\item 多模光纤
+\end{itemize}
+
+无线介质
+
+多路复用(multiplexing)
+\begin{itemize}
+	\item 时分多路复用(time division multiplexing, TDM)
+	\item 频分多路复用(frequency, FDM)
+	\item 波分多路复用(wavelength)
+	\item 码分多路复用(code)
+\end{itemize}

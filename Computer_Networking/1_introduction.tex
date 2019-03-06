@@ -1,0 +1,124 @@
+% !TEX root = main.tex
+
+\section{计算机网络概述}
+计算机网络是自主计算机的的互连集合。
+
+\subsection{网络连接方式}
+直接连接的网络
+\begin{itemize}
+\item 点对点(point-to-point)网络：包括专用介质(dedicated medium)、节点/主机
+\begin{itemize}
+	\item 单向(simplex)
+	\item 半双工(half duplex)
+	\item 全双工(full duplex)
+\end{itemize}
+\item 多路访问(multiple access)网络：共享介质(shared medium)、广播、碰撞(collision)
+\begin{itemize}
+	\item 单播(unicast)
+	\item 多播(multicast)
+	\item 广播(broadcast)
+\end{itemize}
+\end{itemize}
+
+间接连接的网络
+\begin{itemize}
+	\item 中间节点、路由器(router)
+	\item 包(packet)
+	\item 存储转发(store and forward)
+	\item 路由选择(routing)
+	\item 路由表(routing table)
+	\item 目的地(destination)、下一跳(next hop)
+\end{itemize}
+
+\subsection{因特网}
+网络互连：用路由器（或网关gateway）连接起来构成的网络称为互连网络(internetwork)。
+
+因特网/互联网(Internet)是一种互连网络
+\begin{itemize}
+	\item 系统域网(System Area Network, SAN)
+	\item 局域网(Local Area Network, LAN)
+	\item 城域网(Metropolitan Area Network, MAN)
+	\item 广域网(Wide Area Network, WAN)
+\end{itemize}
+
+因特网：
+\begin{itemize}
+	\item 终端系统/主机：运行网络应用程序
+	\item 通信链路(communication link)：光纤、铜线、无线电、卫星等
+	\item 路由器(router)
+\end{itemize}
+
+因特网的结构：ISP(Internet Service Provider)
+\begin{itemize}
+	\item 顶层ISP：主干网（中国电信、中国移动、中国网通）
+	\item 区域ISP：可以私自互联
+	\item 本地ISP
+\end{itemize}
+
+\subsection{网络服务}
+网络提供的服务：
+\begin{itemize}
+	\item 可靠/不可靠：会不会丢包
+	\item 面向连接/无连接：需要连通
+	\item 有确认/无确认
+	\item 数据报服务：无连接无确认（因特网）
+	\item 请求相应和消息流服务
+\end{itemize}
+
+因特网体系结构：
+\begin{itemize}
+	\item 应用层：提供对某些专门应用的支持，如FTP、SMTP、HTTP
+	\item 传输层：将网络层获得的包在\textbf{进程之间}数据传送（端到端），如TCP、UDP
+	\item 网络层：\textbf{路由选择}，实现在互联网中的数据传送（主机到主机），IP、路由协议
+	\item 数据链路层：在物理网络中传送包（跳到跳，节点到节点），PPP、Ethernet
+	\item 物理层：线上的\textbf{比特}（传送原始比特流）
+\end{itemize}
+网络层以下不可靠，以上可靠；防止丢包的机制：重发
+
+协议(protocol)：在网络实体(entities)之间传送消息的规则，如消息的格式、收发消息的次序等
+
+协议栈：发送时封装(encaptulation)，接收时拆封。
+每层传输的数据单元都称为包(packets)，都属于某个协议，又被称为协议数据单元(protocol data unit, PDU)=协议控制信息(potocal control data, PCI)+服务数据单元(SDU)
+\begin{center}
+\begin{tikzcd}
+\text{应用层Application}\arrow{d}{\text{消息message}}\\
+\text{传输层Transport}\arrow{d}{\text{数据段segment}}\\
+\text{网络层Network}\arrow{d}{\text{数据报datagram}}\\
+\text{链路层Link}\arrow{d}{\text{帧frame}}\\
+\text{物理层Physical}
+\end{tikzcd}
+\end{center}
+不同协议则添加不同头部。
+路由做得事情是拆一层封装，然后重新加一层。
+同一个互联网络中网络层协议需要相同，链路层协议可以不同。
+
+% 服务访问点(service access point, SAP)
+
+ISO/OSI(open system interconnection)网络七层协议，在应用层和传输层中间添加两层：
+\begin{itemize}
+	\item 表示层(presentationn)：提供数据转换服务, 例如，加密解密，压缩解压缩，数据格式变换
+	\item 会话层(session)：简化会话实现机制，例如，数据流的检查点设置和回滚以及多数据流同步
+\end{itemize}
+
+对等实体：实现相同协议
+
+\subsection{网络性能分析}
+当一个包到达时如果有空闲缓存则排队等待转发，产生延迟(delay)；
+如果没有空闲缓存，则丢弃该包，造成丢失(loss)。
+
+包交换(packet-switching)网络中的延迟
+\begin{itemize}
+	\item 处理(processing)延迟：查路由
+	\item 排队(queueing)延迟
+	\item 发送/传输(transmission)延迟：包长(bits)/链路带宽(bps, bit per second)；指从发送第一个包到发送最后一个包的间隔
+	\item 传播(propagation)延迟：指对于一个包来说从发送到接收所需的时间
+\end{itemize}
+接收延迟与传播延迟重合。
+故总延迟（从第一个包被发送到最后一个包被接收的时间）=传播延迟+发送延迟。
+
+往返时间(round trip time, RTT)：从源主机到目的主机再返回源主机所花的时间
+
+\begin{itemize}
+	\item 带宽(bandwidth)：一条链路或通道可达到的最大数据传输速率(bps)
+	\item 吞吐量(thoughput)：一条链路或通路实际数据传输速率
+\end{itemize}
