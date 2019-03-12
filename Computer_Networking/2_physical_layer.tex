@@ -1,11 +1,11 @@
 % !TEX root = main.tex
 
 \section{物理层}
-\subsection{通信系统}
-信息能够被解释为数据(msg/data)，用符号(sign)记录，用信号(signal)传递(transmit)，用熵(entropy)测量
+直连网，不管包。
 
+信息能够被解释为数据(msg/data)，用符号(sign)记录，用信号(signal)传递(transmit)，用熵(entropy)测量
 \begin{itemize}
-	\item 信号：光、电、广播
+	\item 信号：光、电
 	\item 模拟信号：连续取值
 	\item 数字信号/跳变信号：离散取值
 	\item 模拟传输：模拟信号、放大器(amplifier)
@@ -13,14 +13,16 @@
 \end{itemize}
 
 \subsection{编码方式}
+\subsubsection{模拟信号}
 载波信号(carrier)一般采用正弦波信号：角频率$\omega$、频率$f$、周期$T$、振幅$A$、相位($\varphi$)
 \begin{itemize}
 	\item 频移键控(frequency-shift keying, FSK)：通过不同频率表示不同信息0/1
 	\item 幅移键控(amplitude-shift keying, ASK)
 	\item 相移键控(phase-shift keying, PSK)
-	\item 正交调幅(QAM-quadrature amplitude modulation)：用不同的振幅/频率表示不同的多位信息$000\thicksim 111$
+	\item 正交调幅(quadrature amplitude modulation, QAM)：用不同的振幅/频率表示不同的多位信息$000\thicksim 111$
 \end{itemize}
 
+\subsubsection{数字信号}
 \begin{enumerate}
 \item 单极编码(unipolar)：0V即0，$+E$V为1，但是会产生
 \begin{itemize}
@@ -28,28 +30,42 @@
 	\item 基线漂移：线很长会有（积累很多电荷，以为是1），一定要有变化/正负
 \end{itemize}
 \item 不归零编码/双极编码(non-return-to-zero/bipolar, NRZ) ：$-E$为0，$+E$为1，解决基线漂移问题（平衡01）；全是0或全是1，还是没法区分
-\item 不归零编码反转(Inverted, NRZI)：\textbf{差分}码波形，相邻码元的电位改变表示1，而电位不改变表示0；也可以反过来。 该表示方法与码元本身电位或极性无关，而仅与相邻码元的电位变化有关
+\item 不归零反转编码(Inverted, NRZI)：\textbf{差分}码波形，相邻码元的电位改变表示1，而电位不改变表示0；也可以反过来。 该表示方法与码元本身电位或极性无关，而仅与相邻码元的电位变化有关
 \item 曼彻斯特(Manxhester)编码：从相邻时刻的中间起$降-E\thicksim +E$，$0\to 10, 1\to 01$，可克服时钟漂移和基线漂移；频率高，传输有问题，对传输介质要求高
 \item 差分曼彻斯特编码：在每一位开始时间如果跳变则为0，否则为1
 \item 4B/5B编码：用5比特代表4比特，多一位冗余；每个编码没有多于1个前导零和多于2个末端零
 \end{enumerate}
 
 \subsection{物理介质}
-非屏蔽双绞线(unshielded twisted pair, UTP)：四对线（绿绿白、橙橙白、蓝蓝白、棕棕白）
-屏蔽双绞线(STP)
-同轴电缆(coaxial cable)
-光导纤维(optical fiber)
+\subsubsection{分类}
+有线介质
 \begin{itemize}
-	\item 单模光纤
-	\item 多模光纤
+	\item 双绞线：
+	\begin{itemize}
+		\item 非屏蔽双绞线(unshielded twisted pair, UTP)：四对线（绿绿白、橙橙白、蓝蓝白、棕棕白）
+		\item 屏蔽双绞线(STP)
+	\end{itemize}
+	\item 同轴电缆(coaxial cable)
+	\item 光导纤维(optical fiber)
+	\begin{itemize}
+		\item 单模光纤(single mode)
+		\item 多模光纤：阶跃(step-index)光纤、渐变(graded-index)光纤
+	\end{itemize}
 \end{itemize}
 
-无线介质
+无线介质：地面微波、WiFi、3G网络、卫星
 
-多路复用(multiplexing)
+\subsubsection{多路复用}
 \begin{itemize}
 	\item 时分多路复用(time division multiplexing, TDM)
 	\item 频分多路复用(frequency, FDM)
-	\item 波分多路复用(wavelength)
+	\item 波分多路复用(wavelength)：利用多个激光器在单条光纤上同时发送多束不同波长激光的技术
 	\item 码分多路复用(code)
+	\item 统计多路复用：动态分配方法共享通信链路，比如FIFO；对于多个可变速率的数据流，SDM可以提高链路利用率
+\end{itemize}
+
+交换技术
+\begin{itemize}
+	\item 电路交换技术(circuit-switching)：采用FDM、TDM、WDM、CDM技术
+	\item 包交换技术(packet-switching)：采用SDM
 \end{itemize}

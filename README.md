@@ -11,3 +11,7 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 * **Computer Organization** - 2018 Autumn
    * notes available
 * Data Structures and Algorithms - 2018 Autumn
+* **Operating Systems** - 2019 Spring
+	* notes available
+* **Computer Networking** - 2019 Spring
+	* notes available
