@@ -14,7 +14,7 @@
 功能
 \begin{itemize}
 	\item 成帧(framing)
-	\item 差错监测(error detect)：比特错，纠错
+	\item 差错检测(error detect)：比特错，纠错
 	\item 差错控制(error control)：丢包、重复、错序、流控制(flow control)
 	\item 介质访问控制(medium access control)：多路访问，碰撞(collision)
 \end{itemize}
@@ -43,12 +43,37 @@
 超时则自动重发请求(Automatic Repeat reQuest, ARQ)：每发送一帧都启动一个超时定时器，哪个帧超时将重传该帧，并重启定时器
 
 \begin{itemize}
-	\item 停等协议(stop-and-wait)：ARQ协议，只有收到前一个数据帧的确认帧才可以发送下一个数据帧
+	\item 停等协议(stop-and-wait)：ARQ协议，只有收到前一个数据帧的确认帧才可以发送下一个数据帧\\
+	三种出错情况：
+	\begin{itemize}
+		\item 数据帧丢失
+		\item 确认帧丢失
+		\item 超时：收到ACK表明接收方一定收到，可以发送新的数据帧，重传的也一定要发ACK
+	\end{itemize}
+	效率十分低，信道空闲时间长
 	\item 滑动窗口协议(sliding window)：ARQ协议，不需等待前面发送的帧的确认帧返回，就可以连续发送下一个，其个数不能超过发送窗口大小(sending window size, SWS)（连续发送数据帧可用序号范围，用于流控制：控制发送速度，否则会发生溢出(overlow)，后面覆盖前面的）\\
-	这里的确认帧是指在此之前的帧都已收到
-	\item 回退N协议(go back N)：同滑动窗口连续发送，但某个ACK没收到则重传在此ACK之后的所有帧（超时重传），丢3则4发2
+	这里的确认帧是指在此之前的帧都已收到\\
+	直连网中间没有节点，后面收到前面一定收到；只要出错纠正不了直接丢弃
+	\begin{itemize}
+	\item 回退N协议(go back N)：同滑动窗口连续发送，但某个ACK没收到则重传在此ACK之后的所有帧（超时重传），丢3则4发2\\
+	发送窗口需要缓存SWS个帧，以便重传\\
+	不是靠超时重传\\
+	发送窗口中序号最小的为sendbase
 	\item 选择性重传(selective repeat)：否定性确认帧(negative acknowledgement, NAK)，要求重传某一帧；如3丢失，4发送NAK=3，5发送ACK=2\\
-	接收窗口(receiving window size, RWS)表示接收缓冲区大小，用于确定应该保存哪些帧，用序号范围表示
+	接收窗口(receiving window size, RWS)表示接收缓冲区大小(RWS$\leq$SWS，最好是等于，尽量减少重传帧)，用于确定应该保存哪些帧，用序号范围表示\\
+	超时设长，2次来回\\
+	没有后续帧也会超时重传\\
+	无论窗口内窗口外收到都要发确认\\
+	min序号个数=RWS+SWS\\
+	序号少的话导致重复
+	\end{itemize}
+	\begin{example}
+	序号8个，SWS=RWS=4，345670123456，5丢失
+	\end{example}
+	\begin{analysis}
+	回退N：346705670123456\\
+	选择性重传：346705123456
+	\end{analysis}
 \end{itemize}
 
 % 序号可以重复使用
@@ -56,11 +81,14 @@
 
 提高滑动窗口协议的效率：
 \begin{itemize}
-	\item 选择性确认(selective acknowledgement)：接受方把已收到的帧的序号告诉发送方
-	\item 捎带确认(piggybacking)：通信双方全双工方式工作，接收方在发数据给对方时顺便把确认号也告诉对方
+	\item 选择性确认(selective acknowledgement)：接受方把已收到的帧的序号告诉发送方（收到不用重传告诉发送方哪些已收到，则只用重传某帧）
+	\item 捎带确认(piggybacking)：通信双方\textbf{全双工}方式工作，接收方在发数据给对方时顺便把确认号也告诉对方（两个滑动窗口，两边都要发数据），需要结合下面一起使用
 	\item 延迟确认(delayed acknowledgement)：接收方收到一帧后并不立即发送确认帧，而是等待一段时间再发送
 \end{itemize}
 
-PPP协议(point-to-point)：点到点网络的数据链路层协议，主要用于串行电缆、电话线(MODEM)等串行链路
+PPP协议(point-to-point)：点到点网络的数据链路层协议，主要用于串行电缆、电话线(MODEM)等串行链路；
+根据HDLC(high-level data link control)协议进行设计
+
+标志位成帧，区分包的起始和终结；同时需要转义
 
 链路层的实现：在网络接口卡(network interface card, NIC)及其驱动程序上实现，路由器在接口模块上实现

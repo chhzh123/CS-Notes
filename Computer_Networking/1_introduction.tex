@@ -14,9 +14,9 @@
 \end{itemize}
 \item 多路访问(multiple access)网络：共享介质(shared medium)、广播、碰撞(collision)
 \begin{itemize}
-	\item 单播(unicast)
-	\item 多播(multicast)
-	\item 广播(broadcast)
+	\item 单播(unicast)：一对一
+	\item 多播(multicast)：一对多
+	\item 广播(broadcast)：一对所有
 \end{itemize}
 \end{itemize}
 
@@ -31,19 +31,20 @@
 \end{itemize}
 
 \subsection{因特网}
-网络互连：用路由器（或网关gateway）连接起来构成的网络称为互连网络(internetwork)。
+网络互连：用路由器（或网关gateway）连接起来构成的网络称为互\textbf{连}网络(internetwork)。
+用实际的物理通信介质及相应的设备把两个或两个以上的网络连接起来的一种网络，如LAN和WAN都可看作是互连网络。
 
-因特网/互联网(Internet)是一种互连网络
+因特网/互联网(Internet)是一种互连网络，可以看作是把世界各地的广域网互连的网络
 \begin{itemize}
 	\item 系统域网(System Area Network, SAN)
-	\item 局域网(Local Area Network, LAN)
+	\item 局域网(Local Area Network, LAN)：某一区域内由多台计算机互联成的计算机组，一般是方圆几千米以内
 	\item 城域网(Metropolitan Area Network, MAN)
 	\item 广域网(Wide Area Network, WAN)
 \end{itemize}
 
 因特网：
 \begin{itemize}
-	\item 终端系统/主机：运行网络应用程序
+	\item 终端系统/主机(end system)：运行网络应用程序
 	\item 通信链路(communication link)：光纤、铜线、无线电、卫星等
 	\item 路由器(router)
 \end{itemize}
@@ -55,11 +56,17 @@
 	\item 本地ISP
 \end{itemize}
 
+\begin{itemize}
+	\item Access network：连接订阅者和服务提供商
+	\item Core network：连接局部提供商
+	\item Network edge：路由、路由交换其、集成访问设备(IAD)
+\end{itemize}
+
 \subsection{网络服务}
 网络提供的服务：
 \begin{itemize}
 	\item 可靠/不可靠：会不会丢包
-	\item 面向连接/无连接：需要连通
+	\item 面向连接/无连接：需要建立通信线路
 	\item 有确认/无确认
 	\item 数据报服务：无连接无确认（因特网）
 	\item 请求相应和消息流服务
@@ -84,7 +91,7 @@
 \text{应用层Application}\arrow{d}{\text{消息message}}\\
 \text{传输层Transport}\arrow{d}{\text{数据段segment}}\\
 \text{网络层Network}\arrow{d}{\text{数据报datagram}}\\
-\text{链路层Link}\arrow{d}{\text{帧frame}}\\
+\text{链路层DataLink}\arrow{d}{\text{帧frame}}\\
 \text{物理层Physical}
 \end{tikzcd}
 \end{center}
@@ -106,9 +113,14 @@ ISO/OSI(open system interconnection)网络七层协议，在应用层和传输�
 当一个包到达时如果有空闲缓存则排队等待转发，产生延迟(delay)；
 如果没有空闲缓存，则丢弃该包，造成丢失(loss)。
 
-包交换(packet-switching)网络中的延迟
 \begin{itemize}
-	\item 处理(processing)延迟：查路由
+	\item 电路交换技术(circuit switching)：电话通信，实时性好
+	\item 包交换技术(packet-switching)：存储转发
+\end{itemize}
+
+包交换网络中的延迟
+\begin{itemize}
+	\item 处理(processing)延迟：查路由，存储转发(store-and-forward)技术则延迟很大
 	\item 排队(queueing)延迟
 	\item 发送/传输(transmission)延迟：包长(bits)/链路带宽(bps, bit per second)；指从发送第一个包到发送最后一个包的间隔
 	\item 传播(propagation)延迟：指对于一个包来说从发送到接收所需的时间
