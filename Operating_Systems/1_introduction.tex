@@ -1,0 +1,35 @@
+% !TEX root = main.tex
+
+\section{操作系统概述}
+\subsection{概述}
+操作系统核心即怎么虚拟多几个冯诺依曼计算机出来给程序用。
+操作系统是控制应用程序执行的程序，是应用程序和计算机硬件间的接口（屏蔽硬件细节）。
+
+这里先解释几个概念
+\begin{itemize}
+	\item 并发：两件事情\textbf{可以}同时(simultaneously)发生，没有时间限制，$t_1>t_2$，$t_1<t_2$，$t_1=t_2$都可
+	\item 同步：两个事件有确定的时间限制
+	\item 异步：两件事不知道何时发生
+\end{itemize}
+
+% 对称多处理器(symmetric multiple processors, SMP)：共享内存（访存时间大致相同）、IO设备，所有处理器/核可执行相同功能（对称性）
+
+\subsection{发展历史}
+\begin{itemize}
+	\item 串行处理(1940s)：没有OS，人工调度，准备时间长
+	\item 简单批处理系统(1950s)：
+	\begin{itemize}
+		\item 使用监控程序(monitor)，读入用户程序执行
+		\item 提供内存保护、计时器、特权指令、中断
+		\item 两种操作模式：用户态、内核态(mode)
+		\item 单道程序(uniprogramming)批处理：处理器必须等到IO指令结束后才能继续
+	\end{itemize}
+	\item 多道程序批处理(1950s末)：多个作业同时进入主存，切换运行，\textbf{充分利用处理器}
+	\item 分时系统(1961)：MIT CTSS(Compatible Time-Sharing System)，满足用户与计算机交互的需要，\textbf{减小响应时间}；多个交互作业，多个用户，把运行时间分成很短的时间片轮流分配
+	\item 实时系统：专用，工业、金融、军事
+\end{itemize}
+
+现代的操作系统通常同时具有分时、实时核多道批处理的功能，因此被称为通用操作系统。
+而OS也不仅是在PC机上有，网络OS、分布式OS、嵌入式OS层出不穷。
+
+% 主要成就：进程、信息保护和安全、内存管理、调度和资源管理
