@@ -1,15 +1,14 @@
 % !TEX root = main.tex
 
 \section{物理层}
-直连网，不管包。
+\textbf{直连网}，不管包。
+需要做的事情：（调制解调为模拟信号，编码解码为数字信号）
+\[\text{信息源}\to\text{调制/编码}\to\text{信道传输}\to\text{解调/解码}\to\text{目的地}\]
 
-信息能够被解释为数据(msg/data)，用符号(sign)记录，用信号(signal)传递(transmit)，用熵(entropy)测量
+信息能够被解释为数据(msg/data)，用符号(sign)记录，用信号(signal)（光、电）传递(transmit)，用熵(entropy)测量
 \begin{itemize}
-	\item 信号：光、电
-	\item 模拟信号：连续取值
-	\item 数字信号/跳变信号：离散取值
-	\item 模拟传输：模拟信号、放大器(amplifier)
-	\item 数字传输：数字信号、中继器(repeater)
+	\item 模拟信号-传输：连续取值，放大器(amplifier)
+	\item 数字信号/跳变信号-传输：离散取值，中继器(repeater)
 \end{itemize}
 
 \subsection{编码方式}
@@ -59,13 +58,7 @@
 \begin{itemize}
 	\item 时分多路复用(time division multiplexing, TDM)
 	\item 频分多路复用(frequency, FDM)：无线电台常用
-	\item 波分多路复用(wavelength)：利用多个激光器在单条光纤上同时发送多束不同波长激光的技术
-	\item 码分多路复用(code)
-	\item 统计多路复用：动态分配方法共享通信链路，比如FIFO；对于多个可变速率的数据流，SDM可以提高链路利用率
-\end{itemize}
-
-交换技术
-\begin{itemize}
-	\item 电路交换技术(circuit-switching)：采用FDM、TDM、WDM、CDM技术
-	\item 包交换技术(packet-switching)：采用SDM
+	\item 波分多路复用(wavelength, WDM)：利用多个激光器在单条光纤上同时发送多束不同波长激光的技术
+	\item 码分多路复用(code, CDM)
+	\item 统计多路复用(static, SDM)：动态分配方法共享通信链路，比如FIFO；对于多个可变速率的数据流，SDM可以提高链路利用率
 \end{itemize}

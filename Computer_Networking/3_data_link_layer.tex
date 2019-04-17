@@ -1,17 +1,9 @@
 % !TEX root = main.tex
 
 \section{数据链路层}
-数据链路层把数据包(packet)从一个节点通过链路（直连网络或物理网络）传给相邻另一个节点
+数据链路层把数据包，即\textbf{帧(frame)}，从一个节点通过链路（直连网络或\textbf{物理网络}）传给相邻另一个节点（主机和路由器）
 
-\subsection{简介}
-基本术语如下：
-\begin{itemize}
-	\item 节点(node)：主机和路由器
-	\item 链路(link)：连接相邻节点的通道，有线链路、无线链路、局域网
-	\item 帧(frame)：第二层数据包
-\end{itemize}
-
-功能
+数据链路层的功能如下：
 \begin{itemize}
 	\item 成帧(framing)
 	\item 差错检测(error detect)：比特错，纠错
@@ -19,29 +11,39 @@
 	\item 介质访问控制(medium access control)：多路访问，碰撞(collision)
 \end{itemize}
 
-\subsection{差错检测}
-在数据报后加校验码（头部加序号），通过链路传输看是否有数据报/校验码错误
+针对点对点和多路访问网络分别制定了两个子层：
+\begin{itemize}
+	\item 逻辑链路控制(Logic Link Control, LLC)子层：提供可靠数据传输
+	\begin{itemize}
+		\item LLC1提供无确认无连接服务
+		\item LLC2提供有确认面向连接的服务，实现滑动窗口协议
+		\item LLC3提供有确认无连接的服务
+	\end{itemize}
+	\item 介质访问控制(Media Access Control, MAC)子层：专门用来处理多路访问网络中的冲突（点对点网络没有冲突就不用）
+\end{itemize}
+注意数据链路层、网络层错了就错了，不提供纠正服务，由上层纠正
 
-奇偶校验
+\subsection{逻辑链路控制子层}
+\subsubsection{差错检测}
+在数据报后加校验码（头部加序号），通过链路传输看是否有数据报/校验码错误
+\begin{enumerate}
+\item 奇偶校验：若接收方收到奇数个1，则有出错
 \begin{itemize}
 	\item 一维偶校验：只能检错；最后补一位使得全部为偶数个1，如010补为010|1，而101补为101|0
 	\item 二维偶校验：检错+纠错一位；横纵同时偶校验
 \end{itemize}
-若接收方收到奇数个1，则有出错
-
-校验和(checksum)：将所有数据加起来\\
+\item 校验和(checksum)：将所有数据加起来\\
 由于需要使用加法器，校验和一般不用于数据链路层，而是更高层，例如IP层和传输层
-
-循环冗余校验码(Cyclic Redundancy Check, CRC)：
+\item 循环冗余校验码(Cyclic Redundancy Check, CRC)：
 补充n位后除以一个n+1位的除数，模2除法（按位异或，做减法时没有借位）\\
 接收方连带校验码一起除，余数为0则没错\\
 链路层常用CRC，因为检错率很高，且容易实现（触发器+异或门）
+\end{enumerate}
 
-\subsection{可靠数据传输}
-发送方传送数据帧，接收方回传确认帧(ACK)
+\subsubsection{可靠数据传输}
+超时则自动重发请求(Automatic Repeat reQuest, ARQ)：每发送一帧都启动一个超时定时器，如果它的确认帧(ACK)在其超时时间内到达就删除该定时器，否则，重传该帧并重启定时器
 
-超时则自动重发请求(Automatic Repeat reQuest, ARQ)：每发送一帧都启动一个超时定时器，哪个帧超时将重传该帧，并重启定时器
-
+主要的协议如下：
 \begin{itemize}
 	\item 停等协议(stop-and-wait)：ARQ协议，只有收到前一个数据帧的确认帧才可以发送下一个数据帧\\
 	三种出错情况：
@@ -50,34 +52,25 @@
 		\item 确认帧丢失
 		\item 超时：收到ACK表明接收方一定收到，可以发送新的数据帧，重传的也一定要发ACK
 	\end{itemize}
-	效率十分低，信道空闲时间长
+	效率/吞吐量十分低，信道空闲时间长
 	\item 滑动窗口协议(sliding window)：ARQ协议，不需等待前面发送的帧的确认帧返回，就可以连续发送下一个，其个数不能超过发送窗口大小(sending window size, SWS)（连续发送数据帧可用序号范围，用于流控制：控制发送速度，否则会发生溢出(overlow)，后面覆盖前面的）\\
-	这里的确认帧是指在此之前的帧都已收到\\
-	直连网中间没有节点，后面收到前面一定收到；只要出错纠正不了直接丢弃
+	这里的确认帧是指在此之前的帧都已收到（直连网中间没有节点，后面收到前面一定收到；只要出错纠正不了直接丢弃）
 	\begin{itemize}
-	\item 回退N协议(go back N)：同滑动窗口连续发送，但某个ACK没收到则重传在此ACK之后的所有帧（超时重传），丢3则4发2\\
-	发送窗口需要缓存SWS个帧，以便重传\\
-	不是靠超时重传\\
-	发送窗口中序号最小的为sendbase
-	\item 选择性重传(selective repeat)：否定性确认帧(negative acknowledgement, NAK)，要求重传某一帧；如3丢失，4发送NAK=3，5发送ACK=2\\
-	接收窗口(receiving window size, RWS)表示接收缓冲区大小(RWS$\leq$SWS，最好是等于，尽量减少重传帧)，用于确定应该保存哪些帧，用序号范围表示\\
-	超时设长，2次来回\\
-	没有后续帧也会超时重传\\
-	无论窗口内窗口外收到都要发确认\\
-	min序号个数=RWS+SWS\\
-	序号少的话导致重复
+	\item 回退N协议(go back N)：同滑动窗口连续发送，但某个ACK没收到则重传在此ACK之后的所有帧（超时重传），丢3则ACK4发2\\
+	发送窗口需要缓存SWS个帧，以便重传；发送窗口中序号最小的为sendbase
+	\item 选择性重传(selective repeat)：通过发送否定性确认帧(negative acknowledgement, NAK)要求重传该帧；如3丢失，4发送NAK=3，5发送ACK=2，重传3\\
+	接收窗口(receiving window size, RWS)表示接收缓冲区大小(RWS$\leq$SWS，最好是等于，尽量减少重传帧；但序号少的话导致重复)，用于确定应该保存哪些帧，用序号范围表示\\
+	超时时间应该设长，确保帧的2次来回；没有后续帧也会超时重传；无论窗口内窗口外收到都要发确认\\
 	\end{itemize}
-	\begin{example}
+\end{itemize}
+注意不管哪一个重传机制，序号可以重复使用，因此有最小序号问题。
+\begin{example}
 	序号8个，SWS=RWS=4，345670123456，5丢失
-	\end{example}
-	\begin{analysis}
+\end{example}
+\begin{analysis}
 	回退N：346705670123456\\
 	选择性重传：346705123456
-	\end{analysis}
-\end{itemize}
-
-% 序号可以重复使用
-% 吞吐量取决于协议
+\end{analysis}
 
 提高滑动窗口协议的效率：
 \begin{itemize}
@@ -86,9 +79,176 @@
 	\item 延迟确认(delayed acknowledgement)：接收方收到一帧后并不立即发送确认帧，而是等待一段时间再发送
 \end{itemize}
 
-PPP协议(point-to-point)：点到点网络的数据链路层协议，主要用于串行电缆、电话线(MODEM)等串行链路；
-根据HDLC(high-level data link control)协议进行设计
-
 标志位成帧，区分包的起始和终结；同时需要转义
 
 链路层的实现：在网络接口卡(network interface card, NIC)及其驱动程序上实现，路由器在接口模块上实现
+
+\subsection{介质访问控制子层}
+\subsubsection{简介}
+\begin{enumerate}
+\item \textbf{PPP协议(point-to-point)：点到点网络}
+\begin{itemize}
+	\item 根据HDLC(high-level data link control)协议进行设计，主要用于串行电缆、电话线(MODEM)等串行链路
+	\item 提供连接认证、传输加密和压缩功能，为网络层协议提供服务
+	\item 没有纠错功能，也没有流控制和确保有序的功能
+\end{itemize}
+
+\item \textbf{以太网：多路访问网络}
+\begin{itemize}
+\item 纯ALOHA：想发送就发送，超时未收到确认则发生冲突
+\item 分槽ALOHA：将时间分为长度相同的时槽，每个站点只在时槽开始时发送。\\
+信道空，立即以概率$p$发送，以概率$1-p$延迟一个时间槽；信道忙，延迟一个时间槽。
+\item 载波监听CSMA(Carrier Sense Multiple Access)：发送前先监听信道
+\begin{itemize}
+	\item 信道空，立即发送；信道忙，持续监听(1-persistent CSMA，以太网)
+	\item 信道空，发送；信道忙，延迟一段随机长度时间(non-persistent CSMA)
+	\item 信道空，立即以概率$p$发送，以概率$1-p$延迟一个时间槽；信道忙，延迟一个时间槽(p-persistent CSMA，分槽ALOHA)
+\end{itemize}
+\end{itemize}
+\end{enumerate}
+
+\subsubsection{以太网MAC层协议}
+载波监听CSMA/CD(with collision detection)
+\begin{enumerate}
+	\item 发送数据帧之前先监听信道。如果信道空闲，立即发送。
+	如果信道忙，则持续监听，直到信道空闲，立即发送。
+	\item 边发送边检测冲突。如果发送完毕都没有检测到冲突，则发送成功。
+	\item 如果检测到冲突，则停止发送，并发送32位干扰位(jamming signal)以加强冲突信号。
+	采用二进制指数退避算法\textbf{随机延迟}一段时间后，转(1)。
+\end{enumerate}
+
+二进制指数退避算法(binary exponential backoff)
+\begin{itemize}
+	\item 时间片$\tau$的长度为512b时间，10Mbps的以太网为51.2$\mu s$
+	\item 帧间空隙(interframe gap)为96b
+	\item 每次从$2^j-1$个时间片随机选择一个
+\end{itemize}
+
+802.3的MAC帧格式
+\begin{center}
+前导字符(8B)+目的地址(6B)+源地址(6B)+类型/长度(2B)+有效载荷/填充位+帧校验序列(4B)
+\end{center}
+\begin{itemize}
+\item 源地址：一般为发送者的单播地址
+\item 目的地址(6B)：一般为接收者的单播地址
+\end{itemize}
+
+\begin{itemize}
+	\item 单播/网卡/烧录地址：全球唯一，每个网卡/接口一个
+	\item 多播地址：字节0第0位为1，地址非全1
+	\item 广播地址：48位全为1
+\end{itemize}
+
+\subsubsection{透明网桥}
+网桥/交换机：二层（从下往上数）交换机数据链路、物理层
+
+校园网大多交换机，路由少
+
+扩展/桥接局域网：每一个局域网(LAN)都是一个网段
+
+MAC地址表，如
+\begin{center}
+\begin{tabular}{|c|c|}\hline
+	B & P1\\\hline
+	D & P2\\\hline
+\end{tabular}
+\end{center}
+\begin{itemize}
+	\item 表里查到则转发(forward)
+	\item 表里没有则扩散/泛洪(flood)：由端口P1，扩散到其他所有端口P2，P3（多播、广播一定扩散）
+	扩散不回传
+	% 只要广播都要收下了，操作系统一定要处理
+	收到的部分不会往回转
+	\item 从某一条路发来则不能传回去，过滤/丢弃(filter)
+\end{itemize}
+
+生存期(Time to live, TTL)：单位为秒，每次发送都会重置，对于不活跃的表项自动删掉（减少表的大小，查找速度更快）
+
+自学习：利用\textbf{源地址}学习，如信息从A-P1来，则记为A-P1，同时设好TTL
+如果收到的帧有错则直接丢弃，根本不会学习
+更新记录，重置超时计时器
+
+广播风暴：回路，容错，防止一个网桥崩溃就全局崩溃
+\begin{center}
+	\begin{tikzcd}
+		& A\arrow{ld}\arrow{rd} &\\
+		B_1\arrow{rd} & & B_2\arrow{ld}\\
+		& C &
+	\end{tikzcd}
+\end{center}
+
+冲突域：中间可以加集线器
+
+\subsection{生成树协议}
+IEEE 802.1w RSTP(Rapid Spanning Tree Protocol)
+
+
+将所有的LAN和网桥都抽象为结点，避免冲突即构造一棵生成树（注意不是最小生成树）
+
+先确定根网桥，即BID(Bridge ID)最小的
+
+每个网段（需要集线器）依赖于连通的网桥，每个网桥都把自己到根的距离发出去（竞选/配置消息）
+
+网桥之间的开销为1，选一条最短路径
+
+网桥只在根端口和指定端口之间转发\textbf{数据}帧
+
+主机端口出去不加帧
+
+扩散自己BID，最后只剩下根网桥认为自己是根
+取得优胜的，作为制定网桥；相同距离时，BID小的优胜；端口号小的优胜
+
+只有从根端口过来的才扩散配置消息
+其他端口来的不扩散
+这样不会形成回路
+
+只能在根端口和指定端口转发，不可通过阻塞端口
+
+断了/失效了则变成无穷大，其他网桥可成为指定网桥
+
+防止广播风暴，又能自动修复损害网桥（通过冗余方式），增加可靠性
+
+\subsection{虚拟局域网}
+虚拟局域网(Virtual LAN, VLAN)将原来的局域网分割成多个相互隔离的局域网，只在具有相同颜色的端口间转发。
+
+扩散到帧内制定的端口或\textbf{干道端口}
+
+查MAC地址表转发
+
+如果从干道收到的帧没有VLAN ID，则认为是本征(native)VLAN，默认为VLAN1。
+
+多生成树协议：管理员规定哪些VLAN为一组，构成多生成树，其余的用公公生成树
+\begin{itemize}
+	\item 公共生成树(common spanning tree, CST)
+	\item 多生成树(Multiple spanning tree protocol, MSTP)
+\end{itemize}
+
+\subsection{交换机}
+交换机是一个把多个网段连接起来的设备，也称为\textbf{多端口网桥}(switch=bridge)。
+注意输入输出端口一样。
+
+交换结构(fabrics)
+\begin{itemize}
+	\item 共享总线式交换机：同样有冲突问题
+	\item 纵横式(crossbar)
+\end{itemize}
+
+交换机转发方法
+\begin{itemize}
+\item 存储转发(store and forward)：交换机收到整个帧后转发\\
+目的MAC地址（6B），转也要依照CSMA/CD来转发
+\item 直通(cut through)：收到一个转一个，出现碎片\\
+\item 无碎片(fragment free)：都没冲突才开始转发，\textbf{最小帧保证}\\
+交换机不用收到整个帧而是收到64B（冲突窗口）后自动转发
+\item 适应性交换(adaptive switching)：自动在上面三种方式中选择
+\end{itemize}
+全双工模式：因为没有冲突，CSMA/CD算法可以被关闭
+自动翻转(auto-MDIX)：
+大部分交换机可以自动选择连接方式，交叉线或直通线
+
+令牌环网(token ring)：通过在站点之间传递令牌防止冲突，具有优先权，take turns protocol
+以太网没有确认机制，没有优先权
+必然有特殊的站点（监控站点）产生令牌帧，选举出监控站点（MAC地址最小）
+保有令牌帧的时间是相同的
+
+源路由网桥：用来连令牌环网，将路径记到头部，下一次就不用查
