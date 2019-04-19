@@ -12,7 +12,7 @@
 	\item 半双工(half duplex)：异步双向，如对讲机
 	\item 全双工(full duplex)：同步双向，如电话
 \end{itemize}
-\item 多路访问(multiple access)网络：共享介质(shared medium)、广播、碰撞(collision)
+\item 多路访问(multiple access)网络：共享介质(shared medium)，会产生碰撞(collision)
 \begin{itemize}
 	\item 单播(unicast)：一对一
 	\item 多播(multicast)：一对多
@@ -24,7 +24,7 @@
 \begin{itemize}
 	\item 中间节点、路由器(router)
 	\item 包(packet)
-	\item 存储转发(store and forward)
+	\item 存储转发(store-and-forward)
 	\item 路由选择(routing)
 	\item 路由表(routing table)
 	\item 目的地(destination)、下一跳(next hop)
@@ -34,33 +34,26 @@
 网络互连：用路由器（或网关gateway）连接起来构成的网络称为互\textbf{连}网络(internetwork)。
 用实际的物理通信介质及相应的设备把两个或两个以上的网络连接起来的一种网络，如LAN和WAN都可看作是互连网络。
 
-因特网/互联网(Internet)是一种互连网络，可以看作是把世界各地的广域网互连的网络，是世界上最大的特定计算机网络，采用TCP/IP协议簇作为通信规则
+因特网/互联网(Internet)是一种互连网络，可以看作是把世界各地的广域网互连的网络，是世界上最大的特定计算机网络，采用TCP/IP协议簇作为通信规则。
 \begin{itemize}
 	\item 系统域网(System Area Network, SAN)：电脑、鼠标、USB
-	\item 局域网(Local Area Network, LAN)：某一区域内由多台计算机互联成的计算机组，一般是方圆几千米以内，如小型实验室
+	\item 局域网(Local Area Network, LAN)：某一区域内由多台计算机互联成的计算机组，一般是方圆几千米以内，如小型实验室；常用\textbf{多路访问网络}
 	\item 城域网(Metropolitan Area Network, MAN)
-	\item 广域网(Wide Area Network, WAN)
+	\item 广域网(Wide Area Network, WAN)：\textbf{因特网}
 \end{itemize}
 
-因特网：
+因特网设备：
 \begin{itemize}
-	\item 终端系统/主机(end system)：运行网络应用程序
+	\item 终端系统/主机(end system)：运行网络应用程序，如手机、浏览器
 	\item 通信链路(communication link)：光纤、铜线、无线电、卫星等
-	\item 路由器(router)
+	\item 路由器(router)：用于连接多个网络形成更大的网络
 \end{itemize}
 
-因特网的组成：
+因特网的组成：ISP(Internet Service Provider)
 \begin{itemize}
-	\item 网络边界(Network edge)：主机
-	\item 接入网络(Access network)：有线或无线接入，连接订阅者和服务提供商
-	\item 网络核心(Core network)：连接局部提供商
-\end{itemize}
-
-因特网的结构：ISP(Internet Service Provider)
-\begin{itemize}
-	\item 顶层ISP：主干网（中国电信、中国移动、中国网通）
-	\item 区域ISP：可以私自互联
-	\item 本地ISP
+	\item 网络边界(network edge)：主机及网络程序，终端设备可以通过本地ISP或区域ISP连接上互联网
+	\item 接入网络/接入网(access network)：有线或无线接入，连接订阅者和服务提供商，如WiFi
+	\item 网络核心/主干网(core network)：顶层ISP（中国电信、中国移动、中国网通），可以连接局部提供商
 \end{itemize}
 
 \subsection{网络服务}
@@ -72,62 +65,94 @@
 	\item 请求响应/消息流服务：有请求才有响应/一直发消息，如电视
 \end{itemize}
 
-因特网是数据报服务，无连接无确认
+因特网是\textbf{数据报服务}，\textbf{无连接无确认（尽力服务）}。
 
 \subsection{因特网体系结构}
-因特网体系结构包括以下这五层，而ISO/OSI(open system interconnection)网络包括七层协议：
+因特网体系结构包括以下这\textbf{五层}，而ISO/OSI(open system interconnection)网络包括七层协议\footnote{也有TCP/IP四层的说法，将物理层和数据链路层合并起来变成物理网络层}：
 \begin{itemize}
-	\item 应用层：提供对某些专门应用的支持，如FTP、SMTP、HTTP
-	\item [OSI]表示层(presentationn)：提供数据转换服务, 例如，加密解密，压缩解压缩，数据格式变换
-	\item [OSI]会话层(session)：简化会话实现机制，例如，数据流的检查点设置和回滚以及多数据流同步
-	\item 传输层：将网络层获得的包在\textbf{进程之间}数据传送（端到端），如TCP、UDP
-	\item 网络层：\textbf{路由选择}，实现在互联网中的数据传送（主机到主机），IP、路由协议
-	\item 数据链路层：在物理网络中传送\textbf{包}（跳到跳，节点到节点），PPP、Ethernet
+	\item 应用层：提供对某些专门应用的支持，如\underline{FTP、SMTP、HTTP}
+	\item (OSI)表示层(presentationn)：提供数据转换服务, 如\underline{加密解密，压缩解压缩，数据格式变换}
+	\item (OSI)会话层(session)：简化会话实现机制，如\underline{数据流的检查点设置和回滚，多数据流同步}
+	\item 传输层：将网络层获得的包在\textbf{进程之间}数据传送（端到端），如\underline{TCP、UDP}
+	\item 网络层：\textbf{路由选择}，实现在互联网中的数据传送（主机到主机），如\underline{IP协议、路由协议}
+	\item 数据链路层：在\textbf{物理网络}中传送\textbf{包}（跳到跳hop，结点到结点），如\underline{PPP、Ethernet}
 	\item 物理层：线上的\textbf{比特}（传送原始比特流）
 \end{itemize}
-\par 其中网络层以下不可靠，以上可靠；防止丢包的机制：重发
+\par 其中网络层以下不可靠，以上可靠；防止丢包的机制：重发。
+\par 协议(protocol)：在网络实体(entities)之间传送消息的规则，如消息的格式、收发消息的次序等。
+\par 协议栈：发送时封装(encaptulation)，接收时拆封。
+\par 协议簇(protocol family)：应用层FTP、HTTP、DNS，传输层TCP/UDP，网络层IP。
 
-协议(protocol)：在网络实体(entities)之间传送消息的规则，如消息的格式、收发消息的次序等
-
-协议栈：发送时封装(encaptulation)，接收时拆封。
-每层传输的数据单元都称为包(packets)，都属于某个协议，又被称为协议数据单元(protocol data unit, PDU)=协议控制信息(potocal control data, PCI)+服务数据单元(SDU)
+每层传输的数据单元都称为包(packets)，都属于某个协议，又被称为\textbf{协议数据单元}(protocol data unit, PDU)，包括\textbf{头部/协议控制信息}(potocal control data, PCI)和\textbf{服务数据单元}(service data unit, SDU)两部分。
 \begin{center}
 \begin{tikzcd}
 \text{应用层Application}\arrow{d}{\text{消息message}}\\
 \text{传输层Transport}\arrow{d}{\text{数据段segment}}\\
 \text{网络层Network}\arrow{d}{\text{数据报datagram}}\\
-\text{链路层DataLink}\arrow{d}{\text{帧frame}}\\
+\text{链路层Data-link}\arrow{d}{\text{帧frame}}\\
 \text{物理层Physical}
 \end{tikzcd}
 \end{center}
-
-不同协议则添加不同头部。
+下层把上层通过服务访问点(service access point, SAP)传来的SDU用PCI封装为PDU后传给对等实体(peer entity)，即实现相同协议的实体。
 路由做的事情是拆一层封装，然后重新加一层。
 同一个互联网络中网络层协议需要相同，链路层协议可以不同。
-对等实体(peer entity)即实现相同协议的实体。
-
-% 服务访问点(service access point, SAP)
-
-协议簇(protocol family)：应用层FTP、HTTP、DNS，传输层TCP/UDP，网络层IP
 
 \subsection{网络性能分析}
 当一个包到达时如果有空闲缓存则排队等待转发，产生延迟(delay)；
 如果没有空闲缓存，则丢弃该包，造成丢失(loss)。
-包交换网络中的延迟
+
+包交换网络中的延迟主要有以下四点：
 \begin{itemize}
 	\item 处理(processing)延迟：查路由，存储转发(store-and-forward)技术则延迟很大
 	\item 排队(queueing)延迟：依赖于路由器的拥塞程度
-	\item 发送/传输(transmission)延迟：包长(bits)/链路带宽(bps, bit per second)；指从发送第一个包到发送最后一个包的间隔
-	\item 传播(propagation)延迟：指对于一个包来说从发送到接收所需的时间，物理链路长度/信号传播速度
+	\item 发送/传输(transmission)延迟：\[\text{传输延迟}=\text{包长(bits)}/\text{链路带宽(bps, bit per second)}\]
+	指从发送第一个包到发送最后一个包的间隔
+	\item 传播(propagation)延迟：指对于一个包来说从发送到接收所需的时间
+	\[\text{传播延迟}=\text{物理链路长度}/\text{信号传播速度}\]
 \end{itemize}
 
 接收延迟与传播延迟重合。
-故
+故忽略掉处理、排队延迟，
 \[\text{总延迟（从第一个包被发送到最后一个包被接收的时间）}=\text{传播延迟}+\text{发送延迟}\]
 
-往返时间(round trip time, RTT)：从源主机到目的主机再返回源主机所花的时间
+\par 往返时间(round trip time, RTT)：从源主机到目的主机再返回源主机所花的时间
+\par 带宽(bandwidth)：一条链路或通道可达到的\textbf{最大}数据传输速率(bps)
+\par 吞吐量(thoughput)：一条链路或通路\textbf{实际}数据传输速率
 
-\begin{itemize}
-	\item 带宽(bandwidth)：一条链路或通道可达到的最大数据传输速率(bps)
-	\item 吞吐量(thoughput)：一条链路或通路实际数据传输速率
-\end{itemize}
+\begin{example}
+	如果一个长度为$3000$字节的文件用一个数据包从源主机通过一段链路传给了一个交换机，然后再通过第二段链路到达目的主机。
+	如果在包交换机的延迟为$2ms$，两条链路上的传播延迟都是$2\times 10^8m/s$，带宽都是$1Mbps$，长度都是$6000km$。
+	采用以下三种方式，问这个文件在这两台主机之间的总延迟是多少？
+	\begin{enumerate}
+		\item 交换机采用存储转发方式
+		\item 将文件分成10个数据包，且存储转发
+		\item 收到一位转发一位
+	\end{enumerate}
+\end{example}
+\begin{analysis}
+	\begin{enumerate}
+	\item 因采用存储转发技术，先计算一段的延时，最后乘2。
+	\begin{itemize}
+	\item 一段的传输延时：$3000B*8/10^6bps=24$ms
+	\item 一段的传播延时：$6000km/(2\times 10^8m/s)=30$ms
+	\item 转发延时：$2$ms
+	\end{itemize}
+	总时长：$(24+30)*2+2=110$ms
+	\item 类似1，但是总时长是一个包的传输传播转发延迟，加上剩余包的接收/传输延迟，见下表加粗部分
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|}\hline
+			包1 & \textbf{传输} & \textbf{传播} & \textbf{接收} & & \\\hline
+			包2 &  & 传输 & 传播 & \textbf{接收} & \\\hline
+			包3 &  &  & 传输 & 传播 & \textbf{接收} \\\hline
+		\end{tabular}
+	\end{center}
+	\begin{itemize}
+		\item 一段的传输延时：$300B*8/10^6bps=2.4$ms
+		\item 一段的传播延时：$30$ms
+		\item 转发延时：$2$ms
+	\end{itemize}
+	总时长：$(2.4+30)*2+2+2.4*9=88.4$ms
+	\item 同1，但是只用计算一段传输延时，因为1位的转发延迟忽略。
+	故总时长：$24+30*2=84$ms
+\end{enumerate}
+\end{analysis}

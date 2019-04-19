@@ -2,17 +2,17 @@
 
 \section{网络层}
 \subsection{IP数据报}
-两种数据传输技术：
+\subsubsection{数据传输技术}
 \begin{itemize}
 \item 电路交换(circuit switching)：实际接通一条物理线路，时分多路复用，电话；频分多路复用，电视；一直占用，不管有无数据交互
-\item 包交换/分组交换(packet switching)：统计多路复用，按需分配
+\item 包交换/分组交换(packet switching)：统计多路复用，按需分配；可能引起网络拥塞，适合发送突发数据
 \begin{itemize}
 	\item 虚电路：需建立连接才可以传输数据（仿照电话系统，因特网之前），好处在于保留带宽
 	\begin{itemize}
 	    \item 交换式（要交换才建立连接）：建立虚电路(VC)表，虚电路标识符(VCI)，类似于电话
 	    \item 永久式（建立后一直保持）：由管理员维护
 	\end{itemize}
-	\item 数据报(datagram)：不需建立连接，因特网，不预留带宽
+	\item 数据报(datagram)：不需建立连接，因特网，\textbf{不预留带宽}
 \end{itemize}
 \end{itemize}
 
@@ -23,7 +23,7 @@ IP协议是因特网的网络层协议
 \item IP协议可以运行在\textbf{任何}网络上，不仅仅是因特网
 \end{itemize}
 
-IP数据报格式
+\subsubsection{IP数据报格式}
 \begin{itemize}
 \item 4个字节一个字，头部最多$(2^4-1)*4=60$B，除选项20B，IPv4选项最多40B，太少了
 \item 生存期(TTL)限制在因特网上的停留时间，实际限制为经过的路由器数目，即跳数(hop count)，超过则自动清除，防止兜圈，每次经过路由器减1\\
@@ -83,23 +83,43 @@ NAT将内部源地址转换为外部地址\\
 NAPT将端口号也加入NAT的映射中
 \end{itemize}
 
-地址解析协议(address resolution protocol, ARP)可以将IP地址映射为MAC地址
+地址解析协议(address resolution protocol, ARP)可以\underline{将IP地址映射为MAC地址}\footnote{也有将也有MAC映射为IP地址的协议}
 \begin{itemize}
+	\item ARP请求广播帧（谁的IP地址是XXX），ARP响应单播帧（返回MAC地址），IP地址与MAC地址的端口号相同
 	\item 没有超时重传机制，超时没有收到响应则丢弃引发ARP查询的IP分组
-	\item 源主机获得的映射结果缓存在ARP表中，TTL一般位2到20分钟
+	\item 源主机获得的映射结果缓存在ARP表中$\lrang{\text{IP address},\text{MAC address},\text{TTL}}$，TTL一般为2到20分钟
 	\item 当收到ARP请求，目的主机会缓存源主机的映射，其他主机如果已缓存该映射，则会重置TTL
 	\item 也可直接将映射加入ARP缓存，称为静态ARP映射，不会因超时而删除
-	\item 源硬件地址和协议地址、目标协议地址都知道，但目的硬件地址不知
+	\item 源硬件地址和协议地址、目标协议地址都知道，但\textbf{目的硬件地址}不知
 \end{itemize}
-ARP请求广播帧，ARP响应单播帧
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{fig/ARP.PNG}
+\end{figure}
 
-也有MAC映射为IP地址
-
-动态主机配置协议(Dynamic Host Configuration Protocol, DHCP)用于主机在加入网络时动态租用IP地址，用UDP
-
+DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\textbf{动态租用}IP地址，用UDP，四个步骤如下
 \begin{itemize}
 	\item DHCP发现(discover)
 	\item DHCP提供(offer)
 	\item DHCP请求(request)
 	\item DHCP确认(ACK)
+\end{itemize}
+
+因特网控制消息协议(Internet Control Message Protocol, ICMP)用于主机或路由器发布网络级别的控制消息，主要是出错/丢包后将信息发回给源主机（TTL减到0、不可达），如回响请求和答复消息(ping)、不可达消息、时间超时消息（原IP头部+原IP数据部份的头64B）、重定位消息
+
+\subsection{路由协议}
+有类网的路由选择算法：
+利用数据包中的\textbf{目的地址}得到\textbf{目的网络号}，然后查询\textbf{路由表}(routing table)/转发表(forwarding table)
+\begin{itemize}
+	\item 如果查询的结果为\textbf{直连网}，则\textbf{下一跳(next hop)为空}，直接把数据包从查出的接口转发到目的主机
+	\item 否则，如果查询得到下一跳(路由器)，则把数据包转发给下一跳
+	\item 如果没有查到任何匹配项，则把数据包转发给默认路由器
+	\item 如果没有设置默认路由，则丢弃该数据包
+\end{itemize}
+
+无类网的路由选择：
+无类网的路由表里有子网掩码
+\begin{itemize}
+	\item 匹配方法: 目的IP地址 \& 子网掩码 = 子网号
+	\item 最长匹配原则(The longest match rule): 当有多条路由都匹配时选择子网掩码最长（1的长度）的路由，因为更详细
 \end{itemize}

@@ -44,3 +44,22 @@
 \end{itemize}
 
 进程切换：扔掉堆、数据段，读入新代码段、数据段，重设栈段、堆段，初始化寄存器，开始执行
+
+% COM 基于组件共享技术 软件重用
+% OLE
+
+% 可再入/不可再入内核
+
+处理器上下文即处理器寄存器的内容
+\begin{tikzcd}
+\text{就绪}\arrow[bend left]{rr}{\text{分派}} & & \text{运行}\arrow[bend right]{ll}{\text{超时}}
+\end{tikzcd}
+用户态 核心态
+
+shell：用户控制台，解释用户指令
+
+OS自身代码
+\begin{itemize}
+	\item 传统方式：响应中断，获得CPU控制权
+	\item 进程方式
+\end{itemize}
