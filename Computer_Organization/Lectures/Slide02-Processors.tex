@@ -1,11 +1,11 @@
 \documentclass{myslide}
-\usepackage[slide]{mypackage}
+\usepackage[slide,table]{mypackage}
 
 \title{Computer System Architecture}
 \subtitle{--- Computation, ISA and Datapath}
 
 \author[chhzh123]{陈鸿峥}
-\date[Dec 30, 2018]{December, 2018}
+\date[Apr, 2018]{April, 2018}
 
 \keywords{}
 
@@ -38,48 +38,61 @@
 \pause
 希尔伯特23个问题：第二个问题 --- 算术系统的相容性
 \begin{enumerate}
-	\item 数学是完备的吗(complete)？% 面对那些正确的数学陈述，我们是否总能找出一个证明
-	\item 数学是一致的吗(consistent)？% 数学是否没有内部矛盾
+	\item 数学是完备的吗(complete)？% 面对那些正确的数学陈述，我们是否总能找出一个证明；在任一个无矛盾的形式系统中所能表达的所有陈述都要么能够证明要么能够证伪
+	\item 数学是一致的吗(consistent)？% 数学是否没有内部矛盾，不会出现一个结论又对又不对的情况
 	\item 数学是可判定的吗(decidable)？% 仅仅通过机械化的计算，就能判定某个数学陈述是对是错
 \end{enumerate}
-\pause
-\begin{itemize}[<+->]
-	\item 哥德尔(G\"odel)不完备性定理, 1931
-	\begin{itemize}
-		\item \textbf{形式化}武器
-		% 哥德尔的证明非常的长，达到了200多页纸，但其中很大的成分是用在了一些辅助性的工作上面，比如占据超过1/3纸张的是关于一个形式系统如何映射到自然数，也就是说，如何把一个形式系统中的所有公式都表示为自然数，并可以从一自然数反过来得出相应的公式。这其实就是编码，在我们现在看来是很显然的，因为一个程序就可以被编码成二进制数，反过来也可以解码。但是在当时这是一个全新的思想，也是最关键的辅助性工作之一，另一方面，这正是“程序即数据”的最初想法。
-		% https://www.jianshu.com/p/9236794ddef3
-		% \item 递归函数 % ($\mu$-recursive function)
-		\item \textbf{一阶谓词逻辑}是完备的
-	\end{itemize}
-% 任何包含了算术的数学系统都不可能同时拥有完备性和一致性
-% 任何包含了算术的数学系统，如果它是一致的，那么我们不能在它的内部证明它本身的一致性
-% -> 在数学的领地上，有些东西我们不知道，也不可能知道。
-%% 哥德尔不完备性定理告诉我们，有时候越强大的数学理论，因为能表达的概念太多，甚至连理论的命题和证明都能表达，反而会导致不能被证明的真命题的存在
-	% \item 图灵(Turing)机, 1936
-\end{itemize}
 \end{frame}
 % http://songshuhui.net/archives/70194
 % http://songshuhui.net/archives/20161
 
-\begin{frame}
-\only<1->{
-\begin{center}
-\Large\textbf{什么是计算？}
-\end{center}
-}
-\only<2>{
-\begin{figure}
-\centering
-\includegraphics[width=0.6\linewidth]{fig/Lecture2/Abstraction-Computation.pdf}
-\end{figure}
-}
+\begin{frame}[fragile]{一切的开端}
+\begin{itemize}
+	\item 哥德尔(G\"odel)不完备性定理, 1931
+	\begin{center}
+		\textbf{任何包含了算术的数学系统都不可能同时拥有完备性和一致性！}
+	\end{center}
+	% 也就是说，如果一个数学系统包含了算术的话，要么它是自相矛盾的，要么存在一些命题，它们是真的，但我们却无法证明。这说明，希尔伯特的前两个问题不可能同时为真
+	\pause
+	\begin{itemize}
+		\item \textbf{形式化}武器\\
+		\pause
+		\begin{tikzcd}
+		\text{形式系统}\arrow{rr}{\text{映射}} & & \text{自然数}\arrow{ll}{\text{映射}}
+		\end{tikzcd}\\
+		\pause
+		\begin{tikzcd}
+		\text{程序/数据}\arrow{rr}{\text{编码}} & & \text{二进制数}\arrow{ll}{\text{解码}}
+		\end{tikzcd}
+		\pause
+		% 哥德尔的证明非常的长，达到了200多页纸，但其中很大的成分是用在了一些辅助性的工作上面，比如占据超过1/3纸张的是关于一个形式系统如何映射到自然数，也就是说，如何把一个形式系统中的所有公式都表示为自然数，并可以从一自然数反过来得出相应的公式。这其实就是编码，在我们现在看来是很显然的，因为一个程序就可以被编码成二进制数，反过来也可以解码。但是在当时这是一个全新的思想，也是最关键的辅助性工作之一，另一方面，这正是“程序即数据”的最初想法。
+		% https://www.jianshu.com/p/9236794ddef3
+		% \item 递归函数 % ($\mu$-recursive function)
+		\item \textbf{一阶谓词逻辑}是完备的
+		\begin{itemize}
+			\item 命题逻辑：$\land,\lor,\lnot$
+			\item 量化：$\forall,\exists$
+		\end{itemize}
+	\end{itemize}
+% 任何包含了算术的数学系统，如果它是一致的，那么我们不能在它的内部证明它本身的一致性
+% -> 在数学的领地上，有些东西我们不知道，也不可能知道。
+%% 哥德尔不完备性定理告诉我们，有时候越强大的数学理论，因为能表达的概念太多，甚至连理论的命题和证明都能表达，反而会导致不能被证明的真命题的存在
+\end{itemize}
 \end{frame}
 
-% 而计算刚好解决了这个问题——计算定义了机械可以做什么，不可以做什么。如果宇宙/思想/大脑/小兔子/上帝是可以用机械的方法解释的，那么他们就是电脑，反之亦然。
-\begin{frame}{图灵机}
-Alan Turing, \emph{On Computable Numbers, With an Application to the Entscheidungsproblem}, 1936
+\begin{frame}{一切的开端}
+对于完备的系统，真理一定可以被证明，那么
+\begin{itemize}
+	\item 它是否可以被\textbf{判定}呢？
+	\item 是否能找到一种\textbf{机械计算}的方法来判断命题的真伪呢
+\end{itemize}
+\end{frame}
+
+\begin{frame}{一切的开端}
+\begin{itemize}
+	\item \textbf{图灵(Turing)机，1936}
 \only<1>{
+\\\emph{On Computable Numbers, With an Application to the Entscheidungsproblem}
 \begin{figure}
 \centering
 \includegraphics[width=0.25\linewidth]{fig/Lecture2/turing_machine.jpg}
@@ -87,10 +100,10 @@ Alan Turing, \emph{On Computable Numbers, With an Application to the Entscheidun
 \begin{columns}
 \begin{column}{0.5\linewidth}
 \begin{itemize}
-	\item 纸带(tape)
+	\item \textbf{无限长}的纸带(tape)
 	\item 读写头(head)
 	\item 状态寄存器(state register)
-	\item 有限状态表(table)
+	\item \textbf{有限}状态表(table)
 \end{itemize}
 \end{column}
 \begin{column}{0.5\linewidth}
@@ -112,24 +125,59 @@ Alan Turing, \emph{On Computable Numbers, With an Application to the Entscheidun
 % “一阶谓词演算”是完备的。也就是说，在这个数学系统中，每个真理都能被证明，“真”和“能被证明”这两个概念是一致的
 % 希尔伯特的可判定性问题是：是否存在一种计算过程，可以在有限步运算内，判断在这个完备的数学系统中每个命题的真假？
 }
-\only<3->{
-\\停机问题：是否存在这样的图灵机能够判断一个程序在给定输入上是否会停机/结束？
+\only<3>{
+\\停机问题：是否存在这样的图灵机能够判断一个程序在给定输入上是否会停机/结束？\\
+\textbf{证明方法：反证法，输入图灵机$R$关于自身的编码$\lrang{R}$}
 \begin{figure}
 \centering
 \includegraphics[width=0.5\linewidth]{fig/Lecture2/halting_problem.png}
 \end{figure}
+图灵机$R$相当于\textbf{完整的程序}，$P$相当于\textbf{一个函数}，$M$则是输入\textbf{数据}\\
 }
 \only<4>{
+\\停机问题：是否存在这样的图灵机能够判断一个程序在给定输入上是否会停机/结束？\\
+\textbf{证明方法：反证法，输入图灵机$R$关于自身的编码$\lrang{R}$}
+\begin{figure}
+\centering
+\includegraphics[width=0.5\linewidth]{fig/Lecture2/halting_problem.png}
+\end{figure}
+图灵机$R$相当于\textbf{完整的程序}，$P$相当于\textbf{一个函数}，$M$则是输入\textbf{数据}\\
+再一次，\textcolor{red}{\textbf{程序即数据！}}
+}
+\only<5>{
+\\停机问题：是否存在这样的图灵机能够判断一个程序在给定输入上是否会停机/结束？\\
+\textbf{证明方法：自我指涉$+$自我否定$\to$矛盾！}
+\begin{figure}
+\centering
+\includegraphics[width=0.5\linewidth]{fig/Lecture2/halting_problem.png}
+\end{figure}
 \begin{center}
 \large 即使是完备的数学系统，也是\textbf{不可判定}的！
 \end{center}
 }
+\end{itemize}
 \end{frame}
+
+\begin{frame}
+\only<1>{
+\begin{center}
+\Large\textbf{希尔伯特的幻想破灭！}
+\end{center}
+}
+\only<2>{
+\begin{center}
+\Large\textbf{故事该结束了？}
+\end{center}
+}
+\end{frame}
+
+% 而计算刚好解决了这个问题——计算定义了机械可以做什么，不可以做什么。如果宇宙/思想/大脑/小兔子/上帝是可以用机械的方法解释的，那么他们就是电脑，反之亦然。
 % 赋值、跳转、比较 图灵机与编程语言 - 王先生的文章 - 知乎 https://zhuanlan.zhihu.com/p/26328692
 
 \begin{frame}{$\lambda$-Calculus}
-Alonzo Church, \emph{An unsolvable problem of elementary number theory}, 1936
+Alonzo Church, \emph{An unsolvable problem of elementary number theory}, 1936\\
 \only<1>{
+$\lambda$-item:
 \begin{itemize}
 	\item 变量(variable)：$x$
 	\item 抽象(abstraction)：$(\lambda x.M)$
@@ -152,60 +200,73 @@ Operation:
 }
 \only<2>{
 \begin{center}
-没有\textbf{数据和程序}之分！\\
-一切都是$\lambda$项，它们既是程序，也是数据
+\textcolor{red}{没有\textbf{数据和程序}之分！\\
+一切都是$\lambda$项，它们既是程序，也是数据}
 \end{center}
 }
 \end{frame}
+% 注意+-等运算并不是内嵌在lambda-演算中的，而是可以被推导出来的，这跟指令集类似
+
 % 我们甚至可以说，图灵机的设计本身，正是这些限制的一种体现。图灵很可能一开始就意识到了这些限制，再由此出发，去定义他的图灵机。哥德尔之所以对图灵机击节叹赏，大概也正因蕴含在它定义中的，图灵对“机械计算”的深刻洞察。相比之下，虽然与之等价的λ演算也尚算精致，但对于“机械计算”只得其形未得其神，显然逊色不少。
 % Deutsch 所有（有限的可以实现的）物理系统都可以被一台通用计算机器来模拟。 量子计算
 
 \begin{frame}{图灵完备}
 \begin{center}
-\large\textbf{图灵机与$\lambda$-演算等价！（图灵完备）}
+\large\textbf{图灵机与$\lambda$-演算等价！}
 \end{center}
 \pause
 \begin{center}
-\fontsm
+\small
 \begin{tabular}{|c|c|}\hline
-命令式语言(imperative) & 函数式语言(functional)\\\hline
-图灵系 & 丘奇系 \\\hline
-面向计算机硬件的抽象 & 面向数学的抽象\\\hline
-指令序列 & 表达式（函数是一等公民）\\\hline
-C/C++/Python/Java & Lisp/Haskell/ML/Coq\\\hline
-顺序执行 & 对求值顺序不相关，易于并行\\
+\textbf{命令式语言(imperative)} & \textbf{函数式语言(functional)}\bigstrut\\\hline\hline
+图灵系(图灵机) & 丘奇系($\lambda$-演算) \bigstrut\\\hline
+面向计算机硬件的抽象 & 面向数学的抽象\bigstrut\\\hline
+指令序列 & 表达式（\textbf{函数是一等公民}）\bigstrut\\\hline
+C/C++/Python/Java & \begin{tabular}{c}Lisp/Haskell/ML/Coq\\C++11和Python中的lambda表达式\end{tabular}\bigstrut\\\hline
+顺序执行 & 对求值顺序不相关，易于并行\bigstrut\\
 有副作用，依赖外部环境（如IO） & 无副作用，纯函数，不出现竞争冒险\\
-变量对应着存储单元 & 变量只是代数名称\\\hline
+变量对应着存储单元 & 变量只是代数名称\bigstrut\\\hline
 \end{tabular}
 \end{center}
-\pause
-若不考虑内存的限制，绝大多数编程语言都是图灵完备的
+编程语言影响力网络：\url{https://exploring-data.com/vis/programming-languages-influence-network/}
+\end{frame}
+% https://cs.stackexchange.com/questions/66849/lambda-calculus-didnt-seem-abstract-and-i-cant-see-the-point-of-it
+
+\begin{frame}[fragile]{图灵完备}
+如果一个系统（指令集、编程语言、元胞自动机等）能够模拟图灵机，则它是\textbf{图灵完备}的
+\begin{itemize}
+	\item 图灵完备的基本条件是有条件分支(\verb'if')、跳转指令(\verb'goto')，及修改内存的能力
+	\item 若不考虑内存的限制，绝大多数编程语言都是图灵完备的
+	\pause
+	\begin{itemize}
+		\item C++ Template: \cmark
+		\pause
+		\item Regular Expression: \xmark
+	\end{itemize}
+\end{itemize}
 \end{frame}
 
 \begin{frame}{计算模型}
 \begin{center}
-\Large\textbf{什么是可计算的？(Computability)}
-\end{center}
-\pause
-\begin{center}
 \Large\textbf{Church-Turing Thesis}\\
-\large所有可以有效计算的函数都可以被通用图灵机计算
+\large 所有可以有效计算的函数都可以被通用图灵机计算
 \end{center}
 \begin{itemize}
-	\item \textbf{机械计算}就是图灵机能做的计算 $\gets$ 可计算理论的基石 % 希尔伯特在他的问题中那模糊的“机械计算”
+	\item \textbf{机械计算}就是图灵机能做的计算 $\gets$ 可计算理论(Computability)的基石 % 希尔伯特在他的问题中那模糊的“机械计算”
 	\item \textbf{目前}任何计算装置（乃至大脑、超算）都不能超过图灵机的能力（不考虑速度，只考虑可计算性）
 \end{itemize}
+\pause
+* 超计算(Hyper-computation)模型:
+\begin{itemize}
+	\item 谕示机(Oracle machine)
+	\item 量子图灵机(QTM)？\pause 区分可计算性和时间复杂度！
+\end{itemize}
 \end{frame}
+% https://cs.stackexchange.com/questions/23162/quantum-computing-and-turing-machines-are-turing-machines-still-an-accurate-mea
 % 一阶逻辑 形式验证
 % 密码学
 % 函数式编程
 % 计算复杂性理论
-
-\begin{frame}
-\begin{center}
-\Large\textbf{怎么去计算？}
-\end{center}
-\end{frame}
 
 \begin{frame}
 \begin{center}
@@ -228,17 +289,39 @@ $\lambda$-演算 更像是智慧的推理\\
 
 \begin{frame}{冯诺依曼体系结构}
 \begin{itemize}
-	\item 图灵机是\textbf{理论}的最简单的模型，但具有非常强的计算力
-	\item 冯诺依曼(von Neumann)体系结构则是对图灵机的物理\textbf{实现}(EDVAC, 1945)
+	\item 图灵机是\textbf{理论}模型，简单但具有非常强的计算力
+	\item 冯诺依曼(von Neumann)体系结构则是对图灵机的物理\textbf{实现}(EDVAC\footnote{区别于第一台\textbf{通用}电子计算机, ENIAC, 1943}, 1945)
 \end{itemize}
 % EDVAC, 1945, 第一台现代意义的通用计算机, 首次用二进制
 \begin{figure}
 \centering
-\includegraphics[width=0.5\linewidth]{fig/Lecture2/Von_Neumann_Architecture.png}
+\includegraphics[width=0.4\linewidth]{fig/Lecture2/Von_Neumann_Architecture.png}
 \end{figure}
 \begin{itemize}[<+->]
-	\item \textbf{存储器！}二进制！
-	\item 所有指令与数据都\textbf{无区别}地存储在计算机中
+	\item \textbf{存储器！二进制！}
+	\item 所有\textbf{指令与数据}都\textbf{无区别}地存储在计算机中
+\end{itemize}
+\end{frame}
+% 不以lambda演算作为基石？
+% https://www.quora.com/Is-there-any-computer-architecture-based-on-lambda-calculus-instead-of-Turing-machine
+
+\begin{frame}{冯诺依曼体系结构}
+为什么采用二进制？
+\begin{itemize}
+	\item 二进制只有两种状态，容易找到具有两个稳定状态并且状态转换容易控制的物理器件（物理实施）
+	\item 二进制可靠性强，噪声容限高，且节省大量的空间资源开销（数字电路）
+	\item 二进制编码运算规则简单，0、1与二值逻辑一致，容易实现逻辑运算（布尔代数）
+\end{itemize}
+\end{frame}
+
+\begin{frame}{程序即数据}
+\textbf{程序即数据}的思想衍生出了后来很多分支
+\begin{itemize}[<+->]
+	\item 元编程(metaprogramming)：能够写程序的程序，输出数据是一个程序，如C宏
+	\item 性能剖析器(profiler)：对程序的分析，输入数据是一个程序，如杀毒软件
+	\item 编译器：程序的优化，本身是一个程序，输入、输出数据也都是程序
+	\item 神经网络：TVM Relay (ongoing)，既然神经网络是一个程序，那能否类似编译一样进行优化？\\
+	Key idea：图灵完备，自动优化，高阶微分
 \end{itemize}
 \end{frame}
 
@@ -267,7 +350,8 @@ $\lambda$-演算 更像是智慧的推理\\
 \begin{itemize}
 	\item 位(bit)：处理信息的最小单位
 	\item 字节(Byte)：存储的基本单位，$1$B$=8$bit
-	\item 字(Word)：随机器而变，32位机 $1$Word$=4$B$=32$bit
+	\item 字(Word)：随机器而变，32位机 $1$Word$=4$B$=32$bit\\
+	但注意在操作系统中，word为16位，dword为32位
 	\item 字长(Word length)：数据通路的宽度/字的长度
 \end{itemize}
 内存大小\\
@@ -284,6 +368,10 @@ $\lambda$-演算 更像是智慧的推理\\
 \end{frame}
 
 \subsection{指令集背景}
+\begin{frame}
+\subsectionpage
+\end{frame}
+
 \begin{frame}[fragile]{指令集背景}
 \only<1>{
 \begin{center}
@@ -303,7 +391,6 @@ $\lambda$-演算 更像是智慧的推理\\
 \only<3>{
 \begin{center}
 \begin{tikzcd}
-\text{Natural language}\arrow{d}\\
 \text{High-Level Programming Language (FORTRAN)[1954]}\arrow{d}{\text{Compiler}[1954]}\\
 \text{Assembly Language [1947]}\arrow{d}{\text{Assembler}[1948]}\\
 \text{Machine Language (Binary)[1945]}
@@ -345,7 +432,6 @@ Machine:\\
 }
 \end{frame}
 
-\subsection{指令系统的作用}
 \begin{frame}{指令系统概述}
 \begin{figure}
 \centering
@@ -370,18 +456,67 @@ Machine:\\
 \textbf{ISA determines the performance and the cost of computers}
 \end{center}
 \end{frame}
+% 指令系统需预先实现/存放在计算机中，硬连线/微程序，逐行解释执行
 
 \subsection{指令集计算机}
+\begin{frame}
+\subsectionpage
+\end{frame}
+
+\begin{frame}{CISC与RISC之争}
+\textbf{变长指令集}\\
+CISC(Complex Instruction Set Computer)的天下：1970s
+\begin{itemize}
+	\item 内存少$\to$程序要小$\to$代码密度高
+	\item 编译器弱$\to$寄存器分配难，无法针对微结构进行深层优化
+	\item mem-mem，reg-mem模式
+\end{itemize}
+\pause
+泥沼：
+\begin{itemize}
+	\item 越来越多指令添加进指令集
+	\item 研发成本提升，周期变长
+	\item 殃及软件，甚至编译器都不知如何用这么庞大的指令集
+\end{itemize}
+\end{frame}
+
+\begin{frame}{CISC与RISC之争}
+\textbf{定长指令集}\\
+John Cocke (IBM), David Patterson (UCB), John Hennessy (Stanford)\\
+RISC(Reduce Instruction Set Computer)崛起：1980s
+\begin{itemize}
+	\item 寄存器着色：Graph coloring
+	\item 编码整洁，流水线设计容易
+\end{itemize}
+\pause
+存在的问题：
+\begin{itemize}
+	\item 指令定长，大常数/地址需要拆分为多块
+	\item 代码密度不高，某些情况下浪费指令缓存的容量和带宽
+\end{itemize}
+\end{frame}
+
+\begin{frame}{CISC与RISC之争}
+CISC与RISC交互融合：
+\begin{itemize}
+	\item 编译技术的提升：寄存器重命名
+	\item 体系结构的发展：微程序
+	\item Intel x86为``兼容''需要，保留CISC风格，同时借鉴了RISC思想
+	\item RISC引入代码密度更高的新指令集，以弥补指令缓存等劣势
+\end{itemize}
+\end{frame}
+% http://blog.sina.com.cn/s/blog_685fc2ec0101h1ws.html
+
 \begin{frame}[fragile]{指令集计算机}
 \begin{center}
 \begin{tabular}{|p{5cm}|p{5cm}|}
 \hline
-\multicolumn{1}{|c|}{\textbf{复杂指令集计算机}} & \multicolumn{1}{c|}{\textbf{精简指令集计算机}} \\\hline
-CISC, Complex Instruction Set Computer & RISC, Reduce Instruction Set Computer\\\hline
-出现较早(1970s)，大而全 & 出现较晚(1980s)，小而精 \\\hline
-指令周期长，专用寄存器，微程序控制，难编译优化生成高效目标代码，效率低 & 指令周期短，大量通用寄存器，组合逻辑电路控制，优化编译系统\\\hline
-变长指令字 & 定长指令字 \\\hline
-x86 & ARM(Advanced RISC Machine), MIPS, SPARC \\\hline
+\multicolumn{1}{|c|}{\textbf{复杂指令集计算机}} & \multicolumn{1}{c|}{\textbf{精简指令集计算机}}\bigstrut \\\hline\hline
+CISC & RISC \bigstrut \\\hline
+出现较早(1970s)，大而全 & 出现较晚(1980s)，小而精\bigstrut \\\hline
+指令周期长，专用寄存器，\textbf{微程序}控制，难编译优化生成高效目标代码，效率低 & 指令周期短，大量通用寄存器，\textbf{组合逻辑}电路控制，编译系统易优化\bigstrut\\\hline
+变长指令字 & 定长指令字\bigstrut \\\hline
+x86 & ARM(Advanced RISC Machine), MIPS, SPARC\bigstrut \\\hline
 \end{tabular}
 \end{center}
 \end{frame}
@@ -389,22 +524,34 @@ x86 & ARM(Advanced RISC Machine), MIPS, SPARC \\\hline
 \begin{frame}{处理器性能评价}
 \begin{figure}
 \centering
-\includegraphics[width=\linewidth]{fig/Lecture2/processor_performance.PNG}
+\includegraphics[width=\linewidth]{fig/Lecture2/processor_performance-2.PNG}
 \end{figure}
-\# of instructions, cycles, CPI
 \end{frame}
 
 \subsection{指令集系统基本内容}
-\begin{frame}{指令集系统}
-\begin{enumerate}
-	\item 什么操作？操作码
-	\item 操作对象？操作数
-	\item 如何找到操作对象？寻址方式 % 4字节=32位
-\end{enumerate}
-指令=操作码+地址码
+\begin{frame}
+\subsectionpage
 \end{frame}
 
 \begin{frame}{指令集系统}
+\begin{enumerate}
+	\item 什么操作？\pause 操作码\pause
+	\item 操作对象？\pause 操作数\pause
+	\item 如何找到操作对象？\pause 寻址方式 % 4字节=32位
+\end{enumerate}
+\[
+\text{指令}=\text{操作码}+\text{地址码}
+\]
+\end{frame}
+
+\begin{frame}{寻址方式}
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{fig/Lecture2/memory_addressing.PNG}
+\end{figure}
+\end{frame}
+
+\begin{frame}{操作指令}
 \begin{enumerate}
 	\item 数据传送指令：store、load
 	\item 算术运算指令：加减乘除
@@ -413,8 +560,24 @@ x86 & ARM(Advanced RISC Machine), MIPS, SPARC \\\hline
 	\item 系统控制指令：启动IO设备、存取特殊寄存器指令
 	\item 程序控制指令：转移、跳转、返回、中断
 \end{enumerate}
+为什么是这些指令？
+\pause
+\textbf{图灵完备！}
 \end{frame}
 
+\begin{frame}{指令集设计的难点}
+指令的位数十分有限
+\begin{itemize}
+	\item 完备性：可以解决任何可解的问题
+	\item 有效性：简洁、无歧义、加速常用操作
+	\item 规整性：简单源于规整，相同位置含义相同
+	\item 兼容性：向前/向后兼容
+\end{itemize}
+对于RISC来说，如果操作码多了，意味着操作数少了；\\
+反之，操作码少操作数多\\
+需要\textbf{极其精巧的设计与权衡！}
+\end{frame}
+% 为什么 ARM 和 MIPS 那么多寄存器，x86 那么少？ - 艾斯奥特曼的回答 - 知乎 https://www.zhihu.com/question/24551779/answer/28186090
 
 \section{RISC-V指令集总览}
 \begin{frame}
@@ -422,9 +585,11 @@ x86 & ARM(Advanced RISC Machine), MIPS, SPARC \\\hline
 \end{frame}
 
 \begin{frame}{RISC-V指令集}
+这里主要介绍32位指令，64位类似
 \begin{itemize}
 	\item 所有指令都是32位宽(4字节)，按字地址对齐
-	\item 基本的RV32I共47条指令
+	\item 基本的RV32I共47条指令($2^6=64$)
+	\item 仅提供一种数据寻址模式（寄存器+立即数）
 \end{itemize}
 \end{frame}
 % P35
@@ -443,18 +608,19 @@ x86 & ARM(Advanced RISC Machine), MIPS, SPARC \\\hline
 \begin{frame}[fragile]{Registers}
 \verb'x1-x31', \verb'x0'=0, Program Counter (PC)
 \begin{columns}
-\begin{column}{0.3\linewidth}
+\begin{column}{0.35\linewidth}
 \begin{figure}
 \centering
 \includegraphics[width=\linewidth]{fig/Lecture2/general_registers.PNG}
 \end{figure}
 \end{column}
-\begin{column}{0.6\linewidth}
+\begin{column}{0.55\linewidth}
 \begin{itemize}
-	\item RISC-V共32个通用寄存器，有零寄存器，且PC不是通用寄存器
-	\item x86-32仅8个寄存器，且无零寄存器
-	\item arm-32有16个寄存器，但PC不作为单独寄存器
+	\item RISC-V共32个通用寄存器，\\有零寄存器，且PC不是通用寄存器
+	\item x86-32仅8个寄存器，\\且无零寄存器
+	\item arm-32有16个寄存器，\\且PC包含在内
 \end{itemize}
+为什么x86寄存器数目这么少？
 \end{column}
 \end{columns}
 \end{frame}
@@ -499,6 +665,10 @@ x86 & ARM(Advanced RISC Machine), MIPS, SPARC \\\hline
 \end{figure}
 \end{frame}
 
+\begin{frame}
+\Large 既然\textbf{指令和数据}在计算机中都以二进制形式表示，那么CPU到底是怎么区别它们的？
+\end{frame}
+
 \begin{frame}{CPU指令执行过程}
 2-phases:
 \begin{enumerate}
@@ -531,11 +701,11 @@ Main instructions:
 \begin{column}{0.5\linewidth}
 Examples:
 \begin{itemize}
-	\item \verb'add $3, $2, $1'
-	\item \verb'add $3, $2, 10'
-	\item \verb'lw $3, $2(4)'
-	\item \verb'sw $3, $2(4)'
-	\item \verb'beq $3, $2, -2'
+	\item \verb'add x3, x2, x1'
+	\item \verb'add x3, x2, 10'
+	\item \verb'lw x3, x2(4)'
+	\item \verb'sw x3, x2(4)'
+	\item \verb'beq x3, x2, -2'
 	\item \verb'j 0x00000050'
 \end{itemize}
 \end{column}
@@ -739,10 +909,11 @@ Program Counter (PC)
 \end{column}
 \begin{column}{0.5\linewidth}
 按字编址\\
-\verb'0x00000000'\\
-\verb'0x00000004'\\
-\verb'0x00000008'\\
-\verb'0x0000000C'\\
+\qquad\qquad\qquad\verb'main:'\\
+\verb'0x00000000' \qquad\verb'xor x1, x1, 0'\\
+\verb'0x00000004' \qquad\verb'add x2, x1, 1'\\
+\verb'0x00000008' \qquad\verb'beq x3, x1, x2'\\
+\verb'0x0000000C' \qquad\verb'jal x3, 1'\\
 $\cdots$
 \end{column}
 \end{columns}
@@ -1001,7 +1172,7 @@ Use \verb'lui' and \verb'auipc' to jump anywhere in a 32-bit pc-relative address
 \fontsm\verb'x[rd] = pc+4; pc += sgnext(offset)'
 \begin{figure}
 \centering
-\includegraphics[width=0.8\linewidth]{fig/Lecture2/Datapath-jal.pdf}
+\includegraphics[width=0.9\linewidth]{fig/Lecture2/Datapath-jal.pdf}
 \end{figure}
 \end{frame}
 % 跳转并链接 (Jump and Link). J-type, RV32I and RV64I.
@@ -1103,7 +1274,7 @@ Two-state controller (A filp-flop can be used to remember)
 \begin{frame}{Multi-Cycle CPU State Transition}
 \begin{figure}
 \centering
-\includegraphics[width=0.6\linewidth]{fig/Lecture2/Datapath-Multi-State.pdf}
+\includegraphics[width=0.7\linewidth]{fig/Lecture2/Datapath-Multi-State.pdf}
 \end{figure}
 \end{frame}
 
@@ -1152,7 +1323,6 @@ Device input (I), output (O), read (R), write (W)\\
 \quad\\
 Hardware implementation? Emmm...
 \end{frame}
-
 % 补充说明： 内存一致性模型
 % RISC-V 具有宽松的内存一致性模型（relaxed memory consistency model），因此其他线程看到的内存访问可以是乱序的。图 6.2 中，所有的 RV32A 指令都有一个请求位（aq）和一个释放位（rl）。 aq 被置位的原子指令保证其它线程在随后的内存访问中看到顺序的 AMO 操作； rl 被置位的原子指令保证其它线程在此之前看到顺序的原子操作。想要了解更详细的有关知识，可以查看[Adve and Gharachorloo 1996]。
 
@@ -1170,6 +1340,7 @@ Hardware implementation? Emmm...
 	\item RV32V: 向量架构（避免SIMD）
 % 向量计算机从内存中中收集数据并将它们放入长的， 顺序的向量寄存器中。 在这些向量寄存器上， 流水线执行单元可以高效地执行运算。然后，向量架构将结果从向量寄存器中取出，并将其并分散地存回主存。向量寄存器的大小由实现决定，而不是像 SIMD 中那样嵌入操作码中。我们将会看到， 将向量的长度和每个时钟周期可以进行的最大操作数分离，是向量体系结构的关键所在：向量微架构可以灵活地设计数据并行硬件而不会影响到程序员，程序员可以不用重写代码就享受到长向量带来的好处。此外，向量架构比 SIMD架构拥有更少的指令数量。而且，与 SIMD 不同，向量架构有着完善的编译器技术。
 	\item RV64: 64位
+	\item RV32S：特权指令
 \end{itemize}
 以及一些未来可选扩展
 \end{frame}
