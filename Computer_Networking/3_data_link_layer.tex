@@ -414,7 +414,7 @@ MAC地址
 交换结构(fabrics)
 \begin{itemize}
 	\item 共享总线式交换机：同样有冲突问题
-	\item 纵横式(crossbar)
+	\item 纵横式(crossbar)：可实现多路并行传输
 \end{itemize}
 
 交换机转发方法
@@ -441,7 +441,7 @@ MAC地址
 
 集线器、交换机、路由器的区别如下\footnote{\url{http://www.qianjia.com/html/2017-08/09_274208.html}}：
 \begin{itemize}
-	\item 集线器(hub)：\textbf{物理层/一层}，广播，排队，冲突，共享型设备（一个端口往另一个端口发数据，其他端口就处于等待状态），半双工，监听，响应
+	\item 集线器(hub)：\textbf{物理层/一层}，广播，排队，冲突，共享型设备（一个端口往另一个端口发数据，其他端口就处于等待状态，全部端口属于一个冲突域），半双工，监听，响应
 	\item 交换机(switch)：\textbf{数据链路层/二层}，MAC地址，建立连接，独享信道，全双工，增加冲突域数量，减少冲突范围大小
 	\item 路由器(router)：\textbf{网络层/三层}，建立路由表，IP地址，路由选择
 \end{itemize}
@@ -462,3 +462,5 @@ MAC地址
 \end{enumerate}
 
 小范围的局域网，如我们的校园网大多采用交换机，路由少。
+
+注意交换机\textbf{相当于\textcolor{red}{透明}网桥}，故路由器不会知道，路由器只知道下一跳。

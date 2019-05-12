@@ -16,6 +16,18 @@
 \end{itemize}
 \end{itemize}
 
+一般网络的服务模型：Aynchronous Transfer Mode, ATM
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}\hline
+网络结构 & 服务模型 & 带宽 & 不丢包 & 有序 & 及时 & 拥塞反馈\\\hline
+ATM & 恒定位速率 & 固定速率 & 是 & 是 & 是 & 无拥塞\\\hline
+ATM & 可变位速率 & 确保速率 & 是 & 是 & 是 & 无拥塞\\\hline
+ATM & 可用位速率 & 最小保证 & 否 & 是 & 否 & 是\\\hline
+ATM & 未指定位速率 & 无 & 否 & 是 & 否 & 否\\\hline
+因特网 & 尽力服务 & 无 & 否 & 否 & 否 & 否\\\hline
+\end{tabular}
+\end{center}
+
 IP协议是因特网的网络层协议
 \begin{itemize}
 \item 可路由的(routable)：全局地址，按层分配
@@ -78,7 +90,7 @@ IP地址可划分为两个部分：
 用长度来表示子网掩码，如/26代表255.255.255.192
 	\item 无类域间路由选择协议(classless inter-domain routing, CIDR)：将多个有类网合并为一个更大的网络，称为超网(supernet)\\
 可以显著减少路由表中路由的数量，称为路由聚合(route aggregation)
-	\item 网络地址转换(network address translation, NAT)：将内部地址映射为外部地址的技术（可以扩展6w多倍），将私有地址映射为全局地址\\
+	\item 网络地址转换(network address translation, NAT)：\textbf{最节约地址的方法}，将内部地址映射为外部地址的技术（可以扩展6w多倍），将私有地址映射为全局地址\\
 NAT将内部源地址转换为外部地址\\
 NAPT将端口号也加入NAT的映射中
 \end{itemize}
@@ -107,19 +119,112 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 
 因特网控制消息协议(Internet Control Message Protocol, ICMP)用于主机或路由器发布网络级别的控制消息，主要是出错/丢包后将信息发回给源主机（TTL减到0、不可达），如回响请求和答复消息(ping)、不可达消息、时间超时消息（原IP头部+原IP数据部份的头64B）、重定位消息
 
+% Path MTU Discovery 用于寻找路径上最小MTU
+% Traceroute 用于获得整条路径上的路由器IP地址
+% 交换机端口镜像Port Mirroring, also known as SPAN (Switched Port Analyzer) 实现监听
+% DHCP Relay(中继) 多个局域网共享一个DHCP服务器 https://www.netmanias.com/en/post/blog/6004/dhcp-network-protocol/what-is-a-dhcp-relay-agent
+
 \subsection{路由协议}
 有类网的路由选择算法：
 利用数据包中的\textbf{目的地址}得到\textbf{目的网络号}，然后查询\textbf{路由表}(routing table)/转发表(forwarding table)
 \begin{itemize}
 	\item 如果查询的结果为\textbf{直连网}，则\textbf{下一跳(next hop)为空}，直接把数据包从查出的接口转发到目的主机
-	\item 否则，如果查询得到下一跳(路由器)，则把数据包转发给下一跳
-	\item 如果没有查到任何匹配项，则把数据包转发给默认路由器
-	\item 如果没有设置默认路由，则丢弃该数据包
+	\item 否则，如果查询得到\textbf{下一跳}(路由器)，则把数据包转发给下一跳
+	\item 如果没有查到任何匹配项，则把数据包转发给\textbf{默认路由器}（也算查到）
+	\item 如果没有设置默认路由，则\textbf{丢弃}该数据包
 \end{itemize}
 
 无类网的路由选择：
 无类网的路由表里有子网掩码
 \begin{itemize}
-	\item 匹配方法: 目的IP地址 \& 子网掩码 = 子网号
+	\item 匹配方法: 目的IP地址 \& 子网掩码 $==$ 子网号
 	\item 最长匹配原则(The longest match rule): 当有多条路由都匹配时选择子网掩码最长（1的长度）的路由，因为更详细
+	\item 从IP数据报中获取目的地址，利用目的地址\textbf{查路由表}（同有类网）
+	\item 直连网将数据报直接\textbf{封装成帧}发送，不需要目的地址(PPP)
+	\item 以太网同样要封装成帧，从\textbf{路由表中查出下一跳}的IP地址，通过\textbf{ARP协议}获得\textbf{目的MAC地址}，加入帧内
+	\item 如没有下一跳，则直接取\textbf{IP数据报中的目的IP地址}（已经到达了）
+	\item 发送时要遵守以太网协议(CSMA/CD)
+	\item 每到一个路由器都将帧拆出来，再重新封装，目的和源MAC地址（上一跳路由器MAC地址）全要发生变化
+\end{itemize}
+
+路由表
+\begin{itemize}
+	\item 127.0.0.1是内部的，其他是外部的需要经过防火墙
+	\item 接口不一样，因此要在路由器里写两项，一项内部一项外部
+	\item 往外发，默认路由会匹配
+	\item 选择跃点数(metric)小的一项，如果跃点数也相同，则两个接口都会发送
+\end{itemize}
+
+路由表可以由管理员手工建立，也可以由路由/路由选择协议(routing protocols)自动建立。
+路由协议即自动建立路由表，包括网络号、子网号、下一跳、接口、开销等。
+所建立的路由分别称为\textbf{静态路由}和\textbf{动态路由}。
+默认路由和直连路由都是静态路由。
+
+建路由表是记\textbf{最短路径}的下一跳。
+
+整个因特网实际上由很多机构进行管理。每个机构管理自己的网络，它们有权决定采用什么协议和网络控制策略。这样在\textbf{同一个机构}管理下的网络称为一个\textbf{自治系统}(autonomous systems, AS)。因特网实际上是由很多自治系统构成的。
+\begin{itemize}
+	\item 用于在AS\textbf{内部}(Intra-AS)建立动态路由的路由协议称为\textbf{内部网关协议}(Interior Gateway Protocols, IGP)。例如，\underline{RIP协议}和\underline{OSPF协议}。一个AS通常运行单一IGP。
+	\item 用于在AS\textbf{之间}(Inter-AS)建立动态路由的路由协议称为\textbf{外部网关协议}(Exterior Gateway Protocol, EGP)。例如，\underline{BGP协议}。
+	\item 运行同一个IGP协议的连通区域也称为路由选择域(routing domain)。一个AS可以运行多个IGP协议，形成多个路由选择域。
+\end{itemize}
+
+加了网关相当于加了默认路由。
+
+网络层在入口位置有防火墙，未查路由表就丢弃了。
+
+路由算法(Routing algorithm):路由协议里用的算法， 由于两个路由器之间都有开销，可以建立一个图，找最短路径
+\begin{itemize}
+	\item 链接状态(link state)：Dijstra
+	\item 距离向量(distance vector)：BellmanFord
+\end{itemize}
+
+\subsubsection{RIP协议}
+路由信息协议(Route Information Protocol, RIP)：距离向量算法的路由协议（问路），工作原理是\underline{采用邻居的路由表构造自己的路由表}。
+\begin{itemize}
+	\item 每\textbf{30秒}\footnote{太频繁会占用带宽}RIP路由器把它的整个路由表发送给邻居。具体实现时每个邻居会错开发送，30秒的时间也会随机变化一点。
+	\item 初始时每个RIP路由器只有到直连网的路由，它们的距离为1。
+	\item 到目的网络的距离以跳为单位。最大距离为15。距离16表示无穷大，即目的网络不可达。
+\end{itemize}
+
+具体算法：
+当收到邻居发来的路由表(update packet)，路由器将更新它的路由表$\lrang{\text{目的网络},\text{开销},\text{下一跳}}$：
+\begin{enumerate}
+	\item 收到路由的距离全部加1(即一跳的距离)
+	\item 利用上述路由修改路由表:
+	\begin{itemize}
+		\item 把路由表中不存在的路由加入路由表
+		\item 如果比路由表中的路由的距离更小，则更新该路由的距离为新距离，把下一跳改为邻居。如果原来的更大，则\textbf{也要进行改动}，因为原来的路可能断了。即路由的下一跳送来的新路由，则必须修改距离。
+	\end{itemize}
+	\item 如果路由存在，就要重置失效定时器
+\end{enumerate}
+RIP路由表的每一项都有TTL(Time-To-Live)，用失效定时器(invalid timer)计时，超时则让该路由失效
+
+RIP协议存在的问题
+\begin{itemize}
+	\item 慢收敛：最短时间接近$0$（这样看更新时刻），最长时间$30(m-1)$，平均时间$15(m-1)$
+	\item 计数到无穷：N1-R1通路断了，R1收到R2的路由表，更改自己的
+\end{itemize}
+
+RIP协议的技术
+\begin{itemize}
+	\item 水平分割(split horizon)技术：从一个接口学来的路由不会从该接口发回去；依然会计数到无穷，三角形R1断了，R1先发，R2后发
+	\item 毒性反转(poison reverse)技术：当一条路由变为无效之后，路由器并不立即将它从路由表中删除，而是将其距离改为用16后广播给邻居，使邻居所拥有的该路由立即失效，而不是等待TTL到期后删除，以迅速消除路由环路，这种方法称为毒性反转，距离为16的路由称为毒化路由(poisoned route)
+	\item 抑制技术(hold down)：距离被改为无穷大的路由在一段短时间(180秒)内其距离不允许被修改
+	\item 触发更新(triggered update)：一旦出现路由变化将立即把变化的路由发送给邻居。原有的30秒发一次完整的路由表依然不变
+\end{itemize}
+
+\subsubsection{OSPF协议}
+开放最短路径优先协议(Open Shortest Path First, OSPF)采用链路状态路由算法，可能是在大型企业中使用最广泛的内部网关协议：
+\begin{itemize}
+	\item 利用最短路径算法，如Dijkstra，求出一个节点(源节点)到所有其它节点的最短路径
+	\item 利用这些最短路经上的下一个节点作为下一跳得到源节点的转发表(路由表)
+\end{itemize}
+
+OSPF协议的简单描述：
+\begin{itemize}
+\item 周期性地收集链路状态，并扩散给AS中的所有路由器
+\item 用收到的链路状态建立整个AS的拓扑结构图
+\item 利用Dijkstra算法计算到AS中所有网络的最短路径
+\item 利用这些路径上的下一跳建立路由表
 \end{itemize}
