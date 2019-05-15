@@ -154,6 +154,7 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 	\item 往外发，默认路由会匹配
 	\item 选择跃点数(metric)小的一项，如果跃点数也相同，则两个接口都会发送
 \end{itemize}
+% 点到点可以路由器端口不用配IP地址，但以太网一定要配，因为可能有交换机
 
 路由表可以由管理员手工建立，也可以由路由/路由选择协议(routing protocols)自动建立。
 路由协议即自动建立路由表，包括网络号、子网号、下一跳、接口、开销等。
@@ -175,12 +176,12 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 
 路由算法(Routing algorithm):路由协议里用的算法， 由于两个路由器之间都有开销，可以建立一个图，找最短路径
 \begin{itemize}
-	\item 链接状态(link state)：Dijstra
-	\item 距离向量(distance vector)：BellmanFord
+	\item 链接状态(link state, LS)：Dijstra
+	\item 距离向量(distance vector, DV)：BellmanFord
 \end{itemize}
 
 \subsubsection{RIP协议}
-路由信息协议(Route Information Protocol, RIP)：距离向量算法的路由协议（问路），工作原理是\underline{采用邻居的路由表构造自己的路由表}。
+路由信息协议(Route Information Protocol, RIP)：\textbf{距离向量}算法的路由协议（问路），工作原理是\underline{采用邻居的路由表构造自己的路由表}。
 \begin{itemize}
 	\item 每\textbf{30秒}\footnote{太频繁会占用带宽}RIP路由器把它的整个路由表发送给邻居。具体实现时每个邻居会错开发送，30秒的时间也会随机变化一点。
 	\item 初始时每个RIP路由器只有到直连网的路由，它们的距离为1。
@@ -214,8 +215,22 @@ RIP协议的技术
 	\item 触发更新(triggered update)：一旦出现路由变化将立即把变化的路由发送给邻居。原有的30秒发一次完整的路由表依然不变
 \end{itemize}
 
+RIP协议简单、容易实现。特点如下
+\begin{itemize}
+\item 网络的直径不能超过16跳
+\item 不允许把一个大网络分成多个区
+\item 开销缺乏灵活性
+\item 存在慢收敛问题和计数到无穷问题
+\item 每30秒发送完整路由表会消耗大量的带宽
+\item 实际运行的RIP协议具有如下特性：
+\begin{itemize}
+\item 可以保存多达6个等距离的路由在路由表中，默认为4个
+\item 直连网的管理距离为0，RIP协议的距离为1
+\end{itemize}
+\end{itemize}
+
 \subsubsection{OSPF协议}
-开放最短路径优先协议(Open Shortest Path First, OSPF)采用链路状态路由算法，可能是在大型企业中使用最广泛的内部网关协议：
+开放最短路径优先协议(Open Shortest Path First, OSPF)采用\textbf{链路状态}路由算法，可能是在大型企业中使用最广泛的内部网关协议：
 \begin{itemize}
 	\item 利用最短路径算法，如Dijkstra，求出一个节点(源节点)到所有其它节点的最短路径
 	\item 利用这些最短路经上的下一个节点作为下一跳得到源节点的转发表(路由表)
@@ -228,3 +243,95 @@ OSPF协议的简单描述：
 \item 利用Dijkstra算法计算到AS中所有网络的最短路径
 \item 利用这些路径上的下一跳建立路由表
 \end{itemize}
+
+OSPF第一步需要将整个网络(AS)转化为AS的拓扑结构图。
+\begin{itemize}
+	\item 每一个路由器和每一个网段（多路访问网络/\textbf{点到点网络}）都作为一个结点
+	\item 每个中转网(transit network)，要选举一个直连路由器作为其指定路由器(designated router, DR)
+	\item 中转网只有入边有权，出边都没有
+	\item 如果点到点网络没有配置IP地址，则该结点可去除
+	\item 末端网(stub network)即不再连其他路由器的网络
+	\item 每一个路由/网段都有自己的链路状态通告(Link State Advertisement, LSA)
+\end{itemize}
+
+详细过程如下
+\begin{itemize}
+	\item 发现邻居：每10秒向邻居发送Hello分组，如果40s(dead interval)都收不到邻居发来的Hello分组，则把到邻居的链路标记为失效。多路访问网络采用多播(224.0.0.5, all OSPF routers)发送Hello分组。一个Hello分组包含优先权、已知的邻居（收到过Hello）、DR和BDR
+	\item 完全相邻：在发现邻居之后， OSPF路由器将与邻居交换链路状态数据库中的LSA，请求得到更新的或者没有的LSA。在与邻居的链路状态数据库变得完全一样时，它们就处于完全相邻状态(fully adjacency)
+	\item 生成LSA：每30分钟或链路变化时，每个OSPF路由器会生成router LSA，中转网的DR会生成	network LSA
+	\item 扩散LSA：产生的 LSA立即封装为Update分组，被可靠地扩散出去 (需要确认)。每次产生的LSA的序号会加1。序列号越大表示越新。若通过收到多个LSA，由发出此LSA的路由器ID(发通告路由器),链路状态和序列号唯一确定。通过序号，也可以防止扩散形成回路，第二次收到来自相同的发通告路由器、相同LSA类型和相同序号的LSA将丢弃它
+	\item 收集LSA：路由器收集到LSA之后，用新LSA替换链路状态数据库中旧LSA。如果一个LSA在60分钟(max age)没有被更新，它将从链路状态数据库移除
+	\item 计算最短路径：当链路状态数据库被改变时， OSPF路由器将利用Dijkstra算法计算到所有网络的最短路径。
+	\item 建立路由表：利用得到的最短路径产生路由表
+\end{itemize}
+
+OSPF协议采用路由器ID(RID)标识每一个路由器。
+路由器ID由以下方法得到：
+\begin{itemize}
+	\item 使用直接配置的RID
+	\item 所有活动环回接口中最大的IP地址
+	\item 所有活动物理接口中最大的IP地址
+\end{itemize}
+除非路由器重启、所选接口故障或关闭或IP地址改变、重新执行了router-id命令，RID都将保持不变。
+
+% 透明网桥来了就转，数据报中没有标识
+% 但对于OSPF来说，有序号，知道收到过一次，就把它丢了，管理数据所以可以这样弄
+
+指定路由器
+\begin{itemize}
+	\item 当多路访问网络重启时，选择DR的过程就开始了。在等待时间结束(Wait Time/Dead Interval, 40s)时，带有最高和次高优先权的路由器分别成为DR和BDR(Backup DR)。如果优先权相同，RID更大的成为DR，次大的成为BDR。
+	\item 如果路由器不希望参与选举，则应该把优先权设置为0。如果优先权相同，具有更高RID的路由器成为DR。如果收到的Hello列出了DR(RID不是0.0.0.0)，路由器成为DR。
+	\item 如果一个新的路由器在选举之后到达或者有路由器修改为更高的优先权，它也不可能抢占现存的DR/BDR和变为DR/BDR。
+	\item 当DR失效时， BDR成为DR，将开始一个新的选举过程来选出BDR。
+	\item 一个多路访问网络中的OSPF路由器只与DR和BDR建立相邻关系。
+	\item 收到一个LSA后，一个多路访问网络中的OSPF路由器将把它首先多播(224.0.0.6)给DR和BDR，然后 DR再把它多播(224.0.0.5)给所有OSPF路由器
+\end{itemize}
+
+LSA具有多个定时器
+\begin{itemize}
+	\item 每10秒(Hello Interval)向邻居发送一次Hello，4倍的hello interval(Dead Interval，40s)没有收到邻居的Hello就认为邻居失效。
+	\item 每30分钟会产生新的LSA，最小间隔时间为5s。
+	\item 每个LSA都有年龄字段(age)，发给邻居时被设置为0，在链路状态数据库中age会不断增长，增长到Max Age(默认为60分钟)时LSA被标记为失效。失效的LSA会被扩散到整个AS，令AS的所有路由器把该LSA从链路状态数据库中移除。
+	\item 存储在链路状态数据库中的LSA每10分钟会被计算校验和，如果有错将被删除。
+	\item 接收来自邻居的LSA的最小间隔时间为1s。
+	\item 计算最短路径的最小间隔时间为10s。
+\end{itemize}
+
+OSPF特点
+\begin{itemize}
+	\item 所有的OSPF消息都要认证 (防止恶意入侵)。
+	\item 路由表中允许多个\textbf{相同开销}的路经存在(RIP只允许一条路径)，可以实现负载均衡。
+	\item 对于每条链路，允许同时有多个(TOS)开销。
+	\item 多播OSPF(MOSPF)使用与OSPF相同的链路状态数据库(思科路由器不支持)
+	\item 在大型路由选择域中OSPF可以\textbf{分区}。
+	\item 比RIP\textbf{收敛快而且更安静}。
+	\item 实现起来更复杂，需要更多的\textbf{计算开销}。
+\end{itemize}
+
+LS算法和DV算法比较
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+	& LS & DV\\\hline
+消息复杂性 & n个节点, E条链路, 要发送$O(nE)$条消息 & 只在邻居之间交换消息\\\hline
+收敛速度 &
+\begin{tabular}{l}
+$O(n^2)$算法需要$O(nE)$条消息\\
+可能会震荡
+\end{tabular} &
+\begin{tabular}{l}
+收敛时间变化\\
+可能出现路由循环\\
+计数到无穷问题
+\end{tabular}\\\hline
+健壮性\footnote{路由器失效时会出现什么情况？} &
+\begin{tabular}{l}
+可能通告不正确的链路开销\\
+每个节点只计算自己的路由表
+\end{tabular} &
+\begin{tabular}{l}
+DV节点可能通告不正确的路径开销\\
+每个节点的路由表被其它节点所用\\
+错误会通过网络传播开
+\end{tabular}\\\hline
+\end{tabular}
+\end{center}
