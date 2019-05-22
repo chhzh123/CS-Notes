@@ -247,11 +247,11 @@ OSPF协议的简单描述：
 OSPF第一步需要将整个网络(AS)转化为AS的拓扑结构图。
 \begin{itemize}
 	\item 每一个路由器和每一个网段（多路访问网络/\textbf{点到点网络}）都作为一个结点
-	\item 每个中转网(transit network)，要选举一个直连路由器作为其指定路由器(designated router, DR)
+	\item 每个\textbf{中转网}(transit network)，要选举一个直连路由器作为其指定路由器(designated router, DR)
 	\item 中转网只有入边有权，出边都没有
 	\item 如果点到点网络没有配置IP地址，则该结点可去除
-	\item 末端网(stub network)即不再连其他路由器的网络
-	\item 每一个路由/网段都有自己的链路状态通告(Link State Advertisement, LSA)
+	\item \textbf{末端网}(stub network)即不再连其他路由器的网络，管理员设的
+	\item 每一个\textbf{路由/网段}都有自己的链路状态通告(Link State Advertisement, LSA)（2种LSA）
 \end{itemize}
 
 详细过程如下
@@ -279,8 +279,8 @@ OSPF协议采用路由器ID(RID)标识每一个路由器。
 
 指定路由器
 \begin{itemize}
-	\item 当多路访问网络重启时，选择DR的过程就开始了。在等待时间结束(Wait Time/Dead Interval, 40s)时，带有最高和次高优先权的路由器分别成为DR和BDR(Backup DR)。如果优先权相同，RID更大的成为DR，次大的成为BDR。
-	\item 如果路由器不希望参与选举，则应该把优先权设置为0。如果优先权相同，具有更高RID的路由器成为DR。如果收到的Hello列出了DR(RID不是0.0.0.0)，路由器成为DR。
+	\item 当多路访问网络重启时，选择DR的过程就开始了。在等待时间结束(Wait Time/Dead Interval, 40s)时，带有\textbf{最高和次高优先权}的路由器分别成为DR和BDR(Backup DR)。如果优先权相同，RID更大的成为DR，次大的成为BDR。
+	\item 如果路由器不希望参与选举，则应该把优先权设置为0。如果优先权相同，具有\textbf{更高RID}的路由器成为DR。如果收到的Hello列出了DR(RID不是0.0.0.0)，路由器成为DR。
 	\item 如果一个新的路由器在选举之后到达或者有路由器修改为更高的优先权，它也不可能抢占现存的DR/BDR和变为DR/BDR。
 	\item 当DR失效时， BDR成为DR，将开始一个新的选举过程来选出BDR。
 	\item 一个多路访问网络中的OSPF路由器只与DR和BDR建立相邻关系。
