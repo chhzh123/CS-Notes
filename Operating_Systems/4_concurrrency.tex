@@ -1,0 +1,93 @@
+% !TEX root = main.tex
+
+\section{并发}
+\subsection{基本概念}
+\begin{itemize}
+    \item 原子(atomic)操作：不可分割
+    \item 临界区(critical section)：不允许多个进程同时进入的一段访问\textbf{共享资源}的代码
+    \item 死锁(deadlock)：两个及以上进程，因每个进程都在等待其他进程做完某事（如释放资源），而不能继续执行
+    \item 活锁(livelock)：两个及以上进程，为响应其他进程中的变化，而不断改变自己的状态，但是没有做任何有用的工作
+    \item 互斥(mutual exclusion)：当一个进程在\textbf{临界区访问共享资源}时，不允许其他进程进入访问
+    \item 竞争条件(race condition, RC)：多个进程/线程读写共享数据，其结果依赖于它们执行的相对速度
+    \item 饥饿(starvation)：可运行的进程长期未被调度执行
+\end{itemize}
+
+核心内容
+\[\text{并发}\to\text{共享}\to\text{RC问题}\to\text{互斥}\]
+
+共享数据的最终结果取决于进程执行的相对速度
+
+同步：有明确的时间先后限制，两个或多个进程之间的操作存在时间上的约束（也包含互斥）
+
+\subsection{互斥}
+软件方法
+\begin{itemize}
+    \item Dekker算法
+    \item Peterson算法
+\end{itemize}
+硬件方法
+\begin{itemize}
+    \item 关中断：限制处理器交替执行各进程的能力，不能用于多核
+    \item TestSet(TS)指令：比较并交换，原子指令，一个指令周期内完成，不会被中断
+    \item Exchange指令(x86\verb'xchg'指令)：同上，适用于单核多核，多变量多临界区，但需要忙等待(busy waiting)/自旋等待(spin waiting)，可能饥饿或死锁
+\end{itemize}
+
+\subsubsection{信号量(semaphore)}
+\begin{itemize}
+    \item 整数：可用资源数($\geq 0$)，需要初始化
+    \item P操作(\verb'semWait')：信号量的值\textbf{减1}（申请一个单位的资源），若信号量变为\textbf{负数}，则执行P操作进程阻塞，\textbf{让权等待}
+    \item V操作(\verb'semSignal')：信号量的值\textbf{加1}（释放一个单位的资源），若信号量\textbf{不是正数}（绝对值=现被阻塞的进程数/等待队列的长度），则使一个因P操作被阻塞的进程解除阻塞（唤醒）
+\end{itemize}
+需要保证P操作和V操作的原子性
+\begin{lstlisting}
+    struct semaphore {
+        int count;
+        PCB *next;
+    } s;
+    void Init(s) {
+        s.count = nr;
+        s.next = NULL;
+    }
+    void P(semaphore s) {
+        s.count--;
+        if (s.count < 0)
+            Block(CurruntProcess, s);
+    }
+    void V(semaphore s) {
+        s.count++;
+        if (s.count <= 0)
+            WakeUp(s);
+    }
+\end{lstlisting}
+注意P操作是\textbf{小于0}，V操作\textbf{小于等于0}
+
+信号量的优点是简单且表达能力强，用P、V操作可解决多种类型的同步/互斥问题，但不够安全，P、V操作使用不当会产生死锁。
+
+二元信号量省空间，不能代表资源数量，要引入全局变量代表数量
+
+信号量实现互斥
+\begin{itemize}
+    \item 对于每一个RC问题，设一个信号量（向系统调用向内核调用），\textbf{初始化为$1$}
+    \item 所有相关进程在进入临界区\textbf{之前}对该信号量进行\textbf{P操作}
+    \item 出临界区\textbf{之后}进行\textbf{V操作}
+\end{itemize}
+
+信号量实现进程同步
+\begin{itemize}
+    \item 对每一个同步关系都要设一个信号量，初值看具体问题
+    \item P后续动作的前面
+    \item V前驱动作的前面
+\end{itemize}
+
+组合动作：生产者-消费者问题
+
+
+管程(monitor)：通过集中管理（封装同步机制与同步策略）以保证安全
+
+消息传递
+\begin{itemize}
+    \item send
+    \item receive
+\end{itemize}
+
+读者-写者问题
