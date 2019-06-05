@@ -43,6 +43,8 @@ TCP/UDP通过数据段(segment)中的目的端口号(2B)确定将收到的数据
 \end{itemize}
 
 TCP数据报格式：头部长度以四个字节为单位。校验和由伪IP头、 TCP头和TCP数据部分形成。其形成方法与UDP协议类似。
+字节流中的每个字节均被编号。初始序号采用基于时间的方案， 一般采用随机数。
+数据部分的第一个字节的编号为初始序号加1。
 \begin{itemize}
 \item SYN：表示建立连接
 \item FIN：表示关闭连接，不再发送数据，但是可以接收数据，也可以发送\textbf{数据段}（不包含数据）
@@ -89,8 +91,8 @@ TCP协议工作过程
 
 TCP协议使用\textbf{选择性确认}协议，不使用NAK。只有\textbf{一个超时定时器}。
 \begin{itemize}
-\item 采用字节流方式，每个数据段使用其第一个字节的编号作为序号，按字节编号。
-\item 确认号为期待接收的下一个字节(下一个数据段)的序号。
+\item 采用字节流方式，每个数据段使用其\textbf{第一个字节}的编号作为序号\footnote{数据链路层每一个帧占一个序号}，按\textbf{字节}编号。
+\item 确认号为\textbf{期待接收}\footnote{区别于数据链路层的滑动窗口，确认号是当前接收并确认的序号}的下一个\textbf{字节}(下一个数据段)的序号。
 \item 由于TCP是对IP数据报的封装，要获取数据的长度，可以通过IP数据报中的总长度获取。
 \item TCP协议没有说明如何处理错序到达的数据段，要取决于具体实现。
 \end{itemize}
@@ -102,10 +104,68 @@ TCP协议使用\textbf{选择性确认}协议，不使用NAK。只有\textbf{一
 
 \begin{itemize}
 \item 接收方先传MSS，x和接收窗口大小(advWin)
-\item 发送方做发送窗口，序号为x+1，大小等同advWin大小
+\item 发送方做发送窗口，序号为x+1，大小等同advWin大小（发送窗口大小是会变的）
 \item 接收窗口大小\textbf{会变}，不同于数据链路层；同理发送窗口大小\textbf{也会改变}，用接收窗口大小设置发送窗口大小
 \item 要等接收方进程将缓冲区取空，发送方才能继续发，否则发送窗口大小始终为0
 \item 会自动移动超时定时器
 \item 一旦发现有问题，立即减慢
 \item 要考虑错序到达的数据段
 \end{itemize}
+
+数据链路层每个帧都有一个超时定时器，而传输层只有一个超时定时器。
+如果发送方收到一个数据段的\textbf{3次重复的ACK}（包括第一次则一共4次），它就认为其后的数据段（由确认号指出） 已经丢失，在超时之前会重传该数据段，这种方法称为快速重传(fast retransmit)。
+缺点是丢包时间很长，优点是可以减缓网络压力。
+
+采用延迟确认(delayed ACK)时，接收方并不在收到数据段立即进行确认，而是延迟一段时间再确认。如果这个期间收到多个数据段，则只需要发送一个确认。如果在这个期间接收方有数据帧要发往发送方，还可以使用捎带确认(piggybacking)。
+大部分的系统(Windows/Unix)的延迟确认时间为200毫秒。TCP标准要求延迟确认不大于500毫秒。
+
+选择性确认允许接收方把收到的数据块通过数据段的选项告知发送方，使发送方不会重传这些数据块
+
+Go back N超时重传1个RTT，没有中间结点，故可以用固定的超时时间。
+但由于TCP涉及多个结点，故需要实时变化，进行估计。
+
+原始公式
+\[\text{EstimatedRTT} = (1-\alpha)\times \text{EstimatedRTT} + \alpha \times \text{SampleRTT}\]
+\begin{itemize}
+    \item $0<\alpha<1$, $\alpha$越小过去样本的影响越大。
+    \item 一般取值$\alpha=0.9$，这会使过去影响指数减少。
+    \item 这个公式也称为指数加权移动平均方法(Exponentially Weighted Moving Average, EWMA)
+    \item $\text{RTO(retransmission timeout)} = 2\times \text{EstimatedRTT}$
+\end{itemize}
+
+Jacobson算法
+\begin{itemize}
+    \item 修改上一页公式的参数：$\alpha=1/8$。
+    \item Jacobson/Karels提议RTO计算还要加上一个合适的安全边际(safety margin)，使得在样本变化较大时RTO会很快变得更大。
+\end{itemize}
+\[\text{RTO} = \text{EstimatedRTT} + 4\times \text{DevRTT}\]
+\[\text{DevRTT} =(1-\beta)\times\text{DevRTT} + \beta\times|SampleRTT-EstimatedRTT|\]
+一般设$\beta = 1/4$
+
+采样频率：如果发送窗口为12MSS，则每12个段取样一次。
+
+Karn算法：在收到重传段确认时不要计算EstimatedRTT。在每次重传时直接把RTO加倍直到数据段首次得到确认，并把这个RTO作为后续段的RTO。这个修正称为Karn算法(Karn and Partridge, 1987)。每次收到非重传段的ACK之后，就计算EstimatedRTT和正常的RTO，并用这个RTO作为后续段的RTO。
+
+在12次重传后TCP协议发送rst数据段并关闭连接。
+
+拥塞简单来说“太多的主机发送太快太多的数据给网络处理”。这不同于流控制！表现为：
+\begin{itemize}
+    \item 丢包（路由器上缓冲区溢出）
+    \item 长延迟（在路由器缓冲区中排队）
+\end{itemize}
+
+拥塞控制的两大类方法：
+\begin{enumerate}
+    \item 端到端的拥塞控制:
+\begin{itemize}
+    \item 没有来自网络的明确的反馈
+    \item 终端系统通过丢包和延迟推导的拥塞
+    \item TCP协议的方法
+\end{itemize}
+    \item 网络辅助的拥塞控制:
+\begin{itemize}
+    \item 路由器反馈给终端系统
+    \item 用一个比特指出拥塞发生(SNA, DECbit, TCP/IP ECN, ATM)
+    \item 向发送方给一个明确的发送速率
+\end{itemize}
+\end{enumerate}
