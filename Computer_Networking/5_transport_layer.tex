@@ -83,7 +83,7 @@ TCP协议工作过程
 \end{itemize}
 可以合并中间两次握手(ACK和FIN)或两方同时发出ACK
 
-先发送FIN报文的一方在ACK发送完毕后需要等待2MSL(Maximum Segment Lifetime)的时间才\textbf{完全关闭}连接（占用端口号）。 TCP标准中MSL采用60秒， Unix采用30秒。
+先发送FIN报文的一方在ACK发送完毕后需要等待2MSL(Maximum Segment Lifetime)的时间才\textbf{完全关闭}连接（占用端口号）。 TCP标准中MSL采用60秒， Unix采用30秒。\textbf{避免通道中还有未到达的数据}。
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{fig/TCP-transition.PNG}
@@ -113,16 +113,27 @@ TCP协议使用\textbf{选择性确认}协议，不使用NAK。只有\textbf{一
 \end{itemize}
 
 数据链路层每个帧都有一个超时定时器，而传输层只有一个超时定时器。
-如果发送方收到一个数据段的\textbf{3次重复的ACK}（包括第一次则一共4次），它就认为其后的数据段（由确认号指出） 已经丢失，在超时之前会重传该数据段，这种方法称为快速重传(fast retransmit)。
+
+\begin{itemize}
+\item 如果发送方收到一个数据段的\textbf{3次重复的ACK}（包括第一次则一共4次），它就认为其后的数据段（由确认号指出） 已经丢失，在超时之前会重传该数据段，这种方法称为\textbf{快速重传}(fast retransmit)。
 缺点是丢包时间很长，优点是可以减缓网络压力。
-
-采用延迟确认(delayed ACK)时，接收方并不在收到数据段立即进行确认，而是延迟一段时间再确认。如果这个期间收到多个数据段，则只需要发送一个确认。如果在这个期间接收方有数据帧要发往发送方，还可以使用捎带确认(piggybacking)。
+\item 采用\textbf{延迟确认}(delayed ACK)时，接收方并不在收到数据段立即进行确认，而是延迟一段时间再确认。如果这个期间收到多个数据段，则只需要发送一个确认。如果在这个期间接收方有数据帧要发往发送方，还可以使用捎带确认(piggybacking)。
 大部分的系统(Windows/Unix)的延迟确认时间为200毫秒。TCP标准要求延迟确认不大于500毫秒。
-
-选择性确认允许接收方把收到的数据块通过数据段的选项告知发送方，使发送方不会重传这些数据块
+\item \textbf{选择性确认}允许接收方把收到的数据块通过数据段的选项告知发送方，使发送方不会重传这些数据块
+\end{itemize}
 
 Go back N超时重传1个RTT，没有中间结点，故可以用固定的超时时间。
 但由于TCP涉及多个结点，故需要实时变化，进行估计。
+
+总结传输层滑动窗口协议和数据链路层的区别
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+     & 传输层 & 数据链路层\\\hline
+    序号 & 随机初始序号+1，按字节计数 & 每一个帧一个序号 \\\hline
+    确认号 & 期待接收的序号 & 收到哪一个就用哪一个，代表当前与之前的全收到了\\\hline
+超时定时器 & \begin{tabular}{c}只有一个，只要有未确认的数据段\\就会启动（针对未确认序号最小的）；超时没收到确认，就会重传\end{tabular} & 每个帧都有一个\\\hline
+\end{tabular}
+\end{center}
 
 原始公式
 \[\text{EstimatedRTT} = (1-\alpha)\times \text{EstimatedRTT} + \alpha \times \text{SampleRTT}\]
@@ -133,7 +144,7 @@ Go back N超时重传1个RTT，没有中间结点，故可以用固定的超时�
     \item $\text{RTO(retransmission timeout)} = 2\times \text{EstimatedRTT}$
 \end{itemize}
 
-Jacobson算法
+TCP超时计算最常用的算法---Jacobson算法
 \begin{itemize}
     \item 修改上一页公式的参数：$\alpha=1/8$。
     \item Jacobson/Karels提议RTO计算还要加上一个合适的安全边际(safety margin)，使得在样本变化较大时RTO会很快变得更大。
@@ -148,11 +159,17 @@ Karn算法：在收到重传段确认时不要计算EstimatedRTT。在每次重�
 
 在12次重传后TCP协议发送rst数据段并关闭连接。
 
+\begin{itemize}
+\item 流控制：单一发送方和接收方，控制发送的速度
+\item 拥塞控制：大家都发数据，使整个网络的数据太多，让每一个都不要传那么快
+\end{itemize}
+
 拥塞简单来说“太多的主机发送太快太多的数据给网络处理”。这不同于流控制！表现为：
 \begin{itemize}
     \item 丢包（路由器上缓冲区溢出）
     \item 长延迟（在路由器缓冲区中排队）
 \end{itemize}
+不主张发送ICMP包，加重拥塞；靠TCP自己发现拥塞。
 
 拥塞控制的两大类方法：
 \begin{enumerate}
@@ -169,3 +186,78 @@ Karn算法：在收到重传段确认时不要计算EstimatedRTT。在每次重�
     \item 向发送方给一个明确的发送速率
 \end{itemize}
 \end{enumerate}
+
+\begin{itemize}
+    \item 超时或收到3个重复ack就认为丢包了，看作拥塞发生了
+    \item TCP协议通过减少发送速率来控制拥塞。发送速率与发送窗口大小有关：
+\[\text{发送速率 rate $=$ SWS(Sending Window Size)$/$RTT}\]
+    \item 引入拥塞窗口变量CongWin来限制SWS。
+\[SWS = \min(\text{CongWin}, \text{AdvWin})\]
+CongWin发送窗口限制，Adcwin接收方要求的流量控制
+    \item TCP协议改变CongWin的三种机制：
+    \begin{itemize}
+        \item 加性增乘性减(AIMD)
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.6\linewidth]{fig/congression-AIMD.PNG}
+        \end{figure}
+        \item 慢启动(slow start)
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.6\linewidth]{fig/congression-slow-start.PNG}
+        \end{figure}
+        \begin{enumerate}
+            \item 初始时， CongWin设为1 MSS, 阈值(threshold)设为65535, 发送一个数据段。
+            \item 在当前窗口所有数据段的确认都收到之后, CongWin加倍。
+            实际上，每收到一个确认， CongWin增加一个MSS。把它称为慢启动(slow start)是因为这个方法比立即采用通知窗口更慢。
+            \item 当拥塞发生时，把当前CongWin (或SWS)的一般保存为阈值(threshold)，然后CongWin又从 1MSS开始慢启动。
+            \item 当 CongWin增长到等于或大于阈值(threshold)时，在当前窗口所有数据段的确认都收到之后, CongWin增加一个MSS。(Congestion Avoidance)实际上， 每收到一个ACK， CongWin增加SegSize*SegSize/CongWin。如果发生拥塞，转 (3)。
+            \item 用系统参数TCP\_MaxWin（一般为65535）限制 CongWin的大小。
+            \begin{itemize}
+                \item SegSize 为被确认的数据段的大小
+                \item 假设算法开始时通知窗口大小AdvWin=65535
+            \end{itemize}
+        \end{enumerate}
+        \item 在超时时间之后的保守方法
+    \end{itemize}
+\end{itemize}
+
+随机初始序号和2MSL都用于阻止重建TCP连接相同4元组，不会收到上一次连接遗留的数据的干扰
+
+问题一---长肥管道：带宽大，未确认的数据量(bandwidth*RTT)
+\begin{itemize}
+\item 序号回绕问题（因为速度太快）：使用一般数据段的选项 “timestamp”(TS)。只用于区分回绕的序号是不同的，不用于确定先后次序。TS也用来测量RTT。
+\item 发送窗口太小，满足不了要求：当丢包发生时，由于SWS的限制，管道将会被清空。解决方法：快速重传、快速恢复。
+\end{itemize}
+
+问题二---死锁现象：win为0，接收方取空，再发不为空的ACK丢失了。
+缓冲区不变化，不会发确认回来
+\begin{itemize}
+\item 接收方可以启动一个超时定时器，可以是可以，但如果发送方没有数据传了，那接收方还是会继续发。（无谓发送数据）
+\item 一般从发送方解决：在发送窗口为0之后, 发送方如果有数据要发送，则启动坚持定时器(Persist Timer)，定期从要发送的数据中取一个字节发送出去(Window Probe)，直到收到不为0的通知窗口为止
+\end{itemize}
+
+问题三---傻瓜窗口症候(silly window syndrome)
+\begin{itemize}
+    \item 发送进程有很多小批量数据要发送，如用telnet作为远程终端：设个定时器，到时间就把缓冲区内容发送出去\\
+    Nagle算法---启发式算法
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\linewidth]{fig/nagle.PNG}
+    \end{figure}
+    \begin{enumerate}
+        \item 立即发送一个数据段，即使发送缓冲区只有一个字节
+        \item 只有收到\underline{上一个数据段的确认}或者\underline{发送缓冲区中数据超过MSS}，才可以发送下一个数据段
+        \item 对于即时性要求高的地方，如Window方式的鼠标操作，要\textbf{关闭}Nagle算法
+    \end{enumerate}
+    \item 接收方问题，接收进程频繁取走小批量数据\\
+    Clark算法：当接收缓冲区的空闲块大小变得很小时，要等到空闲块大小为接收缓冲区大小的一半或达到 MSS时才发送确认。
+\end{itemize}
+
+TCP定时器
+\begin{itemize}
+\item 每个连接只针对第一个未确认数据段启动重传定时器(retransmission timer)。所有数据段都已确认，则关闭它。超时重传或发送窗口移动时要重启该定时器。
+\item 持续定时器(persist timer)用于保持窗口大小信息流动即使连接的另一端关闭了接收窗口。
+\item 保活定时器(keepalive timer)在\textbf{长时间}没有交换数据段之后，用于检测连接的另一端是否出了问题。（如微信）隔2个小时，发10个数据段，如果没有ACK则关闭连接。（由应用层程序来做而不是TCP）
+\item 处于TIME\_WAIT状态的连接一方需要等待2MSL秒，时间到才能关闭连接。
+\end{itemize}
