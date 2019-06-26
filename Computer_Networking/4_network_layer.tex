@@ -180,6 +180,7 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 	\item 距离向量(distance vector, DV)：BellmanFord
 \end{itemize}
 
+\subsection{内部网关协议}
 \subsubsection{RIP协议}
 路由信息协议(Route Information Protocol, RIP)：\textbf{距离向量}算法的路由协议（问路），工作原理是\underline{采用邻居的路由表构造自己的路由表}。
 \begin{itemize}
@@ -335,3 +336,78 @@ DV节点可能通告不正确的路径开销\\
 \end{tabular}\\\hline
 \end{tabular}
 \end{center}
+
+
+\subsection{外部网关协议}
+\subsubsection{EGP协议}
+外部网关协议(Exterior Gateway Protocol, EGP)既是分类也是协议，只能对树型，还要判回路
+
+\subsubsection{BGP协议}
+边界网关协议(Border Gateway Protocol, BGP)可以用于图，随便连
+
+\begin{itemize}
+\item 采用可靠扩散(reliable flooding)的方法把AS内的网络的信息传遍整个因特网
+\item 每个AS需要分配一个号码。与IP地址分配相同，全局AS号(1 - 64511)由ICANN的下属机构进行统一分配。 64512 - 65535为私有AS号。
+\end{itemize}
+
+工作原理
+\begin{itemize}
+\item 运行了BGP协议的路由器被称为BGP路由器，所运行的BGP协议称为BGP发言人(speaker)，其他路由器为内部路由器
+\item 在BGP路由器之间可以通过TCP连接（端口号为179）建立相邻关系
+\item AS内的两个BGP路由器之间建立的相邻关系称为iBGP(interior BGP)相邻关系，而位于不同AS的两个BGP路由器之间建立的相邻关系称为eBGP(exterior BGP)相邻关系
+\item  BGP协议所扩散的网络前缀/网络号称为网络层可达信息(Network Layer Reachablility Information， NLRI)，BGP路由器可以把NLRI连同它们的属性一起通过相邻关系扩散给邻居，进而扩散到因特网中所有的BGP路由器
+\item BGP路由器在NLRI引入BGP协议时扩散一次，并不定期扩散
+\end{itemize}
+
+防止出现回路的方法：
+\begin{itemize}
+\item 内部：从iBGP邻居收到的Update分组不能再发给邻居
+\item 之间：利用AS Path防止回路
+\end{itemize}
+
+内部路由如何发到外部
+\begin{itemize}
+\item 查next hop，BGP注入IGP路由，但非BGP路由承受不住；或将路径上所有路由都变为BGP路由
+\item 在IP层运用了虚电路（等于挖了个隧道），不用记中间路由器，现在都用这种方式
+\end{itemize}
+
+内部路由用默认路由转到BGP路由，然后连到世界上任一台路由器；
+在路径上的路由不可设默认路由，否则只能转到一个方向
+
+当收到多路由时，默认只看AS Path长度，选长度小的；管理员也可以直接设
+
+\subsection{IP多播}
+访问同个网站，只发一次请求并回收；但单播访问同一个网站也要多次发送
+\begin{itemize}
+\item 单播：浪费带宽，增加CPU负担，扩展性差
+\item 多播：可扩展（视频直播非常有优势）
+\end{itemize}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/multicast.png}
+\end{figure}
+
+因特网组管理协议(Internet Group Management Protocol, IGMP)用于路由器查询与它直连的网络上是否存在组成员
+\begin{itemize}
+	\item IGMPv1协议只能对某个接口查询所有组，如果三次查询在十秒内都没有收到响应报告，则认为该接口没有任何组成员。
+	\item IGMPv2协议可以直接针对某个组进行查询，而且主机加入组和离开组都要发通告。
+\end{itemize}
+
+防止回路
+\begin{itemize}
+\item 逆向路径广播：指定源的树\\
+利用源地址查路由表，如果多播分组从该接口来，则才进行扩散（类DFS）\\
+建路由表时源地址路径上一定是最短路径，每一次都往远的地方走，故一定没有回路
+\item 逆向路径多播：对于每个多播地址G，每个源地址形成一棵树，即源特定组播树(source-specific multicast tree)，然后剪枝\\
+如果有新主机加入多播组，则要将路径嫁接回来
+\end{itemize}
+
+\begin{itemize}
+	\item 稠密(dense)：全收，扩散$\to$同样要防回路
+	\item 稀疏(sparse)
+\end{itemize}
+
+最短路径多点播送生成树(MOSPF)：
+Steiner树是总代价最小的分布树，但是NP难问题，故采用最短路径
+
+% PIM-Sparse模式

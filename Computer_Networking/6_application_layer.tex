@@ -1,0 +1,68 @@
+% !TEX root = main.tex
+
+\section{应用层}
+
+\section{其他内容}
+\subsection{无线局域网}
+无线局域网(WiFi)802.11
+
+不同标准MAC层一样，改进的是物理层（发、编码、怎么收）
+
+无线信道特点：信号衰减快
+
+无固定设施（自组织）：独立基本服务集(Basic Service Set, BSS)，不需要路由器，可以几台PC直接连
+
+有固定设施：有个接入点(Access Point, AP)，有路由器，连成基本服务集；
+扩展的服务集(ESS)，完全无缝连接，自动迁移到下一个AP
+
+网络名就是SSID
+
+MAC层一般用分布协调功能(DCF)
+\begin{itemize}
+\item 原子操作：发完数据等待28$\mu$s后才发ACK
+\item CSMA/CA(Carrier Avoidance)算法：尽可能少冲突，尽可能少重传；即使空闲也要随机等一段时间
+\end{itemize}
+
+翻译网桥：一种帧转换为另一种帧
+
+5GHz WiFi干扰小
+
+跟以太网不同，WiFi在物理层是有格式的，远距离会换编码，降速进行传输
+
+MIMO技术：多发射天线和多接收天线形成多个空间数据流
+
+\subsection{网络管理}
+SNMP协议：Simple Network Management Protocol
+
+\subsection{广域网}
+ADSL不是用语音传，是用数据传的
+
+现在都不用电话线连
+
+\subsection{软件定义网络}
+软件定义网络(Software Defined Network, SDN)：原来路由器交换机都是固定电路，但现在可编程，未来网络发展方向
+
+\begin{center}
+\begin{tikzcd}
+\text{应用}\arrow{d}\\
+\text{控制器}\arrow{d}\\
+\text{转发器}
+\end{tikzcd}
+\end{center}
+
+控制器相当于一个电脑，用来修改下面（几十台）转发器的路由表
+
+最大的好处在于\textbf{虚拟化}
+
+\subsection{多媒体网络}
+插值解决丢包问题，因为是连续变化的
+
+传语音数据是用RTP协议传的，基于UDP协议
+
+SIP协议用来做网络会议
+
+H.232协议则更加完整
+
+令牌桶：没传的时候放令牌，有传的时候用光令牌
+
+MPLS加标签实现VPN，沿着同一条路径走过去

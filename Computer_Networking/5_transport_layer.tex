@@ -224,17 +224,18 @@ CongWin发送窗口限制，Adcwin接收方要求的流量控制
 
 随机初始序号和2MSL都用于阻止重建TCP连接相同4元组，不会收到上一次连接遗留的数据的干扰
 
-问题一---长肥管道：带宽大，未确认的数据量(bandwidth*RTT)
+问题一---长肥管道：带宽大，未确认的数据量(capacity=bandwidth*RTT)
 \begin{itemize}
-\item 序号回绕问题（因为速度太快）：使用一般数据段的选项 “timestamp”(TS)。只用于区分回绕的序号是不同的，不用于确定先后次序。TS也用来测量RTT。
-\item 发送窗口太小，满足不了要求：当丢包发生时，由于SWS的限制，管道将会被清空。解决方法：快速重传、快速恢复。
+\item \textbf{序号回绕}问题（因为速度太快）：使用一般数据段的选项\verb'timestamp'(TS)。只用于区分回绕的序号是不同的，不用于确定先后次序。TS也用来测量RTT。
+\[\text{Window Size} = \text{AdvertisedWindow} * 2\text{WinScale}\]
+\item \textbf{发送窗口太小}，满足不了要求：当丢包发生时，由于SWS的限制，管道将会被清空。解决方法：快速重传、快速恢复。（数据链路不会，因为直连网）
 \end{itemize}
 
 问题二---死锁现象：win为0，接收方取空，再发不为空的ACK丢失了。
 缓冲区不变化，不会发确认回来
 \begin{itemize}
 \item 接收方可以启动一个超时定时器，可以是可以，但如果发送方没有数据传了，那接收方还是会继续发。（无谓发送数据）
-\item 一般从发送方解决：在发送窗口为0之后, 发送方如果有数据要发送，则启动坚持定时器(Persist Timer)，定期从要发送的数据中取一个字节发送出去(Window Probe)，直到收到不为0的通知窗口为止
+\item 一般从发送方解决：在发送窗口为0之后，并且发送方有数据要发送，则启动坚持定时器(Persist Timer)，定期从要发送的数据中取一个字节发送出去(Window Probe)，直到收到不为0的通知窗口为止
 \end{itemize}
 
 问题三---傻瓜窗口症候(silly window syndrome)
@@ -247,7 +248,7 @@ CongWin发送窗口限制，Adcwin接收方要求的流量控制
     \end{figure}
     \begin{enumerate}
         \item 立即发送一个数据段，即使发送缓冲区只有一个字节
-        \item 只有收到\underline{上一个数据段的确认}或者\underline{发送缓冲区中数据超过MSS}，才可以发送下一个数据段
+        \item 只有收到\underline{上一个数据段的确认}（此时缓冲区已经积累一定数据）或者\underline{发送缓冲区中数据超过MSS}，才可以发送下一个数据段
         \item 对于即时性要求高的地方，如Window方式的鼠标操作，要\textbf{关闭}Nagle算法
     \end{enumerate}
     \item 接收方问题，接收进程频繁取走小批量数据\\
