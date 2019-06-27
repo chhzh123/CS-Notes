@@ -1,0 +1,37 @@
+% !TEX root = main.tex
+
+\section{文件管理}
+文件目录：将所有文件控制块(File Control Block, FCB)组织在一起，一个FCB称之为一个目录项
+
+一级目录：整个目录组织是一个线性结构，系统中所有文件都建立在一张目录表中
+
+优缺点：
+\begin{itemize}
+    \item 结构简单、易实现
+    \item 文件多时目录检索时间长，从而平均检索时间长
+    \item 有命名冲突：如多个文件有相同的文件名或一个文件有多个不同的文件名
+\end{itemize}
+
+二级目录：在根目录/第一级目录/主文件目录MFD下，每个用户对应一个第二级目录/用户目录UFD，在用户目录下是该用户的文件，而不再有下级目录
+
+多级目录：上下级关系
+\begin{itemize}
+    \item 当前目录/工作目录\verb'.'
+    \item 父目录\verb'..'
+    \item 子目录(subdirectory)
+    \item 根目录(root directory)\verb'/'
+\end{itemize}
+
+Unix文件系统
+\begin{itemize}
+    \item Unix磁盘文件系统结构
+    \item 引导块（块0）
+    \item 超级块（块1）
+    \item i-索引结点表
+\end{itemize}
+
+\begin{itemize}
+\item DOS文件系统：FAT12、FAT16、FAT32
+\item Windows文件系统：NTFS
+\item Linux文件系统：ext2/3
+\end{itemize}

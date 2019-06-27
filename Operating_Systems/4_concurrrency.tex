@@ -1,6 +1,6 @@
 % !TEX root = main.tex
 
-\section{并发}
+\section{并发---互斥与同步}
 \subsection{基本概念}
 \begin{itemize}
     \item 原子(atomic)操作：不可分割
@@ -15,79 +15,336 @@
 核心内容
 \[\text{并发}\to\text{共享}\to\text{RC问题}\to\text{互斥}\]
 
-共享数据的最终结果取决于进程执行的相对速度
+共享数据的最终结果取决于进程执行的相对速度（异步性），需要保证进程的结果与相对执行速度无关
 
 同步：有明确的时间先后限制，两个或多个进程之间的操作存在时间上的约束（也包含互斥）
 
 \subsection{互斥}
-软件方法
+互斥的要求
 \begin{itemize}
-    \item Dekker算法
-    \item Peterson算法
-\end{itemize}
-硬件方法
-\begin{itemize}
-    \item 关中断：限制处理器交替执行各进程的能力，不能用于多核
-    \item TestSet(TS)指令：比较并交换，原子指令，一个指令周期内完成，不会被中断
-    \item Exchange指令(x86\verb'xchg'指令)：同上，适用于单核多核，多变量多临界区，但需要忙等待(busy waiting)/自旋等待(spin waiting)，可能饥饿或死锁
+    \item 在具有相同资源或共享对象的临界区的所有进程中，一次只允许一个进程进入临界区（强制排它）
+    \item 一个在非临界区停止的进程必须不干涉其他进程（充分并发）
+    \item 没有进程在临界区中时，任何需要访问临界区的进程必须能够立即进入（空闲让进）
+    \item 决不允许出现一个需要访问临界区的进程被无限延迟（有限等待）
+    \item 相关进程的执行速度和处理机数目没有任何要求或限制（满足异步）
+    \item 当进程不能进入临界区，应该立即释放处理机，防止进程忙等待（让权等待）
 \end{itemize}
 
-\subsubsection{信号量(semaphore)}
+\subsubsection{简单的尝试}
+第一种尝试：两个进程轮流进入临界区
+\begin{minipage}{0.5\linewidth}
+\begin{lstlisting}
+while (turn != 0)
+    /* do nothing */;
+/* critical section */
+turn = 1;
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\begin{lstlisting}
+while (turn != 1)
+    /* do nothing */;
+/* critical section */
+turn = 0;
+\end{lstlisting}
+\end{minipage}
+可以保证互斥，硬性规定进入的顺序，但是
+\begin{itemize}
+    \item 忙等待，白白消耗CPU时间
+    \item 必须轮流进入临界区，不合理，限制推进速度
+    \item 若一个进程失败，则另一个将永远被阻塞
+\end{itemize}
+难以支持并发处理
+
+一共四种尝试
+\begin{itemize}
+    \item 单标志法
+    \item 双标志先检查：死锁
+    \item 双标志后检查：不能保证互斥
+    \item 双标志延迟礼让：活锁
+\end{itemize}
+
+\subsubsection{软件方法}
+Dekker算法：避免无原则礼让，规定各进程进入临界区的顺序；逻辑复杂，正确性难以证明，存在轮流问题，存在忙等待；初始化\verb'flag'都为\verb'false'，\verb'turn'为1
+% https://www.cnblogs.com/zhengruin/p/4994188.html
+\begin{lstlisting}
+void P0()
+{
+	while(true)
+	{
+		flag[0] = true; // `P0想使用关键区'
+		while(flag[1]) // `检查P1是不是也想用？'
+		{
+			if(turn == 1) // `如果P1想用，则查看P1是否具有访问权限？'
+			{
+				flag[0] = false; // `如果有，则P0放弃'
+				while(turn == 1); // `检查turn是否属于P1'
+				flag[0] = true; // `P0想使用'
+			}
+		}
+		visit(0); // `访问Critical Partition'
+		turn = 1; // `访问完成，将权限给P1'
+		flag[0] = false; // `P0结束使用'
+	}
+}
+
+void P1()
+{
+	while(true)
+	{
+		flag[1] = true; // `P1想使用关键区'
+		while(flag[0]) // `检查P0是不是也想用？'
+		{
+			if(turn == 0) // `如果P0想用，则查看P0是否具有访问权限？'
+			{
+				flag[1] = false; // `如果有，则P1放弃'
+				while(turn == 0); // `检查turn是否属于P1'
+				flag[1] = true; // ` P1想使用'
+			}
+
+		}
+		  visit(1); // `访问Critical Partition'
+		turn = 0; // `访问完成，将权限给P0'
+		flag[1] = false; // `P1结束使用'
+	}
+}
+\end{lstlisting}
+
+Peterson算法：flag和turn的含义同Dekker的，但先设turn=别人，且只有flag[别人]和turn=别人同时为真时才循环等待
+\begin{lstlisting}
+void P0()
+{
+        while(true)
+        {
+                flag[0] = true;
+                turn = 1;
+                while(flag[1] && turn == 1)
+                // `退出while循环的条件就是，要么另一个线程'
+                // `不想要使用关键区，要么此线程拥有访问权限'
+                {
+                        sleep(1);
+                        printf("procedure0 is waiting!\n");
+                }
+                //critical section
+                flag[0] = false;
+        }
+}
+
+void P1()
+{
+        while(true)
+        {
+                flag[1] = true;
+                turn = 0;
+                while(flag[0] && turn == 0)
+                {
+                        sleep(1);
+                        printf("procedure1 is waiting!\n");
+                }
+                //critical section
+                flag[1] = false;
+        }
+}
+\end{lstlisting}
+
+\subsubsection{硬件方法}
+\begin{itemize}
+    \item 关中断：限制处理器交替执行各进程的能力，不能用于多核
+    \item 专用指令：\textbf{比较并交换}，原子指令，一个指令周期内完成，不会被中断
+    \begin{itemize}
+        \item TestSet(TS)指令，比较并交换的bool形式
+\begin{lstlisting}
+int compare_and_swap ( int *word, int testval, int newval)
+bool testset (int i)
+\end{lstlisting}
+        \item Exchange/swap指令(x86\verb'xchg'指令)：同上，适用于单核多核，多变量多临界区，但需要忙等待(busy waiting)/自旋等待(spin waiting)，可能饥饿或死锁
+\begin{lstlisting}
+void exchange(int register, int memory)
+\end{lstlisting}
+    \end{itemize}
+\end{itemize}
+
+机器指令方法优点
+\begin{itemize}
+    \item 适用于单处理器或共享主存多[核]处理器系统，进程数目任意
+    \item 简单且易于证明
+    \item 可以使用多个变量支持多个临界区
+\end{itemize}
+缺点
+\begin{itemize}
+    \item 忙等待/自旋等待
+    \item 可能饥饿或死锁
+\end{itemize}
+
+\subsection{信号量(semaphore)}
+解决RC问题一种简单高效的方法
+
+\subsubsection{基本操作}
 \begin{itemize}
     \item 整数：可用资源数($\geq 0$)，需要初始化
-    \item P操作(\verb'semWait')：信号量的值\textbf{减1}（申请一个单位的资源），若信号量变为\textbf{负数}，则执行P操作进程阻塞，\textbf{让权等待}
-    \item V操作(\verb'semSignal')：信号量的值\textbf{加1}（释放一个单位的资源），若信号量\textbf{不是正数}（绝对值=现被阻塞的进程数/等待队列的长度），则使一个因P操作被阻塞的进程解除阻塞（唤醒）
+    \item P操作(proberen,\verb'semWait')：信号量的值\textbf{减1}（申请一个单位的资源），若信号量变为\textbf{负数}，则执行P操作进程阻塞，\textbf{让权等待}
+    \item V操作(verhogen,\verb'semSignal')：信号量的值\textbf{加1}（释放一个单位的资源），若信号量\textbf{不是正数}（绝对值=现被阻塞的进程数/等待队列的长度），则使一个因P操作被阻塞的进程解除阻塞（唤醒）
 \end{itemize}
 需要保证P操作和V操作的原子性
 \begin{lstlisting}
-    struct semaphore {
-        int count;
-        PCB *next;
-    } s;
-    void Init(s) {
-        s.count = nr;
-        s.next = NULL;
-    }
-    void P(semaphore s) {
-        s.count--;
-        if (s.count < 0)
-            Block(CurruntProcess, s);
-    }
-    void V(semaphore s) {
-        s.count++;
-        if (s.count <= 0)
-            WakeUp(s);
-    }
+struct semaphore {
+    int count;
+    struct process* L; // `阻塞队列'
+} s;
+void P(semaphore s) { // semWait
+    s.count--;
+    if (s.count < 0)
+        Block(CurruntProcess, s.L);
+        // `将当前进程插入该信号量对应的阻塞队列'
+}
+void V(semaphore s) { // semSignal
+    s.count++;
+    if (s.count <= 0)
+        WakeUp(s.L);
+}
 \end{lstlisting}
-注意P操作是\textbf{小于0}，V操作\textbf{小于等于0}
+注意P操作是\textbf{小于0}，V操作\textbf{小于等于0}\footnote{理解为先判断是否小于0（阻塞队列非空），然后再++会比较好}，且一个进程只会在一个信号量的阻塞队列中
 
 信号量的优点是简单且表达能力强，用P、V操作可解决多种类型的同步/互斥问题，但不够安全，P、V操作使用不当会产生死锁。
 
-二元信号量省空间，不能代表资源数量，要引入全局变量代表数量
+二元信号量省空间，不能代表资源数量，要引入全局变量代表数量。
 
-信号量实现互斥
+\subsubsection{实现互斥(mutex)}
 \begin{itemize}
-    \item 对于每一个RC问题，设一个信号量（向系统调用向内核调用），\textbf{初始化为$1$}
+    \item 对于每一个RC问题，设一个信号量（向系统调用/向内核调用），\textbf{初始化为$1$}
     \item 所有相关进程在进入临界区\textbf{之前}对该信号量进行\textbf{P操作}
     \item 出临界区\textbf{之后}进行\textbf{V操作}
 \end{itemize}
 
-信号量实现进程同步
+\subsubsection{同步}
+同步：后续动作必须在前驱动作执行完后才能进行
 \begin{itemize}
-    \item 对每一个同步关系都要设一个信号量，初值看具体问题
-    \item P后续动作的前面
-    \item V前驱动作的前面
+    \item 对每一个同步关系都要设一个信号量，初值看具体问题（一般为0）
+    \item 在\textbf{前驱动作之后}执行V操作（相当于资源产生了）
+    \item 在\textbf{后续动作之前}执行P操作
 \end{itemize}
 
-组合动作：生产者-消费者问题
+\subsubsection{生产者-消费者问题}
+\begin{lstlisting}
+void producer() {
+    while (true) {
+        produce();
+        P(e);
 
+        P(s);
+        append();
+        V(s);
 
+        V(n); // first
+    }
+}
+
+void consumer() {
+    while (true) {
+        P(n); // after
+
+        P(s);
+        take();
+        V(s);
+
+        V(e);
+        consume();
+    }
+}
+
+// s = initSem(1); // mutex
+// n = initSem(0); // # products
+// e = initSem(12); // # empty entries in buffer
+\end{lstlisting}
+
+\subsubsection{读者写者问题}
+可以有多个读者，但只有一个写者
+
+读者优先
+\begin{lstlisting}
+/* program reader_and_writer */
+int readcount;
+semaphore x=1, wsem=1;
+void reader() {
+    while(true) {
+        P(x);
+        readcount++;
+        if (readcount==1) P(wsem);
+        V(x);
+        READUNIT();
+        P(x);
+        readcount--;
+        if (readcount==0) V(wsem);
+        V(x);
+    }
+}
+
+void writer() {
+   while(true) {
+       P(wsem);
+       WRITEUNIT();
+       V(wsem);
+   }
+}
+\end{lstlisting}
+
+写者优先
+\begin{lstlisting}[multicols=2]
+/* program reader_and_writer */
+int readcount, writecount;
+semaphore x=1, y=1, z=1, rsem=1, wsem=1;
+void reader() {
+    while(true) {
+        P(z); P(rsem);
+        P(x);
+        readcount++;
+        if (readcount==1) P(wsem);
+        V(x);
+        V(rsem); V(z);
+        READUNIT();
+        P(x);
+        readcount--;
+        if (readcount==0) V(wsem);
+        V(x);
+    }
+}
+
+void writer() {
+    while(true) {
+        P(y);
+        writecount++;
+        if (writecount==1) P(rsem);
+        V(y);
+        P(wsem);
+        WRITEUNIT();
+        V(wsem);
+        P(y);
+        writecount--;
+        if (writecount==0) V(rsem);
+        V(y);
+    }
+}
+\end{lstlisting}
+
+\subsection{管程(monitor)}
 管程(monitor)：通过集中管理（封装同步机制与同步策略）以保证安全
 
-消息传递
+主要特点：
+\begin{itemize}
+    \item 本地变量只能由管程过程访问（封装）
+    \item 进程通过调用管程过程进入管程（调用）
+    \item 每次只能一个进程在执行相关管程的过程（互斥）
+\end{itemize}
+主要缺陷
+\begin{itemize}
+    \item 可能增加了两次多余的进程切换
+    \item 对进程调度有特殊要求（不允许插队）
+\end{itemize}
+
+\subsection{消息传递}
 \begin{itemize}
     \item send
     \item receive
 \end{itemize}
 
-读者-写者问题
+同样可以实现互斥，相当于在进程间传递一个可使用临界区的令牌

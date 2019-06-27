@@ -26,9 +26,12 @@
 	\item 上下文数据(context)：进程被中断时寄存器中的数据
 	\item IO状态信息
 	\item 记账信息(accounting)：占用处理器时间、时钟数总和、时间限制等
+	\item 链表：各状态的进程形成不同的链表：就绪链表、阻塞链表等
 \end{itemize}
 
 % 如果想要进程之间交互，则通过文件进行，如sublime编辑文件，gcc对其进行编译
+
+进程控制由原语(primitive)完成，由若干条指令完成，也可被视为原子操作
 
 内存组织：代码段、数据段、堆段、栈段（从小地址往大地址）
 \begin{figure}[H]
@@ -43,8 +46,6 @@
 	\item 执行进程：execve
 \end{itemize}
 
-进程切换：扔掉堆、数据段，读入新代码段、数据段，重设栈段、堆段，初始化寄存器，开始执行
-
 % COM 基于组件共享技术 软件重用
 % OLE
 
@@ -54,12 +55,13 @@
 \begin{tikzcd}
 \text{就绪}\arrow[bend left]{rr}{\text{分派}} & & \text{运行}\arrow[bend right]{ll}{\text{超时}}
 \end{tikzcd}
-用户态 核心态
 
-shell：用户控制台，解释用户指令
+% shell：用户控制台，解释用户指令
 
-OS自身代码
+导致OS获得控制权的事件：
 \begin{itemize}
-	\item 传统方式：响应中断，获得CPU控制权
-	\item 进程方式
+	\item 时钟中断：时间片结束
+	\item IO中断：IO完成
+	\item 硬件中断/陷阱(trap)/异常：
+	\item 系统调用：\verb'int'
 \end{itemize}
