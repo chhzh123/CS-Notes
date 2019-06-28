@@ -38,8 +38,8 @@ IP协议是因特网的网络层协议
 \subsubsection{IP数据报格式}
 \begin{itemize}
 \item 4个字节一个字，头部最多$(2^4-1)*4=60$B，除选项20B，IPv4选项最多40B，太少了
-\item 生存期(TTL)限制在因特网上的停留时间，实际限制为经过的路由器数目，即跳数(hop count)，超过则自动清除，防止兜圈，每次经过路由器减1\\
-TTL初值默认设置为网络直径的两倍，Windows默认64\\
+\item 生存期(TTL)限制在因特网上的停留时间，实际限制为经过的路由器数目，即跳数(hop count)，每次经过路由器减1，超过则自动清除，防止兜圈，同时发送ICMP包告知源主机\\
+TTL初值默认设置为网络直径的两倍，Windows默认64，Unix默认为255\\
 长了就有捷径(cut-through)，因此发展到现在因特网的直径依然在32左右
 \item IP数据报一定要封装成帧，通过物理层传输，每次都要修改源和目的地址
 \item IP数据报服务类型(type of quality, ToQ)，但路由器都没有实现
@@ -53,6 +53,8 @@ IP数据报的分段和重组
 \item 如果一个数据报的大小大于要承载它的网络的MTU，路由器需要先对该数据报进行分段(fragment)
 \item 源主机每次发送IP数据报时都会把标识(Identification)字段加1。
 \item 分段时用标识的值保持不变，并且用偏移量字段(offset)指出该片段的数据部分相对原来数据报的偏移量(以8字节为单位)，给出原来片段的次序
+\item 当目的主机收到该数据报的所有片段时，它会重组(reassemble)为原来的数据报
+\item 第一个片段到达目的主机时目的主机会启动一个重组定时器(默认超时值为15秒)。如果该定时器到期时没有收集到所有片段，目的主机会放弃本次重组并丢弃该数据报的所有片段
 \item MF(More Fragment), DF(Don't Fragment)
 \item 小于MTU-20B，边界，一定要能被8整除，尽可能大（8字节，一定要除掉）
 \item IPv6中间不能分段
@@ -91,8 +93,33 @@ IP地址可划分为两个部分：
 	\item 无类域间路由选择协议(classless inter-domain routing, CIDR)：将多个有类网合并为一个更大的网络，称为超网(supernet)\\
 可以显著减少路由表中路由的数量，称为路由聚合(route aggregation)
 	\item 网络地址转换(network address translation, NAT)：\textbf{最节约地址的方法}，将内部地址映射为外部地址的技术（可以扩展6w多倍），将私有地址映射为全局地址\\
-NAT将内部源地址转换为外部地址\\
-NAPT将端口号也加入NAT的映射中
+NAT将内部源地址转换为外部地址，NAPT/PAT/过载NAT将端口号也加入NAT的映射中\\
+动态NAT自动转换，但每个动态映射都关联一个TTL，若没使用会被出口路由器删除；静态NAT直接由管理员加入映射，不会被自动删除
+\end{itemize}
+
+特殊IP地址：
+\begin{itemize}
+	\item 全0：未知或秘密IP地址，只用作源地址
+	\item 前面全0，后面为Host：同一子网的主机，只用作源地址
+	\item 全1：有限广播，对于一个直连物理网络的广播
+	\item 前面为network，后面全1：对于一个远程网络的广播
+	\item 前面为network，后面全0：用32b表示的网络号（含子网号）
+	\item 127开头：环回(loopback)/本机地址，127.0.0.1为本地地址(localhost)
+\end{itemize}
+
+私有IP地址：无需IANA分配，任何人都可使用
+\begin{itemize}
+	\item 10.0.0.0 - 10.255.255.255
+	\item 172.16.0.0 - 172.31.255.255
+	\item 192.168.0.0 - 192.168.255.255
+\end{itemize}
+私有地址只能用于内部网络。主干网上的路由器会过滤掉目的地址为私有地址的IP数据报。因此，离开内部网络的IP数据报必须使用由IANA分配的全局地址作为目的地址。
+
+非军事化区(Demilitarized Zone, DMZ)是位于内部网络和外部网络之间并为双方提供因特网服务的区域。
+\begin{itemize}
+\item 内网主机可以访问内网主机、 DMZ和因特网。
+\item 内网主机可以使用内部地址或全局地址访问DMZ的服务器。
+\item 外部主机只能通过全局地址访问DMZ的服务器，不能访问内网主机
 \end{itemize}
 
 地址解析协议(address resolution protocol, ARP)可以\underline{将IP地址映射为MAC地址}\footnote{也有将也有MAC映射为IP地址的协议}
@@ -196,7 +223,8 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 	\item 利用上述路由修改路由表:
 	\begin{itemize}
 		\item 把路由表中不存在的路由加入路由表
-		\item 如果比路由表中的路由的距离更小，则更新该路由的距离为新距离，把下一跳改为邻居。如果原来的更大，则\textbf{也要进行改动}，因为原来的路可能断了。即路由的下一跳送来的新路由，则必须修改距离。
+		\item 如果比路由表中的路由的距离更小，则更新该路由的距离为新距离，把下一跳改为邻居
+		\item 如果路由已经存在且下一跳就是邻居，则必须进行更新
 	\end{itemize}
 	\item 如果路由存在，就要重置失效定时器
 \end{enumerate}
@@ -215,6 +243,18 @@ RIP协议的技术
 	\item 抑制技术(hold down)：距离被改为无穷大的路由在一段短时间(180秒)内其距离不允许被修改
 	\item 触发更新(triggered update)：一旦出现路由变化将立即把变化的路由发送给邻居。原有的30秒发一次完整的路由表依然不变
 \end{itemize}
+
+RIP协议的定时器
+\begin{itemize}
+\item 更新定时器(Update Timer)控制一个路由器如何定期把路由表发送给邻居。默认时间为30 秒。
+\item 一条路由的失效定时器(Invalid Timer)到期时被标记为无效路由(距离改为16)。路由被更新时其失效定时器会被重置。默认值为180秒。
+\item 一条路由的清除定时器(Flush Timer)到期时该路由将从路由表中删除。路由被更新时其清除定时器会被重置。默认值为240秒。
+\item 抑制定时器(Hold-down Timer)在路由的距离变为无穷大(包括收到毒化路由)时启动。在其到期之前不允许修改该路由的距离。默认值为180秒。
+\end{itemize}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/rip_timer.png}
+\end{figure}
 
 RIP协议简单、容易实现。特点如下
 \begin{itemize}
@@ -353,15 +393,19 @@ DV节点可能通告不正确的路径开销\\
 工作原理
 \begin{itemize}
 \item 运行了BGP协议的路由器被称为BGP路由器，所运行的BGP协议称为BGP发言人(speaker)，其他路由器为内部路由器
-\item 在BGP路由器之间可以通过TCP连接（端口号为179）建立相邻关系
+\item 在BGP路由器之间可以通过TCP连接（端口号为179）建立相邻关系，由AS管理员指定，也可以采用自动产生(重发布)和聚合产生。这些指定网络只有发布路由表中存在才会被改路由器扩散出去。如果它们失效，则会把撤销路由的消息扩散出去。
 \item AS内的两个BGP路由器之间建立的相邻关系称为iBGP(interior BGP)相邻关系，而位于不同AS的两个BGP路由器之间建立的相邻关系称为eBGP(exterior BGP)相邻关系
 \item  BGP协议所扩散的网络前缀/网络号称为网络层可达信息(Network Layer Reachablility Information， NLRI)，BGP路由器可以把NLRI连同它们的属性一起通过相邻关系扩散给邻居，进而扩散到因特网中所有的BGP路由器
 \item BGP路由器在NLRI引入BGP协议时扩散一次，并不定期扩散
 \end{itemize}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/NLRI.png}
+\end{figure}
 
 防止出现回路的方法：
 \begin{itemize}
-\item 内部：从iBGP邻居收到的Update分组不能再发给邻居
+\item 内部：从iBGP邻居收到的NLRI Update分组不能再发给邻居
 \item 之间：利用AS Path防止回路
 \end{itemize}
 
@@ -371,10 +415,16 @@ DV节点可能通告不正确的路径开销\\
 \item 在IP层运用了虚电路（等于挖了个隧道），不用记中间路由器，现在都用这种方式
 \end{itemize}
 
-内部路由用默认路由转到BGP路由，然后连到世界上任一台路由器；
+\begin{itemize}
+\item BGP路由器可以聚合若干NLRI网络形成一个新的NLRI。
+\item 如果从多条路径收到同一个NLRI，在默认情况下选择AS-PATH中AS数最少的路径。
+\item BGP路由器根据NLRI的属性NEXT HOP查询IGP路由表得到NEXT HOP， 就可以使用该路由。如果没有查询到匹配项，则丢弃该NLRI。
+\item 如果设置了IGP同步并且NLRI在IGP路由表中没有匹配项，该NLRI不能转发给eBGP邻居。
+\item BGP路由器可以把多个路由聚合(aggregate)为一个路由，其NLRI的ORIGIN属性要改为IMCOMPLETE。
+\item 如果iBGP邻居之间的路由要经过内部路由器，那么就要给IGP路由表中注入AS外的路由，或者通过隧道技术连接iBGP邻居。
+\item 内部路由用默认路由转到BGP路由，然后连到世界上任一台路由器；
 在路径上的路由不可设默认路由，否则只能转到一个方向
-
-当收到多路由时，默认只看AS Path长度，选长度小的；管理员也可以直接设
+\end{itemize}
 
 \subsection{IP多播}
 访问同个网站，只发一次请求并回收；但单播访问同一个网站也要多次发送
@@ -387,27 +437,81 @@ DV节点可能通告不正确的路径开销\\
 	\includegraphics[width=0.8\linewidth]{fig/multicast.png}
 \end{figure}
 
+多播IP地址
+\begin{center}
+\begin{tabular}{|l|p{10em}|}\hline
+多播地址范围 & 用法\\\hline
+\textbf{224.0.0.0 - 239.255.255.255} & IPv4的多播地址空间\\\hline
+224.0.0.0 - 224.0.0.255 & 由IANA分配的永久地址。路由器不转发目的地址为这些地址的IP数据包\\\hline
+224.0.1.0 - 224.0.1.255 & 由IANA分配的永久地址。路由器会转发目的地址为这些地址的IP数据包\\\hline
+232.0.0.0 - 232.255.255.255 & 用于指定源的多播应用\\\hline
+233.0.0.0 - 233.255.255.255 & 由AS分配的全局多播地址\\\hline
+239.0.0.0 - 239.255.255.255 & 私有多播地址\\\hline
+其它地址 & 临时多播地址(transient address)\\\hline
+\end{tabular}
+\end{center}
+
+防止回路
+\begin{itemize}
+\item 逆向路径广播：指定源的树\\
+利用源地址查路由表，当一个路由器收到一个源地址为S发往组G的多播分组<S,G>时, 当且仅当该分组到来的接口在从该路由器到S的最短路径(Parent Link)上时,该路由器才在它的其它接口广播(flooding)该分组。（类DFS）
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/reverse_path_broadcasting.png}
+\end{figure}
+建路由表时源地址路径上一定是最短路径，每一次都往远的地方走，故一定没有回路
+\item 逆向路径多播：对于每个多播地址G，每个源地址形成一棵树，即源特定组播树(source-specific multicast tree)，然后剪枝\\
+对于基于一个源地址的组播流，如果路由器的所有下游接口均无该组成员或已被剪枝，则它通过其双亲链路向上发送剪枝消息(Prune Message)。 路由器不会把多播分组从剪枝口转发出去\\
+如果有新主机加入多播组，则要通过嫁接消息(Graft Message)逐级向上通知直到某个未被剪枝的
+接口或者根路由器。\\
+为了防止嫁接消息丢失引起转发受阻，路由器定期取消所有剪枝。
+\end{itemize}
+
+\begin{itemize}
+	\item 距离向量多播路由协议(Distanse	Vector Multicast Routing Protocol, DVMRP)：在距离向量算法的基础上使用逆向路径多播算法实现的多播路由算法
+	\item 协议无关多播-稠密模式(Protocol Independent Multicast - Dense Mode, PIM-DM)协议：逆向路径多播算法，路由器只需要知道到源主机的最短路径的接口，与使用什么内部网关协议无关
+	\item MOSPF协议是另一种用于组成员稠密方式下的多播协议：如果使用OSPF协议，路由器可以通过Group Membership LSA把自己的哪些直连网有组成员的信息传遍整个AS，最后，所有AS的路由器都在原拓扑结构图上标志哪些（网络）节点有组成员。这样, 每个节点就可以计算出源节点到组成员的\textbf{最短路径多点播送生成树}。MOSPF路由器在收到多播分组时为每个源和多播组建造一颗生成树。由于计算量很大， MOSFP不适用于大型网络。Steiner树是总代价最小的分布树。 求Steiner树是NP问题。
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{fig/MOSPF.png}
+	\end{figure}
+	\item 协议无关多播-稀疏模式协议(Protocol Independent Multicast - Sparse Mode, PIM-SM)用实现于组成员稀疏情形下的多播
+\end{itemize}
+
 因特网组管理协议(Internet Group Management Protocol, IGMP)用于路由器查询与它直连的网络上是否存在组成员
 \begin{itemize}
 	\item IGMPv1协议只能对某个接口查询所有组，如果三次查询在十秒内都没有收到响应报告，则认为该接口没有任何组成员。
 	\item IGMPv2协议可以直接针对某个组进行查询，而且主机加入组和离开组都要发通告。
 \end{itemize}
 
-防止回路
+\subsection{IPv6}
+IPv6地址由128位二进制数组成，分割成8段16位组，然后把每段16位组换算成4个十六进制数来表示，每段十六进制数值的范围是0000-FFFF，每段之间使用冒号来分隔。
+
+简化规则
 \begin{itemize}
-\item 逆向路径广播：指定源的树\\
-利用源地址查路由表，如果多播分组从该接口来，则才进行扩散（类DFS）\\
-建路由表时源地址路径上一定是最短路径，每一次都往远的地方走，故一定没有回路
-\item 逆向路径多播：对于每个多播地址G，每个源地址形成一棵树，即源特定组播树(source-specific multicast tree)，然后剪枝\\
-如果有新主机加入多播组，则要将路径嫁接回来
+\item 每一个段中开头的0可以省略不写，但末尾的0不能省略\\
+原始IPv6地址：3ffe:1944:0100:000a:0000:00bc:2500:0d0b\\
+简化后IPv6地址：3ffe:1944:100:a:0:bc:2500:d0b\\
+\item 如果某段或连续几段全是0，则可以使用一个\verb':'来代替\\
+原始IPv6地址：ff02:0000:0000:0000:0000:0000:0000:0005\\
+简化后IPv6地址：ff02::5
+\item 如果128位全部为0的地址，则可以使用一个\verb'::'来表示\\
+原始IPv6地址: 0000:0000:0000:0000:0000:0000:0000:0000\\
+简化后IPv6地址：::
+\item IPv4地址的表示方法：0:0:0:0:0:0:d.d.d.d\\
+IPv4地址: 170.1.2.3\\
+用IPv6地址表示：0:0:0:0:0:0: 170.1.2.3 或 ::170.1.2.3
 \end{itemize}
+注意：在IPv6地址中，只能使用一次双冒号。如2001:0d02:0000:0000:0014:0000:0000:0095
+以下两种缩写方式都是正确的：\\
+2001:d02::14:0:0:95\\
+2001:d02:0:0:14::95\\
+但下面这种缩写方式是错误的：\\
+2001:d02::14::95
 
+多种IPv4过渡IPv6方式
 \begin{itemize}
-	\item 稠密(dense)：全收，扩散$\to$同样要防回路
-	\item 稀疏(sparse)
+\item 双栈：即在接口上同时配置IPv4和IPv6
+\item 使用IPv4隧道来传输IPv6数据
+\item 在IPV4和IPv6之间进行NAT转换
 \end{itemize}
-
-最短路径多点播送生成树(MOSPF)：
-Steiner树是总代价最小的分布树，但是NP难问题，故采用最短路径
-
-% PIM-Sparse模式
