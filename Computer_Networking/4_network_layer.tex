@@ -7,7 +7,7 @@
 \item 电路交换(circuit switching)：实际接通一条物理线路，时分多路复用，电话；频分多路复用，电视；一直占用，不管有无数据交互
 \item 包交换/分组交换(packet switching)：统计多路复用，按需分配；可能引起网络拥塞，适合发送突发数据
 \begin{itemize}
-	\item 虚电路：需建立连接才可以传输数据（仿照电话系统，因特网之前），好处在于保留带宽
+	\item 虚电路：\textbf{需建立连接}才可以传输数据（仿照电话系统，恒变位速率ATM，因特网之前），好处在于保留带宽
 	\begin{itemize}
 	    \item 交换式（要交换才建立连接）：建立虚电路(VC)表，虚电路标识符(VCI)，类似于电话
 	    \item 永久式（建立后一直保持）：由管理员维护
@@ -15,6 +15,35 @@
 	\item 数据报(datagram)：不需建立连接，因特网，\textbf{不预留带宽}
 \end{itemize}
 \end{itemize}
+
+\begin{example}
+	下图存在3条虚电路（红绿蓝） ,它们都是从A或者B出发的虚电路，请填写它们的虚电路表。
+	接口编号用黑色字表示。 VCI - Virtual Circuits Identifier
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{fig/virtual_circuit.png}
+	\end{figure}
+\end{example}
+\begin{analysis}
+交换机S1的虚电路表
+\begin{center}
+\begin{tabular}{ccccc}\hline
+ & 输入接口 & 输入VCI & 输出接口 & 输出VCI\\\hline
+红 & 1 & 2 & 3 & 4\\
+绿 & 1 & 1 & 3 & 2\\
+蓝 & 2 & 1 & 3 & 1\\\hline
+\end{tabular}
+\end{center}
+交换机S2的虚电路表
+\begin{center}
+\begin{tabular}{ccccc}\hline
+ & 输入接口 & 输入VCI & 输出接口 & 输出VCI\\\hline
+红 & 1 & 4 & 2 & 2\\
+绿 & 1 & 2 & 3 & 1\\
+蓝 & 1 & 1 & 3 & 2\\\hline
+\end{tabular}
+\end{center}
+\end{analysis}
 
 一般网络的服务模型：Aynchronous Transfer Mode, ATM
 \begin{center}
@@ -28,44 +57,89 @@ ATM & 未指定位速率 & 无 & 否 & 是 & 否 & 否\\\hline
 \end{tabular}
 \end{center}
 
-IP协议是因特网的网络层协议
+IP协议是\textbf{因特网的网络层协议}
 \begin{itemize}
 \item 可路由的(routable)：全局地址，按层分配
-\item 尽力服务(best effort)：无连接无确认的数据报服务
-\item IP协议可以运行在\textbf{任何}网络上，不仅仅是因特网
+\item 尽力服务(best effort)：\textbf{无连接无确认}的\textbf{数据报}服务，不可靠的
+\item IP协议可以运行在\textbf{任何物理}网络上，不仅仅是因特网
+\end{itemize}
+注意：IP协议不具有拥塞控制机制
+
+\subsubsection{数据报格式}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\linewidth]{fig/IP_datagram.png}
+\end{figure}
+\begin{itemize}
+\item 版本：共两个版本，IPv4为4，IPv6为6
+\item 头部长度：以字(32b)为单位
+\item 服务类型(Type of Service, ToS)：现在重新定义为\textbf{区分服务}
+\item 总长度：整个数据报的长度，以\textbf{字节}为单位
+\item 标识(identification)、标志(DF、MF)、偏移量：用于划分片段
+\item 生存期(Time-to-live, TTL)：
+\begin{itemize}
+	\item 防止数据报长时间滞留在因特网上，实际限制为经过的路由器数目，即跳数(hop count)，每经过一个路由器减1，超过则自动清除，防止兜圈，同时发送ICMP包告知源主机
+	\item TTL初值默认设置为网络直径的两倍，Windows默认64，Unix默认为255
+	\item 长了就有捷径(cut-through)，因此发展到现在因特网的直径依然在32左右，即TTL限制了因特网的直径
+\end{itemize}
+\item 协议：\underline{TCP为6，UDP为17，ICMP为1，IGMP为2}
+\item 头部选项：1B代码，1B总长度，nB数据
+\begin{itemize}
+	\item 4个字节一个字，头部最多$(2^4-1)*4=60$B，除非选项部分$4*5=20$B，IPv4选项最多$40$B，太少了
+	\item 记录路由：记录下每个转发路由器的IP地址，代码为7。\\
+	代码和长度后面跟1B指针，然后每个IP地址4B
+	\item 指针指向下一个IP地址的位置，4为空，40为满，最多记录9个
+	\item 每经过一个路由器就会记录转出接口的IP地址
+\end{itemize}
+\item IP数据报一定要\textbf{封装成帧}，通过物理层传输，每次都要修改源和目的地址。
+在以太网帧的类型/长度字段填\verb'0x0800'表明是IP数据报
 \end{itemize}
 
-\subsubsection{IP数据报格式}
+\subsubsection{数据报的分段和重组}
 \begin{itemize}
-\item 4个字节一个字，头部最多$(2^4-1)*4=60$B，除选项20B，IPv4选项最多40B，太少了
-\item 生存期(TTL)限制在因特网上的停留时间，实际限制为经过的路由器数目，即跳数(hop count)，每次经过路由器减1，超过则自动清除，防止兜圈，同时发送ICMP包告知源主机\\
-TTL初值默认设置为网络直径的两倍，Windows默认64，Unix默认为255\\
-长了就有捷径(cut-through)，因此发展到现在因特网的直径依然在32左右
-\item IP数据报一定要封装成帧，通过物理层传输，每次都要修改源和目的地址
-\item IP数据报服务类型(type of quality, ToQ)，但路由器都没有实现
-\end{itemize}
-
-IP数据报的分段和重组
-\begin{itemize}
-\item 一个物理网络的最大传输单元(maximum transmission unit, MTU)是该网络可以运载的最大有效载荷，即数据帧的数据部分的最大长度\\
+\item 一个物理网络的最大传输单元(maximum transmission unit, MTU)是该网络可以运载的最大有效载荷，即\textbf{数据\underline{帧}的数据部分}的最大长度\\
 如：以太网(DIXv2)的MTU为1500, FDDI和令牌环的MTU分别为4353和4482
-\item 只要发出去一定会封装成帧（注意要加头部），帧最长就是MTU，因而要分成多段再分
-\item 如果一个数据报的大小大于要承载它的网络的MTU，路由器需要先对该数据报进行分段(fragment)
-\item 源主机每次发送IP数据报时都会把标识(Identification)字段加1。
-\item 分段时用标识的值保持不变，并且用偏移量字段(offset)指出该片段的数据部分相对原来数据报的偏移量(以8字节为单位)，给出原来片段的次序
+\item 只要发出去一定会封装成帧（注意要加头部），帧最长就是MTU；如果一个数据报的大小大于要承载它的网络的MTU，路由器需要先对该数据报进行分段(fragment)
+\item 源主机每次发送IP数据报时都会把标识字段加1
+\item 分段时用标识的值保持不变，并且用偏移量字段(offset)指出该片段的\textbf{数据部分}相对原来数据报的偏移量（以\textbf{8字节为单位}），给出原来片段的次序
 \item 当目的主机收到该数据报的所有片段时，它会重组(reassemble)为原来的数据报
-\item 第一个片段到达目的主机时目的主机会启动一个重组定时器(默认超时值为15秒)。如果该定时器到期时没有收集到所有片段，目的主机会放弃本次重组并丢弃该数据报的所有片段
+\item 第一个片段到达目的主机时目的主机会启动一个重组定时器（默认超时值为15秒）。如果该定时器到期时没有收集到所有片段，目的主机会放弃本次重组并丢弃该数据报的所有片段
 \item MF(More Fragment), DF(Don't Fragment)
-\item 小于MTU-20B，边界，一定要能被8整除，尽可能大（8字节，一定要除掉）
 \item IPv6中间不能分段
-\item 1400B=512B+512B+376B
 \item Path MTU discovery：找到路径上最小的MTU，发现路径上最小MTU
 \item 选项最后一定对齐到边界
-\item 生存期和头部校验（检验和）会变，其他不变
+\item MF、偏移量、头部校验（检验和）和总长度会变，其他不变
 \end{itemize}
+\begin{example}
+	一个没有选项的IP数据报的总长度为3000字节，标识是10034，DF=0，OFFSET=0，要转发到MTU为800的一个物理网络上。如果前面的片段尽量大，如何划分片段？
+	如果第二个片段在后面的路由器上要转发到MTU=300的物理网络上，要继续划分片段，则应该如何划分？
+\end{example}
+\begin{analysis}
+	要减去头部长度，$\lfloor (800-20)/8\rfloor=97$，实际载荷$97*8=776$B，故分为4段，$3000=776+776+776+672$
+\begin{center}
+\begin{tabular}{cccc}\hline
+	& 标识 & 偏移量 & MF\\\hline
+片段1 & 10034 & 0 & 1\\
+片段2 & 10034 & 97 & 1\\
+片段3 & 10034 & 194 & 1\\
+片段4 & 10034 & 291 & 0\\\hline
+\end{tabular}
+\end{center}
+	第二个片段长度776，偏移从97开始，$\lfloor(300-20)/8\rfloor=35$，实际载荷$35*8=280$B，故分为3段，$776=280+280+216$
+\begin{center}
+\begin{tabular}{cccc}\hline
+	& 标识 & 偏移量 & MF\\\hline
+片段1 & 10034 & 97 & 1\\
+片段2 & 10034 & 132 & 1\\
+片段3 & 10034 & 167 & 1\\\hline
+\end{tabular}
+\end{center}
+\end{analysis}
 
 \subsection{IP地址}
-48位的MAC地址和32位的IP地址都是全局的（全球分配），但是IP地址空间分层，是可路由的
+\subsubsection{有类网}
+48位的MAC地址和32位的IP地址都是全局的（全球分配），但是IP地址空间分层，是可路由的。
+IP地址属于接口/网卡(Network interface card, NIC)。主机或路由器的每个接口可以配置一个或多个IP地址。
 
 IP地址可划分为两个部分：
 \begin{itemize}
@@ -75,36 +149,57 @@ IP地址可划分为两个部分：
 
 有类网：ABC单播，D多播，E保留，地址范围如下（点分十进制）
 \begin{itemize}
-	\item 0 $\thicksim$ 127
-	\item 128 $\thicksim$ 191
-	\item 192 $\thicksim$ 223
-	\item 224 $\thicksim$ 239
-	\item 240 $\thicksim$ 255
+	\item A类：0 $\thicksim$ 127（主机号3B）
+	\item B类：128 $\thicksim$ 191（主机号2B）
+	\item C类：192 $\thicksim$ 223（主机号1B）
+	\item D类：224 $\thicksim$ 239
+	\item E类：240 $\thicksim$ 255
 \end{itemize}
+注意：ABC类网网络号全0或全1不可用，故可用网络地址数要减2，如一个C类网可用的IP地址只有$2^8-2=254$个
 
-解决IPv4地址不够用的问题
+\subsubsection{无类网}
+IPv4地址不够用的解决方案
 \begin{itemize}
-	\item 将一个有类网可以划分为多个相同大小的子网(subnet)\\
-用子网掩码(subnet mask)划分边界：主机号全0，剩下的部分（网络号和子网号）全是1\\
-子网掩码与IP地址\textbf{相与}，若相等则在同个子网中
-	\item 变长子网掩码(Variable-length subnet mask, VLSM)：允许把一个有类网划分为多个不同大小的子网，类似变长指令集\\
-解决主机数目不均匀的问题，如100、50、25、10，则不能等距划分子网\\
-用长度来表示子网掩码，如/26代表255.255.255.192
-	\item 无类域间路由选择协议(classless inter-domain routing, CIDR)：将多个有类网合并为一个更大的网络，称为超网(supernet)\\
+	\item 将一个有类网可以划分为多个相同大小的子网(subnet)
+	\begin{itemize}
+		\item 用子网掩码(subnet mask)划分边界：主机号全0，剩下的部分（网络号和子网号）全是1
+		\item 子网掩码与IP地址\textbf{相与}，若相等则在同个子网中
+		\item 主机号为\textbf{全1或全0}的地址被保留，不能使用
+	\end{itemize}
+	\item 变长子网掩码(Variable-length subnet mask, VLSM)：允许把一个有类网划分为多个不同大小的子网，类似变长指令集，用长度来表示子网掩码，如/26代表255.255.255.192
+	\item 无类域间路由选择协议(classless inter-domain routing, CIDR)：将多个有类网合并为一个更大的网络，称为超网(supernet)，其子网号就是最小一个的网络号\\
 可以显著减少路由表中路由的数量，称为路由聚合(route aggregation)
 	\item 网络地址转换(network address translation, NAT)：\textbf{最节约地址的方法}，将内部地址映射为外部地址的技术（可以扩展6w多倍），将私有地址映射为全局地址\\
 NAT将内部源地址转换为外部地址，NAPT/PAT/过载NAT将端口号也加入NAT的映射中\\
 动态NAT自动转换，但每个动态映射都关联一个TTL，若没使用会被出口路由器删除；静态NAT直接由管理员加入映射，不会被自动删除
 \end{itemize}
+\begin{example}
+	一个C类网192.1.2.0划分为6个子网，它们分别需要配置2、2、2、2、50、50个接口的IP地址。如果要求消耗最少的IP地址，请采用点分十进制(dotted decimal)格式(a.b.c.d)写出它们的子网号和子网掩码
+\end{example}
+\begin{analysis}
+	由于主机号全1或全0的地址被保留，故2个接口的子网也要配到4个
+	\begin{center}
+		\begin{tabular}{cccc}\hline
+			子网号 & 末字节 & 子网掩码 & IP地址数\\\hline
+			192.1.2.0 & 0000 & 255.255.255.252 & 4\\
+			192.1.2.4 & 0100 & 255.255.255.252 & 4\\
+			192.1.2.8 & 1000 & 255.255.255.252 & 4\\
+			192.1.2.12 & 1100 & 255.255.255.252 & 4\\
+			192.1.2.64 & 01000000 & 255.255.255.192 & 64\\
+			192.1.2.128 & 10000000 & 255.255.255.192 & 64\\\hline
+		\end{tabular}
+	\end{center}
+\end{analysis}
 
-特殊IP地址：
+\subsubsection{特殊IP地址}
 \begin{itemize}
-	\item 全0：未知或秘密IP地址，只用作源地址
+	\item 0.0.0.0：未知或秘密IP地址，只用作源地址
 	\item 前面全0，后面为Host：同一子网的主机，只用作源地址
-	\item 全1：有限广播，对于一个直连物理网络的广播
-	\item 前面为network，后面全1：对于一个远程网络的广播
+	\item 255.255.255.255：有限广播，对于一个直连物理网络的广播
+	\item 前面为network，后面全1：对于一个远程网络的广播（如192.168.1.255）
 	\item 前面为network，后面全0：用32b表示的网络号（含子网号）
 	\item 127开头：环回(loopback)/本机地址，127.0.0.1为本地地址(localhost)
+	\item 224.0.0.0 - 239.255.255.255：IPv4的多播地址空间
 \end{itemize}
 
 私有IP地址：无需IANA分配，任何人都可使用
@@ -122,12 +217,57 @@ NAT将内部源地址转换为外部地址，NAPT/PAT/过载NAT将端口号也�
 \item 外部主机只能通过全局地址访问DMZ的服务器，不能访问内网主机
 \end{itemize}
 
+\subsubsection{IPv6}
+IPv6地址由128位二进制数组成，分割成8段16位组，然后把每段16位组换算成4个十六进制数来表示，每段十六进制数值的范围是0000-FFFF，每段之间使用冒号来分隔。
+
+简化规则
+\begin{itemize}
+\item 每一个段中开头的0可以省略不写，但末尾的0不能省略\\
+原始IPv6地址：3ffe:1944:0100:000a:0000:00bc:2500:0d0b\\
+简化后IPv6地址：3ffe:1944:100:a:0:bc:2500:d0b\\
+\item 如果某段或连续几段全是0，则可以使用一个\verb':'来代替\\
+原始IPv6地址：ff02:0000:0000:0000:0000:0000:0000:0005\\
+简化后IPv6地址：ff02::5
+\item 如果128位全部为0的地址，则可以使用一个\verb'::'来表示\\
+原始IPv6地址: 0000:0000:0000:0000:0000:0000:0000:0000\\
+简化后IPv6地址：::
+\item IPv4地址的表示方法：0:0:0:0:0:0:d.d.d.d\\
+IPv4地址: 170.1.2.3\\
+用IPv6地址表示：0:0:0:0:0:0: 170.1.2.3 或 ::170.1.2.3
+\end{itemize}
+注意：在IPv6地址中，只能使用一次双冒号。如2001:0d02:0000:0000:0014:0000:0000:0095
+以下两种缩写方式都是正确的：\\
+2001:d02::14:0:0:95\\
+2001:d02:0:0:14::95\\
+但下面这种缩写方式是错误的：\\
+2001:d02::14::95
+
+多种IPv4过渡IPv6方式
+\begin{itemize}
+\item 双栈：即在接口上同时配置IPv4和IPv6
+\item 使用IPv4隧道来传输IPv6数据
+\item 在IPV4和IPv6之间进行NAT转换
+\end{itemize}
+
+\subsection{IP数据报相关协议}
+\subsubsection{地址解析协议}
+\begin{itemize}
+	\item IP单播地址：通过ARP协议获得MAC单播地址
+	\item IP广播地址(4B)：转为6B全1的MAC广播地址
+	\item IP多播地址(1110开头)：MAC的高25位为0x01-00-5E，低23位为IP地址的低23位
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.8\linewidth]{fig/ip_mac.png}
+	\end{figure}
+	如224.0.1.5写为16进制是0xE0-00-01-05，取低23位，得到MAC完整地址为0x01-00-5E-00-01-05
+\end{itemize}
+
 地址解析协议(address resolution protocol, ARP)可以\underline{将IP地址映射为MAC地址}\footnote{也有将也有MAC映射为IP地址的协议}
 \begin{itemize}
 	\item ARP请求广播帧（谁的IP地址是XXX），ARP响应单播帧（返回MAC地址），IP地址与MAC地址的端口号相同
 	\item 没有超时重传机制，超时没有收到响应则丢弃引发ARP查询的IP分组
 	\item 源主机获得的映射结果缓存在ARP表中$\lrang{\text{IP address},\text{MAC address},\text{TTL}}$，TTL一般为2到20分钟
-	\item 当收到ARP请求，目的主机会缓存源主机的映射，其他主机如果已缓存该映射，则会重置TTL
+	\item 当收到ARP请求，目的主机会\textbf{缓存}源主机的映射，其他主机如果已缓存该映射，则会\textbf{重置TTL}
 	\item 也可直接将映射加入ARP缓存，称为静态ARP映射，不会因超时而删除
 	\item 源硬件地址和协议地址、目标协议地址都知道，但\textbf{目的硬件地址}不知
 \end{itemize}
@@ -136,23 +276,96 @@ NAT将内部源地址转换为外部地址，NAPT/PAT/过载NAT将端口号也�
 	\includegraphics[width=0.7\linewidth]{fig/ARP.PNG}
 \end{figure}
 
+可以用ARP请求来确定一个IP地址在以太网中是否被使用，如果没有响应则说明没有使用。
+
+\subsubsection{动态主机配置协议}
 DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\textbf{动态租用}IP地址，用UDP，四个步骤如下
 \begin{itemize}
 	\item DHCP发现(discover)
-	\item DHCP提供(offer)
-	\item DHCP请求(request)
+	\item DHCP提供(offer)： 还可以指出DHCP中转服务器，使多个网络可以共享一个DHCP服务器（通过DHCP discover的域名选项进行区分）
+	\item DHCP请求(request)：从多个响应的服务器中选择一个，并通告其它服务器已拒绝了它们的offer
 	\item DHCP确认(ACK)
 \end{itemize}
 
-因特网控制消息协议(Internet Control Message Protocol, ICMP)用于主机或路由器发布网络级别的控制消息，主要是出错/丢包后将信息发回给源主机（TTL减到0、不可达），如回响请求和答复消息(ping)、不可达消息、时间超时消息（原IP头部+原IP数据部份的头64B）、重定位消息
+\subsubsection{因特网控制消息协议}
+因特网控制消息协议(Internet Control Message Protocol, ICMP)用于主机或路由器发布网络级别的控制消息，主要是出错/丢包后将信息发回给源主机，如
+\begin{itemize}
+	\item 回响请求和答复消息(ping)（类型8）：
+	\item 不可达消息（类型3）：用目的地址未查到匹配的路由项、需要分段但不可分段(DF=1)、网络/主机/协议/端口不可达，数据部分填原IP头部+原IP数据部分的头64b
+	\item 源端抑制（类型4）：控制源主机发送速度
+	\item 重定位消息（类型5）
+	\item 时间超时消息（类型11）：TTL减到0、数据报重组超时
+	\item 参数问题（类型12）：坏的IP头部、缺少必要选项
+\end{itemize}
 
-% Path MTU Discovery 用于寻找路径上最小MTU
-% Traceroute 用于获得整条路径上的路由器IP地址
-% 交换机端口镜像Port Mirroring, also known as SPAN (Switched Port Analyzer) 实现监听
-% DHCP Relay(中继) 多个局域网共享一个DHCP服务器 https://www.netmanias.com/en/post/blog/6004/dhcp-network-protocol/what-is-a-dhcp-relay-agent
+\begin{example}
+	主机和路由器通过三个以太网连接：[H1]-N1-[R1]-N2-[R2]-N3-[H2]。主机和路由器的每个接口的IP地址都配置正确。如果除了一种配置其他配置都是正确的，问其中哪种配置错误或者没有配置会导致以下问题？
+	可选项：
+	\begin{itemize}
+		\item [A.]R1配置N3的静态路由指向R2
+		\item [B.]R2配置N1的静态路由指向R1
+		\item [C.]H1配置默认路由指向R1
+		\item [D.]H2配置默认路由指向R2
+	\end{itemize}
+\end{example}
+\begin{analysis}
+	\begin{enumerate}
+	\item H1可以ping通R1左边接口的IP地址但是ping不通R1右边接口的IP地址：C，ping返回主机不可达
+	\item H1可以ping通R1右边接口的IP地址但是ping不通R2左边接口的IP地址：B，ping返回超时
+	\item H1可以ping通R2左边接口的IP地址但是ping不通R2右边接口的IP地址：A，ping返回主机不可达
+	\item H1可以ping通R2右边接口的IP地址但是ping不通H2的IP地址：D，ping返回超时
+	\end{enumerate}
+\end{analysis}
+\begin{example}
+	ping可以在子网中产生一个广播帧，请给出并解释方法。
+\end{example}
+\begin{analysis}
+	ping本网一个不存在的IP地址，因为ARP映射表中肯定没有，所以会发送ARP请求。ARP请求就是广播帧。或者直接ping对本网的广播，例如：ping 192.168.1.255。这个ICMP消息会用广播帧封装。
+\end{analysis}
+
+% \begin{example}
+% 	一台路由器连接两个子网（以太网）: N1-[R1]-N2。如果一台主机从一个子网移到另一个子网，并修改为另一个子网的IP地址，如何增加路由器的功能使这台主机还可以接收到用原IP地址发给它的数据报？
+% \end{example}
+% \begin{analysis}
+% 	利用ARP协议，当其它主机在N1查询该主机的原IP地址的MAC地址时，R1要用自己的MAC地址进行响应。其它主机就会把IP数据报用帧发给R1，R1再转给该主机(位于N2中)。具体可查ARP代理
+% \end{analysis}
+% \begin{example}
+% 	用一个交换机连接主机H1和H2。H1如何可以窃听到本网络中任何发给H2的IP数据报?
+% \end{example}
+% \begin{analysis}
+% 	对任何用H2的IP地址查询H2的MAC地址的ARP请求，H1都要尽快用自己的MAC地址发出ARP响应。H1也可以用H2的IP地址和自己的MAC地址进行主动查询。
+%% 交换机端口镜像Port Mirroring, also known as SPAN (Switched Port Analyzer) 实现监听
+% \end{analysis}
+% \begin{example}
+% 	如果一个路由器连接了两个以太网，如何采用DHCP协议让这两个以太网可以共用一个DHCP服务器？
+% \end{example}
+% \begin{analysis}
+% 	这里假设DHCP服务器只能接入其中一个子网，并具有两个子网的地址池可分配，路由器作为DHCP中继代理：
+% 	当另一个子网的DHCP客户机广播请求地址租赁时，中继代理服务器就会把这个消息转发给另一子网中的DHCP 服务器，然后再将DHCP服务器返回的分配IP地址的消息转发给DHCP客户机，从而协助DHCP客户机完成地址租赁。
+% 	DHCP服务器要根据DHCP中继代理给出的子网信息确定分配给客户机哪个子网的地址。
+%% DHCP Relay(中继) 多个局域网共享一个DHCP服务器 https://www.netmanias.com/en/post/blog/6004/dhcp-network-protocol/what-is-a-dhcp-relay-agent
+% \end{analysis}
+% \begin{example}
+% 	当一台主机要向远方的另一台主机发送很多数据报。如果它希望这些数据报中途不要分段以节约路由器的时间，这就要找到路径上最小的MTU，有何方法？假设这段时间该路径不会改变。
+% \end{example}
+% \begin{analysis}
+% 	将数据报中的DF置为1，则路径上所有小于该包的MTU都会被丢弃，然后传递回一个类型3代码4的ICMP包（需要分段但不可分段），进而使得源主机减少它的路径MTU。最终直到MTU足够小以至于走完整条路径都不需要分段，此时获得的MTU就是路径最小MTU。
+%% Path MTU Discovery 用于寻找路径上最小MTU
+
+% 	Ping远端主机，每个数据报的DF均设置为1（即不允许分段），ICMP有效载荷的字节数从大到小变化，直到得到响应。也可以直接发送数据报而不用ping。
+% \end{analysis}
+% \begin{example}
+% 	一台主机往远方的另一台主机发送数据报。如何可以通过数据报的TTL字段和ICMP协议依次（由近至远）得到整条路径上的路由器的IP地址（每个路由器只需要得到一个IP地址）? 假设这段时间该路径不会改变。
+% \end{example}
+% \begin{analysis}
+% 	每一次发送一个数据报含有TTL，且TTL的值由1开始每次递增。路由器收到数据包后会将TTL减1，然后丢弃那些已经减到0的数据报，并返回ICMP超时包，进而可以获得距离为1的那些路由器IP地址。如此往复直到数据报能够到达另一台主机，此时整条路径上的路由器IP地址就都得到了，这有点像广度优先搜索(BFS)的原理。
+
+% 	不断ping另一台主机，并且TTL从1开始不断增加。查traceroute命令。
+%% Traceroute 用于获得整条路径上的路由器IP地址
+% \end{analysis}
 
 \subsection{路由协议}
-有类网的路由选择算法：
+\subsubsection{有类网的路由选择算法}
 利用数据包中的\textbf{目的地址}得到\textbf{目的网络号}，然后查询\textbf{路由表}(routing table)/转发表(forwarding table)
 \begin{itemize}
 	\item 如果查询的结果为\textbf{直连网}，则\textbf{下一跳(next hop)为空}，直接把数据包从查出的接口转发到目的主机
@@ -161,47 +374,80 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 	\item 如果没有设置默认路由，则\textbf{丢弃}该数据包
 \end{itemize}
 
-无类网的路由选择：
+\subsubsection{无类网的路由选择算法}
 无类网的路由表里有子网掩码
 \begin{itemize}
 	\item 匹配方法: 目的IP地址 \& 子网掩码 $==$ 子网号
 	\item 最长匹配原则(The longest match rule): 当有多条路由都匹配时选择子网掩码最长（1的长度）的路由，因为更详细
 	\item 从IP数据报中获取目的地址，利用目的地址\textbf{查路由表}（同有类网）
-	\item 直连网将数据报直接\textbf{封装成帧}发送，不需要目的地址(PPP)
-	\item 以太网同样要封装成帧，从\textbf{路由表中查出下一跳}的IP地址，通过\textbf{ARP协议}获得\textbf{目的MAC地址}，加入帧内
-	\item 如没有下一跳，则直接取\textbf{IP数据报中的目的IP地址}（已经到达了）
-	\item 发送时要遵守以太网协议(CSMA/CD)
+	\begin{itemize}
+		\item 没有匹配项：\textbf{丢弃}该分组
+		\item 有匹配项，下一跳接口为以太网：从\textbf{路由表中查出下一跳}的IP地址，通过\textbf{ARP协议}获得\textbf{目的MAC地址}，\textbf{封装成帧}发送，要遵守\textbf{以太网协议(CSMA/CD)}
+		\item 有匹配项，没有下一跳，匹配项接口为以太网：直接取\textbf{IP数据报中的目的IP地址}（已经到达了）或用IP分组的目的地址查询MAC地址，封装成帧发送
+		\item 有匹配项，下一跳接口为直连网(PPP)（或没有下一跳，匹配项接口为PPP）：将数据报直接\textbf{封装成帧}发送，不需要目的地址
+	\end{itemize}
 	\item 每到一个路由器都将帧拆出来，再重新封装，目的和源MAC地址（上一跳路由器MAC地址）全要发生变化
 \end{itemize}
+注意：路由表中每一行的下一跳和接口必然处于同一物理网络中
 
-路由表
-\begin{itemize}
-	\item 127.0.0.1是内部的，其他是外部的需要经过防火墙
-	\item 接口不一样，因此要在路由器里写两项，一项内部一项外部
-	\item 往外发，默认路由会匹配
-	\item 选择跃点数(metric)小的一项，如果跃点数也相同，则两个接口都会发送
-\end{itemize}
+\begin{example}
+	给定目的地址求下一跳
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/router_table_example.jpg}
+\end{figure}
+\end{example}
+\begin{analysis}
+	结果如下
+	\begin{center}
+		\begin{tabular}{cc}\hline
+			目的地址 & 下一跳\\\hline
+			192.4.153.17 & 128.96.39.212\\
+			128.96.39.10 & 128.96.39.1\\
+			128.96.40.12 & 199.1.3.1\\
+			128.96.40.151 & 128.96.39.198\\
+			192.4.153.90 & 128.96.39.198\\\hline
+		\end{tabular}
+	\end{center}
+\end{analysis}
+
+\begin{example}
+	实战分析：“在链路上”意味着是直连网，“网关”相当于下一跳，“接口”直接用IP地址标注
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\linewidth]{fig/my-router-table.png}
+	\end{figure}
+\end{example}
+\begin{analysis}
+	\begin{enumerate}
+		\item 0.0.0.0/0：默认路由，即其他项匹配不上的都会被送至172.19.108.182的接口，\\然后发送到172.19.127.254（默认网关，私有地址，这是WiFi协议）
+		\item 127.0.0.0/8：环回网络，发给自己
+		\item 127.0.0.1/32：环回网络，本地地址（内部地址，其他是外部地址都需要经过网络层防火墙）
+		\item 172.19.64.0/18：WiFi
+		\item 192.168.56.1/32：无线网卡接口IP
+		\item 224.0.0.0/4：从跃点数较小(281)的端口192.168.56.1发出去，在无线网络中多播（接口不一样，因此要在路由器里写两项，一项内部一项外部）
+		\item 255.255.255.255/32：在无线网络中广播
+	\end{enumerate}
+\end{analysis}
 % 点到点可以路由器端口不用配IP地址，但以太网一定要配，因为可能有交换机
+% https://blog.csdn.net/xiaohuima_dong/article/details/47777989
+% https://www.rootusers.com/how-to-display-routing-table-in-linux/
 
-路由表可以由管理员手工建立，也可以由路由/路由选择协议(routing protocols)自动建立。
+\subsubsection{路由表的建立}
+路由表可以由管理员手工建立，也可以由路由/路由选择协议(routing protocols)自动建立，建路由表是即记\textbf{最短路径}的下一跳。
+
 路由协议即自动建立路由表，包括网络号、子网号、下一跳、接口、开销等。
 所建立的路由分别称为\textbf{静态路由}和\textbf{动态路由}。
 默认路由和直连路由都是静态路由。
 
-建路由表是记\textbf{最短路径}的下一跳。
-
-整个因特网实际上由很多机构进行管理。每个机构管理自己的网络，它们有权决定采用什么协议和网络控制策略。这样在\textbf{同一个机构}管理下的网络称为一个\textbf{自治系统}(autonomous systems, AS)。因特网实际上是由很多自治系统构成的。
+整个因特网实际上由很多机构进行管理。每个机构管理自己的网络，它们有权决定采用什么协议和网络控制策略。这样在\textbf{同一个机构}管理下的\textbf{网络}称为一个\textbf{自治系统}(autonomous systems, AS)。因特网实际上是由很多自治系统构成的。
 \begin{itemize}
 	\item 用于在AS\textbf{内部}(Intra-AS)建立动态路由的路由协议称为\textbf{内部网关协议}(Interior Gateway Protocols, IGP)。例如，\underline{RIP协议}和\underline{OSPF协议}。一个AS通常运行单一IGP。
 	\item 用于在AS\textbf{之间}(Inter-AS)建立动态路由的路由协议称为\textbf{外部网关协议}(Exterior Gateway Protocol, EGP)。例如，\underline{BGP协议}。
 	\item 运行同一个IGP协议的连通区域也称为路由选择域(routing domain)。一个AS可以运行多个IGP协议，形成多个路由选择域。
 \end{itemize}
 
-加了网关相当于加了默认路由。
-
-网络层在入口位置有防火墙，未查路由表就丢弃了。
-
-路由算法(Routing algorithm):路由协议里用的算法， 由于两个路由器之间都有开销，可以建立一个图，找最短路径
+路由算法(Routing algorithm)：路由协议里用的算法， 由于两个路由器之间都有开销，可以建立一个图，找最短路径
 \begin{itemize}
 	\item 链接状态(link state, LS)：Dijstra
 	\item 距离向量(distance vector, DV)：BellmanFord
@@ -217,7 +463,8 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 \end{itemize}
 
 具体算法：
-当收到邻居发来的路由表(update packet)，路由器将更新它的路由表$\lrang{\text{目的网络},\text{开销},\text{下一跳}}$：
+当收到邻居发来的路由表(update packet)，路由器将更新它的路由表
+\[\lrang{\text{目的网络},\text{开销},\text{下一跳}}\]
 \begin{enumerate}
 	\item 收到路由的距离全部加1(即一跳的距离)
 	\item 利用上述路由修改路由表:
@@ -229,6 +476,37 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 	\item 如果路由存在，就要重置失效定时器
 \end{enumerate}
 RIP路由表的每一项都有TTL(Time-To-Live)，用失效定时器(invalid timer)计时，超时则让该路由失效
+
+\begin{example}
+	路由器A-G运行RIP协议，每跳的距离为1。B和C是邻居。如果B和C此时的路由表如下所示：
+\begin{center}
+\begin{tabular}{ccc|ccc}\hline
+路由器B目的网络 & 距离 & 下一跳 & 路由器C目的网络 & 距离 & 下一跳\\\hline
+N1 & 5 & A & N1 & 3 & F\\
+N3 & 3 & C & N3 & 6 & F\\
+N6 & 2 & E & N6 & 3 & B\\
+N9 & 5 & D & N7 & 3 & G\\
+N10 & 1 & - & N9 & 5 & G\\
+& & & N10 & 2 & B\\\hline
+\end{tabular}
+\end{center}
+当路由器B接收到来自C的路由表之后对路由表进行自己的更新， 请写出更新之后B的路由表
+\end{example}
+\begin{analysis}
+路由器B路由表更新后的结果为
+\begin{center}
+\begin{tabular}{ccc}\hline
+目的网络 & 距离 & 下一跳\\\hline
+N1 & 4 & C\\
+N3 & 7 & C\\
+N6 & 2 & E\\
+N7 & 4 & C\\
+N9 & 5 & D\\
+N10 & 1 & -\\\hline
+\end{tabular}
+\end{center}
+记得要更新下一跳的内容
+\end{analysis}
 
 RIP协议存在的问题
 \begin{itemize}
@@ -482,36 +760,4 @@ DV节点可能通告不正确的路径开销\\
 \begin{itemize}
 	\item IGMPv1协议只能对某个接口查询所有组，如果三次查询在十秒内都没有收到响应报告，则认为该接口没有任何组成员。
 	\item IGMPv2协议可以直接针对某个组进行查询，而且主机加入组和离开组都要发通告。
-\end{itemize}
-
-\subsection{IPv6}
-IPv6地址由128位二进制数组成，分割成8段16位组，然后把每段16位组换算成4个十六进制数来表示，每段十六进制数值的范围是0000-FFFF，每段之间使用冒号来分隔。
-
-简化规则
-\begin{itemize}
-\item 每一个段中开头的0可以省略不写，但末尾的0不能省略\\
-原始IPv6地址：3ffe:1944:0100:000a:0000:00bc:2500:0d0b\\
-简化后IPv6地址：3ffe:1944:100:a:0:bc:2500:d0b\\
-\item 如果某段或连续几段全是0，则可以使用一个\verb':'来代替\\
-原始IPv6地址：ff02:0000:0000:0000:0000:0000:0000:0005\\
-简化后IPv6地址：ff02::5
-\item 如果128位全部为0的地址，则可以使用一个\verb'::'来表示\\
-原始IPv6地址: 0000:0000:0000:0000:0000:0000:0000:0000\\
-简化后IPv6地址：::
-\item IPv4地址的表示方法：0:0:0:0:0:0:d.d.d.d\\
-IPv4地址: 170.1.2.3\\
-用IPv6地址表示：0:0:0:0:0:0: 170.1.2.3 或 ::170.1.2.3
-\end{itemize}
-注意：在IPv6地址中，只能使用一次双冒号。如2001:0d02:0000:0000:0014:0000:0000:0095
-以下两种缩写方式都是正确的：\\
-2001:d02::14:0:0:95\\
-2001:d02:0:0:14::95\\
-但下面这种缩写方式是错误的：\\
-2001:d02::14::95
-
-多种IPv4过渡IPv6方式
-\begin{itemize}
-\item 双栈：即在接口上同时配置IPv4和IPv6
-\item 使用IPv4隧道来传输IPv6数据
-\item 在IPV4和IPv6之间进行NAT转换
 \end{itemize}

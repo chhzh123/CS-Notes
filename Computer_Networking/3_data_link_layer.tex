@@ -210,11 +210,15 @@ IEEE 802.3规定以太网物理层标准：
 
 802.3的MAC帧格式
 \begin{center}
-前导字符(8B)+目的地址(6B)+源地址(6B)+类型/长度(2B)+有效载荷/填充位+帧校验序列(4B)
+前导字符(8B)+目的地址(6B)+源地址(6B)+类型/长度(2B)+有效载荷/填充位(46B-1500B)+帧校验序列(4B)
 \end{center}
 \begin{itemize}
+\item 前导字符(preamble)：同步字符(7B)和起始定界符(start of frame delimiter)(1B)
+\item 目的地址：一般为接收者的单播地址
 \item 源地址：一般为发送者的单播地址
-\item 目的地址(6B)：一般为接收者的单播地址
+\item 类型/长度：\textbf{0x0800 IP数据报}，0x0806 ARP报文，0x0835 RARP报文
+\item 有效载荷(payload)：用户数据，不足46B加入填充字节至46B
+\item 帧校验序列(frame check sequence)：对目的地址、源地址、类型/长度、有效载荷、填充位进行CRC32校验
 \end{itemize}
 
 MAC地址
