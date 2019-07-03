@@ -4,7 +4,7 @@
 应用层协议一般都是采用客户-服务器结构
 \begin{center}
 \begin{tabular}{|c|c|c|}\hline
-应用 & 应用层协议 & 传输协议\\\hline
+应用 & 应用层协议 & 传输层协议\\\hline
 Email & SMTP [RFC 2821] & TCP \\\hline
 远程终端访问 & Telnet [RFC 854] & TCP\\\hline
 Web & HTTP [RFC 2616] & TCP\\\hline
@@ -13,6 +13,7 @@ Web & HTTP [RFC 2616] & TCP\\\hline
 \end{center}
 
 \subsection{HTTP协议}
+\subsubsection{概述}
 \begin{itemize}
 \item 网页(Web page)是由对象(objects)构成的。这些对象可以是HTML文件、 JPEG图像文件、 MP4视频文件等。
 \item 网页的HTML文件中指出了所需的其他对象。
@@ -25,7 +26,7 @@ HTTP: 超文本传送协议(hypertext transfer protocol)，是无状态的(state
 \item 非流水式持续连接HTTP：每个时刻可以请求多个Web对象，每建立一个连接可以传送多个Web对象。\verb'connection: keep-alive'
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\linewidth]{fig/non-pipelining-http.png}
+    \includegraphics[width=0.4\linewidth]{fig/non-pipelining-http.png}
 \end{figure}
 \item 流水式持久连接HTTP：可以连续请求多个Web对象，每建立一个TCP连接可以传送多个Web对象。HTTP/1.1 默认使用持续连接。\verb'connection: keep-alive'
 \begin{figure}[H]
@@ -34,7 +35,8 @@ HTTP: 超文本传送协议(hypertext transfer protocol)，是无状态的(state
 \end{figure}
 \end{itemize}
 
-HTTP请求消息
+\subsubsection{消息}
+HTTP请求消息(message)
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\linewidth]{fig/http-msg.png}
@@ -58,6 +60,7 @@ Connection: close
 Host: www.sysu.edu.cn
 \end{lstlisting}
 
+\subsubsection{HTTP版本更新}
 HTTP1.1对HTTP1.0的改进：
 \begin{enumerate}
 \item 一个TCP连接可以传送多个HTTP请求和响应。
@@ -76,16 +79,17 @@ HTTP2.0
 \subsection{FTP协议}
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/FTP.png}
+\includegraphics[width=0.6\linewidth]{fig/FTP.png}
 \end{figure}
 
 \begin{itemize}
-\item 使用FTP协议首先建立\textbf{控制连接}，然后建立\textbf{数据连接}，客户端再通过控制连接发出命令，通过数据连接得到服务器返回的结果或上传数据给服务器。
+\item 使用FTP协议首先建立\textemph{控制连接}，然后建立\textemph{数据连接}，客户端再通过控制连接发出命令，通过数据连接得到服务器返回的结果或上传数据给服务器。
 \item 控制连接为带外数据(\verb'out of band')
 \item FTP服务器会保留状态: 当前目录、已做的认证
 \end{itemize}
 
-如下例，得到IP地址(202.116.86.101)后，计算端口号(12*256+26=3098)，进而建立数据连接\verb'telnet 202.116.86.101 3098'
+如下例，得到IP地址(\verb'202.116.86.101')后，计算端口号(12*256+26=3098)，\\
+进而建立数据连接\verb'telnet 202.116.86.101 3098'
 \begin{lstlisting}
 telnet 202.116.86.101 21
 220 Microsoft FTP Service
@@ -111,10 +115,11 @@ Email有三个主要组件：
 \end{itemize}
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/SMTP.png}
+\includegraphics[width=0.7\linewidth]{fig/SMTP.png}
 \end{figure}
 
 \subsection{域名系统}
+\subsubsection{概述}
 域名系统(Domain Name System, DNS)提供的服务
 \begin{itemize}
 \item 主机名到IP地址的转换
@@ -125,7 +130,8 @@ Email有三个主要组件：
 \item 重复的Web服务器: 一个权威名对应一组IP地址
 \end{itemize}
 
-不采用集中式DNS：不易扩大规模
+\myhline
+不采用集中式DNS的原因：不易扩大规模
 \begin{itemize}
 \item 单点失效
 \item 流量过于集中
@@ -133,12 +139,15 @@ Email有三个主要组件：
 \item 维护问题
 \end{itemize}
 
+\subsubsection{DNS服务器}
+\begin{example}
 如果客户希望获得www.amazon.com的IP地址：
 \begin{itemize}
 \item 客户先到根服务器上查询comDNS服务器的IP地址
 \item 然后到com DNS服务器上查询amazon.com的DNS服务器
 \item 最后查询amazon.com DNS服务器获得www.amazon.com的IP地址
 \end{itemize}
+\end{example}
 
 根名字服务器
 \begin{itemize}
@@ -147,6 +156,8 @@ Email有三个主要组件：
 \item 根服务器主要用来管理互联网的主目录，全世界只有13台：1个为主根服务器，放置在美国。其余12个均为辅根服务器，其中9个放置在美国，欧洲2个，位于英国和瑞典，亚洲1个，位于日本。
 \end{itemize}
 
+\myhline
+权威服务器
 \begin{itemize}
 \item 顶级域名提供了权威DNS服务器的IP地址，包括com, org, net, edu, uk, fr, ca, jp等
 \item 权威DNS服务器：
@@ -156,7 +167,8 @@ Email有三个主要组件：
 \end{itemize}
 \end{itemize}
 
-DNS: 采用分布数据库保存资源记录(resource records, RR)
+\subsubsection{资源记录}
+采用分布数据库保存资源记录(resource records, RR)
 \[\text{(name, value, type, class,ttl)}\]
 \begin{itemize}
 \item Type=A (Address RR)
@@ -174,25 +186,28 @@ DNS: 采用分布数据库保存资源记录(resource records, RR)
 
 \section{其他内容}
 \subsection{无线局域网}
+\subsubsection{基本特性}
 无线局域网(WiFi)IEEE 802.11
 \begin{itemize}
 \item 不同标准MAC层一样，改进的是物理层（发、编码、怎么收）
 \item 无线信道特点：信号衰减快
 \end{itemize}
 
-固定设施
+\subsubsection{设施}
 \begin{itemize}
 \item 无固定设施（自组织）：独立基本服务集(Basic Service Set, BSS)，不需要路由器，可以几台PC直接连
 \item 有固定设施：有个接入点(Access Point, AP)，有路由器，连成基本服务集；
 扩展的服务集(ESS)，完全无缝连接，自动迁移到下一个AP
 \end{itemize}
 
+\subsubsection{底层配置}
 MAC层一般用分布协调功能(DCF)
 \begin{itemize}
 \item 原子操作：发完数据等待28$\mu$s后才发ACK
 \item CSMA/CA(Carrier Avoidance)算法：尽可能少冲突，尽可能少重传；即使空闲也要随机等一段时间
 \end{itemize}
 
+\myhline
 \begin{itemize}
 \item 翻译网桥：一种帧转换为另一种帧
 \item 不同频率的WiFi：5GHz WiFi干扰小（不是说现在的5G）
@@ -207,7 +222,7 @@ SNMP协议：Simple Network Management Protocol
 ADSL不是用语音传，是用数据传的，现在都不用电话线连了
 
 \subsection{软件定义网络}
-软件定义网络(Software Defined Network, SDN)：原来路由器交换机都是固定电路，但现在可编程，是未来网络发展方向，最大的好处在于\textbf{虚拟化}
+软件定义网络(Software Defined Network, SDN)：原来路由器交换机都是固定电路，但现在可编程，是未来网络发展方向，最大的好处在于\textemph{虚拟化}
 
 \begin{center}
 \begin{tikzcd}
