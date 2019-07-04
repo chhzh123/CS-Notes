@@ -26,13 +26,13 @@
 \begin{enumerate}
 \item 单极编码(unipolar)：0V即0，$+E$V为1，但是会产生两种漂移
 \begin{itemize}
-	\item 时钟漂移：发送方和接收方采用\textemph{不同的时钟信号}，或长时间没有校正信号；一定要有跳变
-	\item 基线漂移：线很长会有，长时间传输\textemph{相同电平信号}导致积累很多\textemph{同种电荷}，最后导致信号整体偏离基准线；一定要有变化/正负
+	\item 时钟漂移：发送方和接收方采用\textemph{不同的时钟信号}，或长时间没有校正信号；一定要\textemph{有跳变}
+	\item 基线漂移：线很长会有，长时间传输\textemph{相同电平信号}导致积累很多\textemph{同种电荷}，最后导致信号整体偏离基准线；一定要\textemph{有变化/正负}
 \end{itemize}
 \item 不归零编码/双极编码(non-return-to-zero/bipolar, NRZ) ：$-E$为0，$+E$为1，解决基线漂移问题（平衡01）；全是0或全是1，还是没法区分
 \item 不归零反转编码(Inverted, NRZI)：\textemph{差分}码波形，相邻码元的电位改变表示1，而电位不改变表示0；也可以反过来。 该表示方法与码元本身电位或极性无关，而仅与相邻码元的电位变化有关
 \item 曼彻斯特(Manchester)编码：从相邻时刻的中间起降$-E\thicksim +E$，$0\to 10, 1\to 01$，\textemph{可克服时钟漂移和基线漂移}；频率高，传输有问题，对传输介质要求高
-\item 差分曼彻斯特编码：在每一位开始时间如果跳变（当前编码与原数据不同）则为0，否则为1，且中间也要跳变
+\item 差分曼彻斯特编码：在每一位开始时间如果跳变（当前编码与原数据不同）则为0，否则为1，且\textemph{中间也要跳变}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.5\linewidth]{fig/network-manchester.pdf}
@@ -78,7 +78,7 @@
 \begin{itemize}
 	\item 时分多路复用(time division multiplexing, TDM)：时间域被分成周期循环的一些小段，每段时间长度是\textemph{相同}的，每个时段用来传输一个子信道
 	\item 频分多路复用(frequency, FDM)：\textemph{无线电台}常用
-	\item 波分多路复用(wavelength, WDM)：利用多个激光器在单条光纤上同时发送多束不同波长激光的技术
+	\item 波分多路复用(wavelength, WDM)：利用多个激光器在单条光纤上同时发送多束\textemph{不同波长}激光的技术
 	\item 码分多路复用(code, CDM)：利用各路信号码型结构正交性而实现多路复用
 	\item 统计多路复用(static, SDM)：\textemph{动态分配}方法共享通信链路，比如FIFO；对于多个\textemph{可变速率}的数据流，SDM可以提高链路利用率
 \end{itemize}

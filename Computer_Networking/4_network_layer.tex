@@ -1,16 +1,34 @@
 % !TEX root = main.tex
 
 \section{网络层}
+每个数据链路层协议只涉及一个直连网，而网络层协议涉及\textemph{整个网络}。
+
+网络层协议负责确定\underline{把收到的包从哪条路经转发(forwarding)出去}，即\textemph{路由选择}(routing)功能。
+具体的传送则由数据链路层和物理层负责。
+
 \subsection{IP数据报}
-\subsubsection{数据传输技术}
+\subsubsection{一般网络的服务模型}
+异步传输模式(Asynchronous Transfer Mode, ATM)
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}\hline
+网络结构 & 服务模型 & 带宽 & 不丢包 & 有序 & 及时 & 拥塞反馈\\\hline
+ATM & 恒定位速率 & 固定速率 & 是 & 是 & 是 & 无拥塞\\\hline
+ATM & 可变位速率 & 确保速率 & 是 & 是 & 是 & 无拥塞\\\hline
+ATM & 可用位速率 & 最小保证 & 否 & 是 & 否 & 是\\\hline
+ATM & 未指定位速率 & 无 & 否 & 是 & 否 & 否\\\hline
+因特网 & 尽力服务 & 无 & 否 & 否 & 否 & 否\\\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{数据交换技术}
 \begin{itemize}
-\item 电路交换(circuit switching)：实际接通一条物理线路，时分多路复用，电话；频分多路复用，电视；一直占用，不管有无数据交互
-\item \textemph{包交换/分组交换}\footnote{所以IP数据报也被称为IP分组(packet)}(packet switching)：统计多路复用，按需分配；可能引起网络拥塞，适合发送突发数据
+\item 电路交换(circuit switching)：实际接通一条物理线路，如电话（时分多路复用，类似第一种ATM模型）、电视（频分多路复用）。一直占用，不管有无数据交互
+\item \textemph{包交换/分组交换}\footnote{所以IP数据报也被称为IP分组(packet)}(packet switching)：\textemph{统计多路复用}，按需分配；\textemph{可能引起网络拥塞}，适合发送突发数据
 \begin{itemize}
-	\item 虚电路：\textemph{需建立连接}才可以传输数据（仿照电话系统，恒变位速率ATM，因特网之前），好处在于保留带宽
+	\item 虚电路(virtual circuit)：\textemph{需建立连接}才可以传输数据（仿照电话系统，恒变位速率ATM，因特网之前），好处在于\textemph{保留带宽}
 	\begin{itemize}
-	    \item 交换式（要交换才建立连接）：建立虚电路(VC)表，虚电路标识符(VCI)，类似于电话
-	    \item 永久式（建立后一直保持）：由管理员维护
+	    \item 交换式：要传数据时才建立连接，传完则释放；建立虚电路(VC)表，虚电路标识符(VCI)，类似于电话
+	    \item 永久式：建立后一直保持，由管理员维护
 	\end{itemize}
 	\item 数据报(datagram)：不需建立连接，因特网，\textemph{不预留带宽}
 \end{itemize}
@@ -49,23 +67,11 @@
 \end{center}
 \end{analysis}
 
-一般网络的服务模型：Aynchronous Transfer Mode, ATM
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|c|c|}\hline
-网络结构 & 服务模型 & 带宽 & 不丢包 & 有序 & 及时 & 拥塞反馈\\\hline
-ATM & 恒定位速率 & 固定速率 & 是 & 是 & 是 & 无拥塞\\\hline
-ATM & 可变位速率 & 确保速率 & 是 & 是 & 是 & 无拥塞\\\hline
-ATM & 可用位速率 & 最小保证 & 否 & 是 & 否 & 是\\\hline
-ATM & 未指定位速率 & 无 & 否 & 是 & 否 & 否\\\hline
-因特网 & 尽力服务 & 无 & 否 & 否 & 否 & 否\\\hline
-\end{tabular}
-\end{center}
-
 \myhline
 IP协议是\textemph{因特网的网络层协议}
 \begin{itemize}
-\item 可路由的(routable)：全局地址，按层分配
-\item 尽力服务(best effort)：\textemph{无连接无确认}的\textemph{数据报}服务，不可靠的
+\item \textemph{可路由的}(routable)：全局地址，按层分配（三层）
+\item \textemph{尽力服务}(best effort)：\textemph{不可靠的无连接无确认}的\textemph{数据报}服务
 \item IP协议可以运行在\textemph{任何物理网络}上，不仅仅是因特网
 \end{itemize}
 注意：IP协议不具有拥塞控制机制
@@ -88,9 +94,23 @@ IP协议是\textemph{因特网的网络层协议}
 	\item 长了就有捷径(cut-through)，因此发展到现在因特网的直径依然在32左右，即TTL\underline{限制了因特网的直径}
 \end{itemize}
 \item 协议：\underline{TCP为6，UDP为17，ICMP为1，IGMP为2}
-\item 头部选项：1B代码，1B总长度，nB数据
+\item 头部校验：将校验和字段置为0，然后对IP包头进行校验和运算。
+如包头长度不是16b的倍数，则用0填充。
+路由器会丢弃出错的数据报。
+\item 头部选项：最后一定要对齐到边界。
+\[\text{1B代码} + \text{1B总长度} + \text{nB数据}\]
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+代码 & 名称 & 描述\\\hline
+0 & 选项列表结束 & 一个字节：0x00，用于最后选项4字节对齐\\\hline
+1 & 无操作 & 一个字节：0x01，用于中间选项4字节对齐\\\hline
+7 & 记录路由 & 记录下每个转发路由器的IP地址\\\hline
+131 & 松散源路由 & 指明一系列必须经过的路由器\\\hline
+137 & 严格源路由 & 指明一系列必须且只能经过的路由器\\\hline
+\end{tabular}
+\end{center}
 \begin{itemize}
-	\item 4个字节一个字，头部最多$(2^4-1)*4=60$B，除去非选项部分$4*5=20$B，IPv4选项最多$40$B，太少了
+	\item 头部长度只有4b，以字为单位，头部最多$(2^4-1)\times 4=60$B，除去非选项部分$4\times 5=20$B，IPv4选项最多$40$B，太少了
 	\item 记录路由：记录下每个转发路由器的IP地址，代码为7。\\
 	代码和长度后面跟1B指针，然后每个IP地址4B
 	\item 指针指向下一个IP地址的位置，\underline{4为空，40为满，最多记录9个}
@@ -102,15 +122,14 @@ IP协议是\textemph{因特网的网络层协议}
 
 \subsubsection{数据报的分段和重组}
 \begin{itemize}
-\item 一个物理网络的最大传输单元(maximum transmission unit, MTU)是该网络可以运载的最大有效载荷，即\textemph{数据\underline{帧}的数据部分}的最大长度\\
-如：以太网(DIXv2)的MTU为1500, FDDI和令牌环的MTU分别为4353和4482
-\item 只要发出去一定会封装成帧（注意要加头部），帧最长就是MTU；如果一个数据报的大小大于要承载它的网络的MTU，路由器需要先对该数据报进行分段(fragment)
-\item 源主机每次发送IP数据报时都会把标识字段加1
-\item 分段时用标识的值保持不变，并且用偏移量字段(offset)指出该片段的\textemph{数据部分}相对原来数据报的偏移量（以\textemph{8字节为单位}），给出原来片段的次序
+\item 一个物理网络的最大传输单元(maximum transmission unit, MTU)是该网络可以运载的最大有效载荷，即\textemph{数据\underline{帧}数据部分}的最大长度\\
+如：\underline{以太网(DIXv2)的MTU为1500}, FDDI和令牌环的MTU分别为4353和4482
+\item 如果一个数据报的大小大于要承载它的网络的MTU，路由器需要先对该数据报进行分段(fragment)
+\item 源主机每次发送IP数据报时都会把标识字段加1。
+分段时标识的值\textemph{保持不变}，用偏移量字段(offset)指出该片段的\textemph{数据部分}相对原来数据报数据部分的偏移量（以\textemph{8字节为单位}）
 \item 当目的主机收到该数据报的所有片段时，它会重组(reassemble)为原来的数据报
-\item 第一个片段到达目的主机时目的主机会启动一个重组定时器（默认超时值为15秒）。如果该定时器到期时没有收集到所有片段，目的主机会放弃本次重组并丢弃该数据报的所有片段
+\item 第一个片段到达目的主机时目的主机会启动一个\textemph{重组定时器}（默认超时值为15秒）。如果该定时器到期时没有收集到所有片段，目的主机会放弃本次重组并丢弃该数据报的所有片段。
 \item 分段后\underline{MF、偏移量、头部校验（检验和）和总长度}会变，其他不变
-\item 选项最后一定要对齐到边界
 \item IPv6中间不能分段
 \end{itemize}
 \begin{example}
@@ -118,7 +137,8 @@ IP协议是\textemph{因特网的网络层协议}
 	如果第二个片段在后面的路由器上要转发到MTU=300的物理网络上，要继续划分片段，则应该如何划分？
 \end{example}
 \begin{analysis}
-	要减去头部长度，$\lfloor (800-20)/8\rfloor=97$，实际载荷$97*8=776$B，故分为4段，$3000=776+776+776+672$
+	要减去IP数据报头部长度，$\lfloor (800-20)/8\rfloor=97$，实际载荷$97\times 8=776$B，故分为4段，$3000=776+776+776+672$。
+	由数据报总长度来确定数据部分边界。
 \begin{center}
 \begin{tabular}{cccc}\hline
 	& 标识 & 偏移量 & MF\\\hline
@@ -140,24 +160,27 @@ IP协议是\textemph{因特网的网络层协议}
 \end{analysis}
 
 \subsection{IP地址}
-48位的MAC地址和32位的IP地址都是全局的（全球分配），但是IP地址空间分层，是可路由的。
-IP地址属于接口/网卡(Network interface card, NIC)。主机或路由器的每个接口可以配置一个或多个IP地址。
+48位的MAC地址和32位的IP地址都是全局的（全球分配），但是IP地址空间\textemph{分层}（即划分为几个部分），是\textemph{可路由的}（分层避免路由表太大）。
+IP地址属于\textemph{接口/网卡}(Network interface card, NIC)。主机或路由器的每个接口可以配置一个或多个IP地址。
+
+\subsubsection{有类网}
+IPv4地址占32位，以点分十进制方式表示，每8位占一格，如192.168.1.1。
 
 IP地址可划分为两个部分：
 \begin{itemize}
-	\item 网络号/网络前缀/网络标识：确定拥有该IP地址的主机位于哪个网络
-	\item 主机号：确定属于该网络的哪台主机
+	\item \underline{网络号}/网络前缀(prefix)/网络标识(ID)：确定拥有该IP地址的主机位于哪个网络
+	\item \underline{主机号}(host identifier)：确定属于该网络的哪台主机
 \end{itemize}
 
-\subsubsection{有类网}
-ABC单播，D多播，E保留，地址范围如下（点分十进制）：
-\begin{itemize}
-	\item A类：0 $\thicksim$ 127（主机号3B）
-	\item B类：128 $\thicksim$ 191（主机号2B）
-	\item C类：192 $\thicksim$ 223（主机号1B）
-	\item D类：224 $\thicksim$ 239
-	\item E类：240 $\thicksim$ 255
-\end{itemize}
+\begin{center}
+\begin{tabular}{|c|c|l|c|}\hline
+A类 & 0 $\thicksim$ 127 & 0 & 主机号占3B，单播\\\hline
+B类 & 128 $\thicksim$ 191 & 10 & 主机号占2B，单播\\\hline
+C类 & 192 $\thicksim$ 223 & 110 & 主机号占1B，单播\\\hline
+D类 & 224 $\thicksim$ 239 & 1110 & 多播地址\\\hline
+E类 & 240 $\thicksim$ 255 & 1111 & 保留\\\hline
+\end{tabular}
+\end{center}
 注意：ABC类网网络号全0或全1不可用，故可用网络地址数要减2，如一个C类网可用的IP地址只有$2^8-2=254$个
 
 \subsubsection{无类网}
@@ -193,6 +216,7 @@ IPv4地址不够用的解决方案
 	\end{center}
 \end{analysis}
 
+\myhline
 非军事化区(Demilitarized Zone, DMZ)是位于内部网络和外部网络之间并为双方提供因特网服务的区域。
 \begin{itemize}
 \item 内网主机可以访问内网主机、DMZ和因特网。
@@ -203,21 +227,20 @@ IPv4地址不够用的解决方案
 \subsubsection{特殊IP地址}
 \begin{itemize}
 	\item 0.0.0.0：未知或秘密IP地址，只用作源地址
-	\item $00\cdots00$Host：同一子网的主机，只用作源地址
+	\item $00\cdots00+$Host：同一子网的主机，只用作源地址
 	\item 255.255.255.255：有限广播，对于一个\textemph{直连物理网络的广播}
-	\item network$11\cdots11$：对于一个远程网络的广播（如192.168.1.255）
-	\item network$00\cdots00$：用32b表示的网络号（含子网号）
+	\item Network$+11\cdots11$：对于一个远程网络的广播（如192.168.1.255）
+	\item Network$+00\cdots00$：用32b表示的网络号（含子网号）
 	\item 127.X.X.X：\textemph{环回(loopback)/本机地址}，127.0.0.1为本地地址(localhost)
 	\item 224.0.0.0 - 239.255.255.255：IPv4的多播地址空间
+	\item 私有IP地址：无需IANA分配，任何人都可使用
+	\begin{itemize}
+		\item[*] 10.0.0.0 - 10.255.255.255
+		\item[*] 172.16.0.0 - 172.31.255.255
+		\item[*] 192.168.0.0 - 192.168.255.255
+	\end{itemize}
+	私有地址只能用于内部网络。主干网上的路由器会过滤掉目的地址为私有地址的IP数据报。因此，离开内部网络的IP数据报必须使用由IANA分配的全局地址作为目的地址。
 \end{itemize}
-
-私有IP地址：无需IANA分配，任何人都可使用
-\begin{itemize}
-	\item 10.0.0.0 - 10.255.255.255
-	\item 172.16.0.0 - 172.31.255.255
-	\item 192.168.0.0 - 192.168.255.255
-\end{itemize}
-私有地址只能用于内部网络。主干网上的路由器会过滤掉目的地址为私有地址的IP数据报。因此，离开内部网络的IP数据报必须使用由IANA分配的全局地址作为目的地址。
 
 \subsubsection{IPv6}
 IPv6地址由128位二进制数组成，分割成8段16位组，然后把每段16位组换算成4个十六进制数来表示，每段十六进制数值的范围是0000-FFFF，每段之间使用冒号来分隔。
@@ -259,14 +282,14 @@ IPv4地址: \verb'170.1.2.3'\\
 \subsection{IP数据报相关协议}
 \subsubsection{地址解析协议}
 \begin{itemize}
-	\item IP单播地址：通过ARP协议获得MAC单播地址
+	\item IP单播地址：通过ARP协议获得MAC单播/网卡/烧录地址（全球唯一，每个网卡/接口一个）
 	\item IP广播地址(4B)：转为6B全1的MAC广播地址
-	\item IP多播地址(1110开头)：MAC的高25位为0x01-00-5E，低23位为IP地址的低23位
+	\item IP多播地址(1110开头)：MAC的高25位为\verb'0x01-00-5E'，低23位为IP地址的低23位
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.8\linewidth]{fig/ip_mac.png}
 	\end{figure}
-	如224.0.1.5写为16进制是0xE0-00-01-05，取低23位，得到MAC完整地址为0x01-00-5E-00-01-05
+	如224.0.1.5写为16进制是\verb'0xE0-00-01-05'，取低23位，得到MAC完整地址为\verb'0x01-00-5E-00-01-05'
 \end{itemize}
 
 地址解析协议(address resolution protocol, ARP)可以\underline{将IP地址映射为MAC地址}\footnote{也有将也有MAC映射为IP地址的协议}
@@ -287,7 +310,7 @@ IPv4地址: \verb'170.1.2.3'\\
 可以用ARP请求来确定一个IP地址在以太网中是否被使用，如果没有响应则说明没有使用。
 
 \subsubsection{动态主机配置协议}
-DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\textemph{动态租用}IP地址，用UDP，四个步骤如下：
+DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\textemph{动态租用}IP地址，基于UDP，四个步骤如下：
 \begin{itemize}
 	\item DHCP发现(discover)
 	\item DHCP提供(offer)： 还可以指出DHCP中转服务器，使多个网络可以共享一个DHCP服务器（通过DHCP discover的域名选项进行区分）
@@ -298,7 +321,7 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 \subsubsection{因特网控制消息协议}
 因特网控制消息协议(Internet Control Message Protocol, ICMP)用于主机或路由器发布网络级别的控制消息，主要是出错/丢包后将信息发回给源主机，如
 \begin{itemize}
-	\item 回响请求和答复消息(ping)（类型8）：\underline{超时}是\textemph{回来的路找不到}；而\underline{主机不可达}是\textemph{去的路找不到，中途原路返回}
+	\item 回响请求和答复消息/因特网包探索器(Packet Internet Grouper, ping)（类型8）：\underline{超时}是\textemph{回来的路找不到}；而\underline{主机不可达}是\textemph{去的路找不到，中途原路返回}
 	\item 不可达消息（类型3）：用目的地址未查到匹配的路由项、需要分段但不可分段(DF=1)、网络/主机/协议/端口不可达，数据部分填原IP头部+原IP数据部分的头64b
 	\item 源端抑制（类型4）：控制源主机发送速度
 	\item 重定位消息（类型5）
@@ -398,10 +421,10 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 	\begin{itemize}
 		\item 没有匹配项：\textemph{丢弃}该分组
 		\item 有匹配项，下一跳接口为以太网：从\textemph{路由表中查出下一跳}的IP地址，通过\textemph{ARP协议}获得\textemph{目的MAC地址}，\textemph{封装成帧}发送，要遵守\textemph{以太网协议(CSMA/CD)}
-		\item 有匹配项，没有下一跳，匹配项接口为以太网：直接取\textemph{IP数据报中的目的IP地址}（已经到达了）或用IP分组的目的地址查询MAC地址，封装成帧发送
+		\item 有匹配项，没有下一跳，匹配项接口为以太网：直接取\textemph{IP数据报中的目的IP地址查询MAC地址}（已经到达了），封装成帧发送
 		\item 有匹配项，下一跳接口为直连网(PPP)（或没有下一跳，匹配项接口为PPP）：将数据报直接\textemph{封装成帧}发送，不需要目的地址（放到物理网络中自然会到达）
 	\end{itemize}
-	\item 每到一个路由器都将帧拆出来，再重新封装，目的和源MAC地址（上一跳路由器MAC地址）全要发生变化
+	\item 每到一个路由器都将帧拆出来，再重新封装，\textemph{目的和源MAC地址}（上一跳路由器MAC地址）全要发生变化
 \end{itemize}
 注意：路由表中每一行的\textemph{下一跳和接口必然处于同一物理网络中}
 
@@ -515,13 +538,12 @@ DHCP协议(Dynamic Host Configuration Protocol)用于主机在加入网络时\te
 	\item 收到路由的距离全部加1(即一跳的距离)
 	\item 利用上述路由修改路由表:
 	\begin{itemize}
-		\item 把路由表中不存在的路由加入路由表
-		\item 如果比路由表中的路由的距离更小，则更新该路由的距离为新距离，把下一跳改为邻居
-		\item 如果路由已经存在且下一跳就是邻居，则必须进行更新
+		\item 把路由表中\underline{不存在的路由}加入路由表
+		\item 如果比路由表中的路由的距离更小，则更新该路由的距离为\underline{新距离}，把下一跳改为邻居
+		\item 如果路由\underline{已经存在}且\underline{下一跳就是邻居}，则必须进行更新
 	\end{itemize}
-	\item 如果路由存在，就要重置失效定时器
+	\item 如果路由存在，就要\underline{重置失效定时器}(invalid timer)，更新TTL(Time-To-Live)
 \end{enumerate}
-RIP路由表的每一项都有TTL(Time-To-Live)，用失效定时器(invalid timer)计时，超时则让该路由失效
 
 \begin{example}
 	路由器A-G运行RIP协议，每跳的距离为1。B和C是邻居。如果B和C此时的路由表如下所示：
@@ -551,7 +573,7 @@ N9 & 5 & D\\
 N10 & 1 & -\\\hline
 \end{tabular}
 \end{center}
-记得要更新下一跳的内容
+记得要更新下一跳的内容！
 \end{analysis}
 
 \myhline
@@ -561,12 +583,12 @@ RIP协议存在的问题
 	\item 计数到无穷：N1--R1--N2--R2--N3。在R1因N1失效而把N1的路由的距离改为16（无穷大）之后，R2将路由表发给R1
 \end{itemize}
 
-解决方案
+解决方案：
 \begin{itemize}
-	\item 水平分割(split horizon)技术：从一个接口学来的路由不会从该接口发回去；依然会计数到无穷，三角形R1断了，R1先发，R2后发
-	\item 毒性反转(poison reverse)技术：当一条路由变为无效之后，路由器并不立即将它从路由表中删除，而是将其距离改为用16后广播给邻居，使邻居所拥有的该路由立即失效，而不是等待TTL到期后删除，以迅速消除路由环路，这种方法称为毒性反转，距离为16的路由称为毒化路由(poisoned route)
-	\item 抑制技术(hold down)：距离被改为无穷大的路由在一段短时间(180秒)内其距离不允许被修改
-	\item 触发更新(triggered update)：一旦出现路由变化将立即把变化的路由发送给邻居。原有的30秒发一次完整的路由表依然不变（因触发更新可能丢失；路由表也可能出错；要用TTL清除无效路由）
+	\item \underline{水平分割}(split horizon)技术：从一个接口学来的路由不会从该接口发回去；依然会计数到无穷，三角形R1断了，R1先发，R2后发
+	\item \underline{毒性反转}(poison reverse)技术：当一条路由变为无效之后，路由器并不立即将它从路由表中删除，而是将其距离改为用16后广播给邻居，使邻居所拥有的该路由立即失效，而不是等待TTL到期后删除，以迅速消除路由环路，这种方法称为毒性反转，距离为16的路由称为毒化路由(poisoned route)
+	\item \underline{抑制技术}(hold down)：距离被改为无穷大的路由在一段短时间(180秒)内其距离不允许被修改
+	\item \underline{触发更新}(triggered update)：一旦出现路由变化将立即把变化的路由发送给邻居。原有的30秒发一次完整的路由表依然不变（因触发更新可能丢失；路由表也可能出错；要用TTL清除无效路由）
 \end{itemize}
 
 \myhline
@@ -626,12 +648,16 @@ OSPF第一步需要将整个网络(AS)转化为AS的拓扑结构图。
 
 详细过程如下
 \begin{itemize}
-	\item 发现邻居：每10秒向邻居发送Hello分组，如果40s(dead interval)都收不到邻居发来的Hello分组，则把到邻居的链路标记为失效。多路访问网络采用多播(224.0.0.5, all OSPF routers)发送Hello分组。一个Hello分组包含优先权、已知的邻居（收到过Hello）、DR和BDR
-	\item 完全相邻：在发现邻居之后， OSPF路由器将与邻居交换链路状态数据库中的LSA，请求得到更新的或者没有的LSA。在与邻居的链路状态数据库变得完全一样时，它们就处于完全相邻状态(fully adjacency)
-	\item 生成LSA：每\textemph{30分钟}或链路变化时，每个OSPF路由器会生成router LSA，中转网的DR会生成network LSA
-	\item 扩散LSA：产生的LSA立即封装为Update分组，被可靠地扩散出去 (需要确认)。每次产生的LSA的序号会加1。序列号越大表示越新。若通过收到多个LSA，由发出此LSA的路由器ID(发通告路由器),链路状态和序列号唯一确定。通过序号，也可以防止扩散形成回路，第二次收到来自相同的发通告路由器、相同LSA类型和相同序号的LSA将丢弃它
-	\item 收集LSA：路由器收集到LSA之后，用新LSA替换链路状态数据库中旧LSA。如果一个LSA在60分钟(max age)没有被更新，它将从链路状态数据库移除
-	\item 计算最短路径：当链路状态数据库被改变时， OSPF路由器将利用Dijkstra算法计算到所有网络的最短路径。
+	\item 发现邻居：每10秒向邻居发送Hello分组，如果\textemph{40s(dead interval)}都收不到邻居发来的Hello分组，则把到邻居的链路标记为失效。多路访问网络采用多播(224.0.0.5, all OSPF routers)发送Hello分组。一个Hello分组包含\underline{优先权、已知的邻居（收到过Hello）、DR和BDR}
+	\item 完全相邻：在发现邻居之后， OSPF路由器将与邻居交换链路状态数据库中的LSA，请求得到更新的或者没有的LSA。在与邻居的链路状态数据库变得完全一样时，它们就处于\underline{完全相邻状态}(fully adjacency)
+	\item 生成LSA：每\textemph{30分钟}或\textemph{链路变化}时，每个OSPF路由器会生成router LSA，中转网的DR会生成network LSA
+	\item 扩散LSA：产生的LSA立即封装为Update分组，被\textemph{可靠}地扩散出去（需要确认）。
+	每次产生的LSA的序号会加1，序列号越大表示越新。
+	若通过收到多个LSA，由\underline{发出此LSA的路由器ID（发通告路由器）、链路状态和序列号}唯一确定。
+	通过序号也可以防止扩散形成回路，第二次收到来自相同的三元组将丢弃它
+	\item 收集LSA：路由器收集到LSA之后，用新LSA替换链路状态数据库中旧LSA。
+	如果一个LSA在\textemph{60分钟(max age)}没有被更新，它将从链路状态数据库移除
+	\item 计算最短路径：当链路状态数据库被改变时，OSPF路由器将利用Dijkstra算法计算到所有网络的最短路径。
 	\item 建立路由表：利用得到的最短路径产生路由表
 \end{itemize}
 \begin{example}
@@ -679,12 +705,16 @@ OSPF协议采用路由器ID(RID)标识每一个路由器。
 \myhline
 指定路由器的选举方法：
 \begin{itemize}
-	\item 当多路访问网络重启时，选择DR的过程就开始了。在等待时间结束(Wait Time/Dead Interval, 40s)时，带有\textemph{最高和次高优先权}的路由器分别成为DR和BDR(Backup DR)。如果优先权相同，RID更大的成为DR，次大的成为BDR。
-	\item 如果路由器不希望参与选举，则应该把优先权设置为0。如果优先权相同，具有\textemph{更高RID}的路由器成为DR。如果收到的Hello列出了DR(RID不是0.0.0.0)，路由器成为DR。
+	\item 当多路访问网络重启时，就开始选举DR。
+	在等待时间结束(Wait Time/Dead Interval, 40s)时，带有\textemph{最高和次高优先权}的路由器分别成为DR和BDR(Backup DR)。
+	如果优先权相同，RID更大的成为DR，次大的成为BDR。
+	\item 如果路由器不希望参与选举，则应该把\textemph{优先权设置为0}。
+	如果优先权相同，具有\textemph{更高RID}的路由器成为DR。
+	如果收到的Hello列出了DR(RID不是0.0.0.0)，路由器成为DR。
 	\item 如果一个新的路由器在选举之后到达或者有路由器修改为更高的优先权，它也不可能抢占现存的DR/BDR和变为DR/BDR。
-	\item 当DR失效时， BDR成为DR，将开始一个新的选举过程来选出BDR。
+	\item 当DR失效时，BDR成为DR，将开始一个新的选举过程来选出BDR。
 	\item 一个多路访问网络中的OSPF路由器只与DR和BDR建立相邻关系。
-	\item 收到一个LSA后，一个多路访问网络中的OSPF路由器将把它首先多播(224.0.0.6)给DR和BDR，然后 DR再把它多播(224.0.0.5)给所有OSPF路由器
+	\item 收到一个LSA后，一个多路访问网络中的OSPF路由器将把它首先\textemph{多播}(224.0.0.6)给DR和BDR，然后DR再把它多播(224.0.0.5)给所有OSPF路由器
 \end{itemize}
 
 \myhline
@@ -692,7 +722,8 @@ LSA具有多个定时器
 \begin{itemize}
 	\item 每10秒(Hello Interval)向邻居发送一次Hello，4倍的hello interval(Dead Interval，40s)没有收到邻居的Hello就认为邻居失效。
 	\item 每30分钟会产生新的LSA，最小间隔时间为5s。
-	\item 每个LSA都有年龄字段(age)，发给邻居时被设置为0，在链路状态数据库中age会不断增长，增长到Max Age(默认为60分钟)时LSA被标记为失效。失效的LSA会被扩散到整个AS，令AS的所有路由器把该LSA从链路状态数据库中移除。
+	\item 每个LSA都有年龄字段(age)，发给邻居时被设置为0，在链路状态数据库中age会不断增长，增长到Max Age(默认为60分钟)时LSA被标记为失效。
+	失效的LSA会被扩散到整个AS，令AS的所有路由器把该LSA从链路状态数据库中移除。
 	\item 存储在链路状态数据库中的LSA每10分钟会被计算校验和，如果有错将被删除。
 	\item 接收来自邻居的LSA的最小间隔时间为1s。
 	\item 计算最短路径的最小间隔时间为10s。
@@ -704,7 +735,7 @@ OSPF特点：
 	\item 所有的OSPF消息都要认证 (防止恶意入侵)。
 	\item 路由表中允许多个\textemph{相同开销}的路经存在(RIP只允许一条路径)，可以实现负载均衡。
 	\item 对于每条链路，允许同时有多个(TOS)开销。
-	\item 多播OSPF(MOSPF)使用与OSPF相同的链路状态数据库(思科路由器不支持)
+	\item 多播OSPF(MOSPF)使用与OSPF相同的链路状态数据库（思科路由器不支持）。
 	\item 在大型路由选择域中OSPF可以\textemph{分区}。
 	\item 比RIP\textemph{收敛快而且更安静}。
 	\item 实现起来更复杂，需要更多的\textemph{计算开销}。
@@ -775,7 +806,7 @@ DV节点可能通告不正确的路径开销\\
 在路径上的路由不可设默认路由，否则只能转到一个方向
 \end{itemize}
 
-内部路由如何发到外部
+内部路由如何发到外部？
 \begin{itemize}
 \item 查next hop，BGP注入IGP路由，但非BGP路由承受不住；或将路径上所有路由都变为BGP路由
 \item 在IP层运用了虚电路（等于挖了个隧道），不用记中间路由器，现在都用这种方式

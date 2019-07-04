@@ -4,46 +4,37 @@
 计算机网络将终端设备连接起来并可以传输数据。
 
 \subsection{网络连接方式}
-\subsubsection{直接连接的网络}
+\begin{enumerate}
+\item 直接连接的网络（直连网）
 \begin{itemize}
-\item 点对点(point-to-point)网络：包括专用介质(dedicated medium)、节点/主机
+\item \underline{点对点(point-to-point)网络}：包括专用介质(dedicated medium)、节点/主机
 \begin{itemize}
 	\item 单向(simplex)：如广播、电视
 	\item 半双工(half duplex)：异步双向，如对讲机
 	\item 全双工(full duplex)：同步双向，如电话
 \end{itemize}
-\item 多路访问(multiple access)网络：共享介质(shared medium)，会产生碰撞(collision)
+\item \underline{多路访问(multiple access)网络}：共享介质(shared medium)，会产生碰撞(collision)
 \begin{itemize}
 	\item 单播(unicast)：一对一
 	\item 多播(multicast)：一对多
 	\item 广播(broadcast)：一对所有
 \end{itemize}
 \end{itemize}
-
-\subsubsection{间接连接的网络}
-\begin{itemize}
-	\item 中间节点、路由器(router)
-	\item 包(packet)
-	\item 存储转发(store-and-forward)
-	\item 路由选择(routing)
-	\item 路由表(routing table)
-	\item 目的地(destination)、下一跳(next hop)
-\end{itemize}
+\item 间接连接的网络：涉及交换机、路由器
+\end{enumerate}
 
 \subsection{因特网}
-网络互连：用路由器（或网关gateway）连接起来构成的网络称为互\textred{连}网络(internetwork)。
-用实际的物理通信介质及相应的设备把两个或两个以上的网络连接起来的一种网络，如LAN和WAN都可看作是互连网络。
+用路由器或网关(gateway)连接起来构成的网络称为互\textred{连}网络(internetwork)。
 
-\begin{parttext}
-因特网/互联网(Internet)是一种互连网络，可以看作是把世界各地的广域网互连的网络，是世界上最大的特定计算机网络，采用TCP/IP协议簇作为通信规则。
+因特网/互联网(Internet)是一种互连网络，可以看作是把世界各地的广域网互连的网络，是世界上最大的特定计算机网络，采用\textemph{TCP/IP协议簇}作为通信规则。
 \begin{itemize}
 	\item 系统域网(System Area Network, SAN)：电脑、鼠标、USB
 	\item 局域网(Local Area Network, LAN)：某一区域内由多台计算机互联成的计算机组，一般是方圆几千米以内，如小型实验室；常用\textemph{多路访问网络}
 	\item 城域网(Metropolitan Area Network, MAN)
 	\item 广域网(Wide Area Network, WAN)：\textemph{因特网}
 \end{itemize}
-\end{parttext}
 
+\myhline
 因特网设备：
 \begin{itemize}
 	\item 终端系统/主机(end system)：运行网络应用程序，如手机、浏览器
@@ -51,14 +42,13 @@
 	\item 路由器(router)：用于连接多个网络形成更大的网络
 \end{itemize}
 
-\begin{parttext}
+\myhline
 因特网的组成：ISP(Internet Service Provider)
 \begin{itemize}
 	\item 网络边界(network edge)：主机及网络程序，终端设备可以通过本地ISP或区域ISP连接上互联网
 	\item 接入网络/接入网(access network)：有线或无线接入，连接订阅者和服务提供商，如WiFi
 	\item 网络核心/主干网(core network)：顶层ISP（中国电信、中国移动、中国网通），可以连接局部提供商
 \end{itemize}
-\end{parttext}
 
 \subsection{网络服务}
 通信服务类型：
@@ -85,11 +75,8 @@
 \par 其中网络层以下不可靠，以上可靠；防止丢包的机制：重发。
 \par 物理层和数据链路层又被称为\underline{物理网络}，网络层和传输层被称为\underline{逻辑网络}。
 
-\begin{parttext}
-\par 协议(protocol)：在网络实体(entities)之间传送消息的规则，如消息的格式、收发消息的次序等。
-\par 协议栈：发送时封装(encaptulation)，接收时拆封。
-\par 协议簇(protocol family)：应用层FTP、HTTP、DNS，传输层TCP/UDP，网络层IP。
-\end{parttext}
+\myhline
+协议(protocol)：在网络实体(entities)之间传送消息的规则，如消息的格式、收发消息的次序等。
 
 每层传输的数据单元都称为\textemph{包}(packets)，都属于某个协议，又被称为\textemph{协议数据单元}(protocol data unit, PDU)，包括\textemph{头部/协议控制信息}(potocal control data, PCI)和\textemph{服务数据单元}(service data unit, SDU)两部分。
 
@@ -113,8 +100,21 @@
 
 \bigskip
 下层把上层通过服务访问点(service access point, SAP)传来的SDU用PCI封装为PDU后传给对等实体(peer entity)，即实现相同协议的实体。
-路由做的事情是拆一层封装，然后重新加一层。
 同一个互联网络中网络层协议需要相同，链路层协议可以不同。
+
+\myhline
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/network-flow.PNG}
+	\caption*{协议栈(stack)：发送时封装(encaptulation)，接收时拆封。}
+\end{figure}
+
+\myhline
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\linewidth]{fig/protocol_family.png}
+	\caption*{协议簇(protocol family)}
+\end{figure}
 
 \subsection{网络性能分析}
 当一个包到达时如果有空闲缓存则排队等待转发，产生延迟(delay)；
@@ -157,7 +157,7 @@
 	\item 一段的传播延时：$6000km/(2\times 10^8m/s)=30$ms
 	\item 转发延时：$2$ms
 	\end{itemize}
-	总时长：$(24+30)*2+2=110$ms
+	总时长：$(24+30)\times 2+2=110$ms
 	\item 类似1，但是总时长是一个包的传输传播转发延迟，加上剩余包的接收/传输延迟，见下表加粗部分
 	\begin{center}
 		\begin{tabular}{|c|c|c|c|c|c|}\hline
@@ -167,12 +167,12 @@
 		\end{tabular}
 	\end{center}
 	\begin{itemize}
-		\item 一段的传输延时：$300B*8/10^6bps=2.4$ms
+		\item 一段的传输延时：$300B\times 8/10^6bps=2.4$ms
 		\item 一段的传播延时：$30$ms
 		\item 转发延时：$2$ms
 	\end{itemize}
-	总时长：$(2.4+30)*2+2+2.4*9=88.4$ms
+	总时长：$(2.4+30)\times 2+2+2.4\times 9=88.4$ms
 	\item 同1，但是只用计算一段传输延时，因为1位的转发延迟忽略。
-	故总时长：$24+30*2=84$ms
+	故总时长：$24+30\times 2=84$ms
 \end{enumerate}
 \end{analysis}
