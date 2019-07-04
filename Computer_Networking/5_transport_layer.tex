@@ -65,7 +65,7 @@
 \item TCP连接只能在\textemph{两个进程}间建立
 \item TCP是\textemph{面向字节流}的传输方式，多次发送的数据可以放在一个数据段中传送且\textemph{不标识边界}。TCP有一个缓冲，当应用程序传送的数据块太长，TCP就可以把它划分短一些再传送。如果应用程序一次只发送一个字节，TCP也可以等待积累有足够多的字节后再构成报文段发送出去。（注意上图，是将两条写数据合并在一起变为一个数据段才发送）
 \item TCP连接提供\textemph{可靠的无比特错的数据传送}，但经过因特网可能出现\textemph{丢失和错序（同UDP）}。
-\item 每个数据段的数据部分的\textemph{最大长度(字节)}不能超过MSS(Maximum Segment Size)\footnote{一般来讲，TCP协议会以最大传输单元(MTU)减去IP头和TCP头作为MSS。如果是以太网，则是$1500-20-20=1460$。}。
+\item 每个\textemph{数据段数据部分}的\textemph{最大长度(字节)}不能超过MSS(Maximum Segment Size)\footnote{一般来讲，TCP协议会以最大传输单元(MTU，帧的数据部分)减去IP头和TCP头作为MSS。如果是以太网，则是$1500-20-20=1460$。}。
 \item 客户端通过查路由表知道\textemph{IP地址}，\textemph{端口号}自动选一个未用的
 \end{itemize}
 
@@ -114,7 +114,7 @@
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\linewidth]{fig/tcp_connect.png}
-    \caption*{三次握手建立连接}
+    \caption*{\textbf{三次握手建立连接}}
 \end{figure}
 \begin{itemize}
     \item 客户端需要知道服务器的IP地址和端口号。
@@ -138,11 +138,13 @@
     如果采用两次握手，则客户端可以通过发送大量伪造的源地址连接请求，经过两次握手后服务器误以为连接已经建立，最终耗尽所有资源，使得合法的请求连接都被拒绝，无法提供正常的服务，此即DoS攻击的原理。
 
     即使是三次握手也无法避免DoS攻击和DDoS攻击，因为依然可以实现大量客户端同时向服务器发送连接请求，然后接收下服务器发来的确认数据包后，不再向服务器发送确认数据包（即客户端主动不进行第三次握手），那么服务器在短时间内会维护这样的半连接队列，等待队列中的客户端确认。但由于每个半连接都会耗费服务器的资源，故最终会导致资源不够用，拒绝正常的连接请求，使得正常服务无法提供。
+
+    预防DDoS的方法：限制同时打开SYN半连接的数目，缩短SYN半连接超时时间，关闭不必要的服务。
 \end{analysis}
 
 \myhline
 TCP协议传输数据采用\textemph{选择性确认}协议（\textemph{滑动窗口}），不使用NAK。只有\textemph{一个超时定时器}。
-采用字节流方式，每个数据段使用其\textemph{第一个字节}的编号作为序号\footnote{数据链路层每一个帧占一个序号}，按\textemph{字节}编号。
+采用字节流方式，每个数据段使用其\textemph{第一个字节}的编号作为序号，按\textemph{字节}编号。
 
 注意TCP协议中没有说明如何处理错序到达的数据段，要取决于具体实现。
 
@@ -165,7 +167,7 @@ TCP协议传输数据采用\textemph{选择性确认}协议（\textemph{滑动�
     \end{figure}
 \end{example}
 \begin{analysis}
-    注意窗口大小要取MSS和advWin的最小值
+    注意每次发送数据最多就只有MSS，但发送窗口大小可以大于MSS。
     \begin{enumerate}[label=(\alph*)]
         \item 9000 700，取初始序号作为Seq初值，\underline{advWin}作为\underline{sendWin初值}。发送数据段大小为\underline{MSS}，因为MSS小于滑动窗口大小。
         \item 9700 300，继续将发送窗口内的字节发光，此时sendWin还是1000，只是里面的字节都已发送但未确认而已
@@ -183,7 +185,7 @@ TCP协议传输数据采用\textemph{选择性确认}协议（\textemph{滑动�
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.6\linewidth]{fig/tcp_close.png}
-    \caption*{四次握手关闭连接}
+    \caption*{\textbf{四次握手关闭连接}}
 \end{figure}
 \begin{itemize}
     \item FIN报文采用\textemph{超时自动重发}方式。在若干次重发后依然没有收到确认，则发送RST报文给对方后强行关闭连接。不同的系统重发方法不同。x和y都是\textemph{上一个收到的数据段的确认号}。
@@ -201,7 +203,7 @@ TCP协议传输数据采用\textemph{选择性确认}协议（\textemph{滑动�
 \subsubsection{重传机制}
 数据链路层每个帧都有一个超时定时器，而传输层只有\textemph{一个超时定时器}。
 \begin{itemize}
-\item \underline{快速重传}(fast retransmit)：如果发送方收到一个数据段的\textemph{3次重复的ACK}（包括第一次则一共4次），它就认为其后的数据段（由确认号指出） 已经丢失，在超时之前会重传该数据段。
+\item \underline{快速重传}(fast retransmit)：如果发送方收到一个数据段的\textemph{3次重复的ACK}（包括第一次则一共4次），它就认为其后的数据段（由确认号指出）已经丢失，在超时之前会重传该数据段。
 缺点是丢包时间很长，优点是可以减缓网络压力。
 \item \underline{延迟确认}(delayed ACK)：接收方并不在收到数据段立即进行确认，而是延迟一段时间再确认。如果这个期间收到多个数据段，则只需要发送一个确认。
 如果在这个期间接收方有数据帧要发往发送方，还可以使用捎带确认(piggybacking)。
@@ -219,39 +221,39 @@ TCP协议传输数据采用\textemph{选择性确认}协议（\textemph{滑动�
 \begin{tabular}{|c|c|c|}\hline
      & 传输层 & 数据链路层\\\hline
     序号 & 随机初始序号+1，按字节计数 & 每一个帧一个序号 \\\hline
-确认号 & 期待接收的序号 & \begin{tabular}{l}收到哪一个就用哪一个\\代表当前与之前的全收到了\end{tabular}\\\hline
+确认号 & 期待接收的序号 & \begin{tabular}{l}收到哪一个就确认哪一个\\代表当前与之前的全收到了\end{tabular}\\\hline
 窗口大小 & 会改变 & 不会改变\\\hline
 超时定时器 & \begin{tabular}{l}只有一个，只要有未确认的数据段\\就会启动（针对未确认序号最小的）；\\超时没收到确认，就会重传\end{tabular} & 每个帧都有一个\\\hline
 \end{tabular}
 \end{center}
 
 \subsubsection{超时计算}
-数据链路层的Go back N协议由于没有中间节点，故可以用固定的超时时间(1RTT)。
+数据链路层的回退N协议由于没有中间节点，故可以用固定的超时时间(1RTT)。
 而传输层涉及多个节点，故需要实时变化，进行估计。
 
-原始公式/指数加权移动平均方法(Exponentially Weighted Moving Average, EWMA)
+\textbf{原始公式/指数加权移动平均方法}(Exponentially Weighted Moving Average, EWMA)
 \[\begin{aligned}
     \text{EstimatedRTT} &= (1-\alpha)\times \text{EstimatedRTT} + \alpha \times \text{SampleRTT}\\
-    \text{RTO(retransmission timeout)} &= 2\times \text{EstimatedRTT}
+    \text{RTO} &= 2\times \text{EstimatedRTT}
 \end{aligned}\]
-$0<\alpha<1$, $\alpha$越小过去样本的影响越大。
+RTO(retransmission timeout)为超时时间，$0<\alpha<1$，$\alpha$越小过去样本的影响越大。
 一般取值$\alpha=0.9$，这会使过去影响指数减少。
 
 \myhline
-TCP超时计算最常用的算法---Jacobson算法
+TCP超时计算最常用的算法---\textbf{Jacobson算法}
 \[\begin{aligned}
-    \text{RTO} &= \text{EstimatedRTT} + 4\times \text{DevRTT}\\
-    \text{DevRTT} &=(1-\beta)\times\text{DevRTT} + \beta\times|SampleRTT-EstimatedRTT|
+    \text{EstimatedRTT} &= (1-\alpha)\times \text{EstimatedRTT} + \alpha \times \text{SampleRTT}\\
+    \text{DevRTT} &=(1-\beta)\times\text{DevRTT} + \beta\times|\text{SampleRTT}-\text{EstimatedRTT}|\\
+    \text{RTO} &= \text{EstimatedRTT} + 4\times \text{DevRTT}
 \end{aligned}\]
-在RTO计算加上一个合适的安全边际(safety margin)，使得在样本变化较大时RTO会很快变得更大。
+在RTO计算加上一个合适的安全边际(safety margin)，使得在样本变化较大时RTO会很快变得更大（先估计偏移RTT）。
 取$\alpha=1/8$，$\beta = 1/4$。
 如果发送窗口为12MSS，则每12个段取样一次（采样频率）。
 
 \myhline
-Karn算法：在收到重传段确认时不要计算EstimatedRTT。
+\textbf{Karn算法}：在收到重传段确认时不要计算EstimatedRTT，直接计算RTO。
 \[\text{RTO} = \gamma\times\text{RTO}\]
-而是在每次重传时\textemph{直接把RTO加倍}（$\gamma=2$）直到数据段首次得到确认，并把这个RTO作为后续段的RTO。
-每次收到非重传段的ACK之后，就计算EstimatedRTT和正常的RTO，并用这个RTO作为后续段的RTO。
+而是在每次重传时\textemph{直接把RTO加倍}（$\gamma=2$）\textemph{直到数据段首次得到确认}，并把这个RTO作为后续段的RTO。
 在12次重传后TCP协议发送RST并关闭连接。
 
 \begin{example}
@@ -291,11 +293,11 @@ Karn算法：在收到重传段确认时不要计算EstimatedRTT。
 
 TCP的拥塞控制属于\textemph{端到端的拥塞控制}
 \begin{itemize}
-    \item \underline{超时}或\underline{收到3个重复ack}就认为丢包了（同快速重传），看作拥塞发生
+    \item \underline{超时}或\underline{收到3个重复ACK}就认为丢包了（同快速重传），看作拥塞发生
     \item TCP协议通过降低发送速率来控制拥塞。发送速率与发送窗口大小有关：
 \[\text{发送速率(rate) $=$ SWS(Sending Window Size) $/$ RTT}\]
     \item 通过引入\textemph{拥塞窗口变量CongWin}来限制SWS。
-\[SWS = \min\{\text{CongWin}, \text{AdvWin}\}\]
+\[\text{SWS} = \min\{\text{CongWin}, \text{AdvWin}\}\]
     CongWin为发送窗口的流量控制，AdvWin为接收方要求的流量控制
 \end{itemize}
 
@@ -356,7 +358,7 @@ TCP协议改变CongWin的几种机制：
 \textbf{问题三---傻瓜窗口症候}(silly window syndrome)
 \begin{itemize}
     \item 发送进程有很多小批量数据要发送，如用telnet作为远程终端\\
-    \underline{Nagle算法}---启发式算法
+    \underline{Nagle算法}---启发式算法（类似于停等协议）
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.6\linewidth]{fig/nagle.PNG}
@@ -373,6 +375,22 @@ TCP协议改变CongWin的几种机制：
 \subsubsection{定时器}
 \begin{itemize}
 \item 每个连接只针对第一个未确认数据段启动\underline{重传定时器}(retransmission timer)。所有数据段都已确认，则关闭它。超时重传或发送窗口移动时要重启该定时器。
-\item \underline{持续定时器}(persist timer)用于保持窗口大小信息流动即使连接的另一端关闭了接收窗口。
-\item \underline{保活定时器}(keepalive timer)在\textemph{长时间}没有交换数据段之后，用于检测连接的另一端是否出了问题。（如微信）隔2个小时，发10个数据段，如果没有ACK则关闭连接。（由应用层程序来做而不是TCP）
+\item \underline{坚持定时器}(persist timer)用于保持信息流动，即使另一端关闭了接收窗口。
+\item \underline{保活定时器}(keep-alive timer)在\textemph{长时间}没有交换数据段之后，用于检测连接的另一端是否出了问题。（如微信）隔2个小时，发10个数据段，如果没有ACK则关闭连接。（由应用层程序来做而不是TCP）
 \end{itemize}
+
+\subsection{TCP与UDP比较}
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+ & TCP & UDP\\\hline
+连接 & 面向连接 & 无连接\\\hline
+传输可靠性 & 可靠的 & 不可靠的\\\hline
+消息 & 面向字节流 & 面向报文\\\hline
+通信模式 & 只支持点对点 & 支持一对一、多对多、多对一、多对多\\\hline
+拥塞控制 & 有 & 无\\\hline
+系统资源/开销 & 大 & 小\\\hline
+\end{tabular}
+\end{center}
+
+当数据传输的性能必须让位于数据传输的\textemph{完整性}、可控制性和可靠性时，TCP是更好的选择；
+反之，当强调\textemph{传输性能}而不是传输的完整性时，如：音频和多媒体应用，UDP是最好的选择。

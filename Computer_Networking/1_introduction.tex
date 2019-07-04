@@ -69,10 +69,10 @@
 	\item (OSI)会话层(session)：简化会话实现机制，如\underline{数据流的检查点设置和回滚，多数据流同步}
 	\item 传输层：将网络层获得的包在\textemph{进程之间}数据传送（端到端），如\underline{TCP、UDP}
 	\item 网络层：\textemph{路由选择}，实现在互联网中的数据传送（主机到主机），如\underline{IP协议、路由协议}
-	\item 数据链路层：在\textemph{物理网络}中传送\textemph{包}（跳到跳hop，结点到结点），如\underline{PPP、Ethernet}
+	\item 数据链路层：在\textemph{物理网络}中传送\textemph{包}（跳到跳\footnote{一跳(hop)/节点为一个物理设备，即数据链路层只考虑直连网的情况}，节点到节点），如\underline{PPP、Ethernet}
 	\item 物理层：线上的\textemph{比特}（传送原始比特流）
 \end{itemize}
-\par 其中网络层以下不可靠，以上可靠；防止丢包的机制：重发。
+\par 其中\textemph{网络层以下不可靠，以上可靠}；防止丢包的机制：\textemph{重发}。
 \par 物理层和数据链路层又被称为\underline{物理网络}，网络层和传输层被称为\underline{逻辑网络}。
 
 \myhline
@@ -100,7 +100,7 @@
 
 \bigskip
 下层把上层通过服务访问点(service access point, SAP)传来的SDU用PCI封装为PDU后传给对等实体(peer entity)，即实现相同协议的实体。
-同一个互联网络中网络层协议需要相同，链路层协议可以不同。
+同一个互连网络中网络层协议需要相同，链路层协议可以不同。
 
 \myhline
 \begin{figure}[H]
@@ -122,7 +122,7 @@
 
 包交换网络中的延迟主要有以下四点：
 \begin{itemize}
-	\item 处理(processing)延迟：查路由，存储转发(store-and-forward)技术则延迟很大
+	\item 处理(processing)延迟：查路由，存储转发(store-and-forward)的延迟会很大
 	\item 排队(queueing)延迟：依赖于路由器的拥塞程度
 	\item 发送/传输(transmission)延迟：\[\text{传输延迟}=\text{包长(bits)}/\text{链路带宽(bps, bit per second)}\]
 	指从发送第一个包到发送最后一个包的间隔
@@ -153,7 +153,7 @@
 	\begin{enumerate}
 	\item 因采用存储转发技术，先计算一段的延时，最后乘2。
 	\begin{itemize}
-	\item 一段的传输延时：$3000B*8/10^6bps=24$ms
+	\item 一段的传输延时：$3000B\times 8/10^6bps=24$ms
 	\item 一段的传播延时：$6000km/(2\times 10^8m/s)=30$ms
 	\item 转发延时：$2$ms
 	\end{itemize}

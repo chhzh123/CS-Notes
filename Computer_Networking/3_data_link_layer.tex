@@ -25,7 +25,7 @@
 \end{itemize}
 
 注意数据链路层、网络层错了就错了，不提供纠正服务，由上层纠正。
-链路层在网络接口卡(network interface card, NIC)及其驱动程序上实现，路由器在接口模块上实现。
+链路层在\textemph{网络接口卡(network interface card, NIC)及其驱动程序}上实现，路由器在\textemph{接口模块}上实现。
 
 \begin{figure}[H]
 	\centering
@@ -35,14 +35,13 @@
 
 \subsection{逻辑链路控制子层}
 \subsubsection{差错检测}
-在数据报后加校验码（头部加序号），通过链路传输看是否有数据报/校验码错误。
 \begin{enumerate}
 \item 奇偶校验：若接收方收到奇数个1，则有出错
 \begin{itemize}
 	\item 一维偶校验：只能检错；最后补一位使得全部为偶数个1，如$010$补为$010\mid 1$，而$101$补为$101\mid 0$
 	\item 二维偶校验：检错+纠错一位；横纵同时偶校验
 \end{itemize}
-\item 校验和(checksum)：将所有数据加起来，每16位1组，最高位进位则\textemph{末尾加1}，最后结果\textemph{取反}\\
+\item 校验和(checksum)：将所有数据加起来，\textemph{每16位1组}，最高位进位则\textemph{末尾加1}，最后结果\textemph{取反}\\
 由于需要使用加法器，校验和一般不用于数据链路层，而用在更高层（\textemph{网络层和传输层}）
 \begin{figure}[H]
 	\centering
@@ -50,7 +49,7 @@
 \end{figure}
 \item 循环冗余校验码(Cyclic Redundancy Check, CRC)：
 补充n位0后除以一个n+1位的除数，\textemph{模2除法}（\textemph{按位异或}，做减法时没有借位）；
-接收方连带校验码一起除，余数为0则没错\\
+如果传输过程中没有出现比特错，接收方用相同的除数去除[数据和CRC校验码]，余数应该为0。
 如下图，4位除数补3个0，最后的余数011即为校验码
 \begin{figure}[H]
 	\centering
@@ -196,9 +195,9 @@ PPP协议数据帧格式\\
 信道空，立即以概率$p$发送，以概率$1-p$延迟一个时间槽；信道忙，延迟一个时间槽。
 \item 载波监听CSMA(Carrier Sense Multiple Access)：发送前先监听信道
 \begin{itemize}
-	\item 信道空，立即发送；信道忙，持续监听(1-persistent CSMA，以太网)
+	\item 信道空，立即发送；信道忙，持续监听(1-persistent CSMA，\textemph{以太网})
 	\item 信道空，发送；信道忙，延迟一段随机长度时间(non-persistent CSMA，较省电)
-	\item 信道空，立即以概率$p$发送，以概率$1-p$延迟一个时间槽；信道忙，延迟一个时间槽(p-persistent CSMA，分槽ALOHA)
+	\item 信道空，立即以概率$p$发送，以概率$1-p$延迟一个时间槽；信道忙，延迟一个时间槽(p-persistent CSMA，\textemph{分槽ALOHA})
 \end{itemize}
 \end{itemize}
 \end{enumerate}
@@ -231,7 +230,7 @@ IEEE 802.3规定以太网物理层标准：
 \end{itemize}
 
 \subsubsection{以太网MAC层协议}
-以太网采用\underline{帧间空隙(interframe space)}的成帧方法（每帧发送前要求信道空闲时间至少为96bits，造成每帧之间有空隙）。
+以太网采用\underline{帧间空隙(interframe space)}的成帧方法（每帧发送前要求信道空闲时间至少为96bits，造成帧与帧之间有空隙）。
 采用\underline{载波监听CSMA/CD(with collision detection)协议（1-坚持CSMA）}。
 \begin{enumerate}
 	\item 发送数据帧之前先\textemph{监听信道}。如果信道空闲，\textemph{立即}发送。
@@ -255,7 +254,7 @@ IEEE 802.3规定以太网物理层标准：
 \end{itemize}
 
 \begin{example}
-	当一个以太网的信道忙时有五个站点都想发送一个最长帧(长度为1520B)，如果很长时间只有这五帧要发送，问最少经过几次冲突就可以全部发送成功？
+	当一个以太网的信道忙时有五个站点都想发送一个最长帧（长度为1520B），如果很长时间只有这五帧要发送，问最少经过几次冲突就可以全部发送成功？
 \end{example}
 \begin{analysis}
 	最长帧占用$1520B\times 8/512b=23.75$个时间槽，而在第1、2、3、4次冲突的延迟时间最多16个时间槽，首先发送的站点都会引起后续所有站点冲突。
@@ -278,8 +277,7 @@ IEEE 802.3规定以太网物理层标准：
 \item 源地址：一般为发送者的单播地址
 \item 类型/长度：\textemph{0x0800 IP数据报，0x0806 ARP报文}，0x0835 RARP报文
 \item 有效载荷(payload)：用户数据，不足46B加入填充字节至46B
-\item 帧校验序列(frame check sequence)：对目的地址、源地址、类型/长度、
-有效载荷、填充位进行CRC32校验
+\item 帧校验序列(frame check sequence)：对\underline{目的地址、源地址、类型/长度、有效载荷、填充位}进行\textemph{CRC-32}校验
 \end{itemize}
 
 \myhline
@@ -294,7 +292,7 @@ IEEE 802.3规定以太网物理层标准：
 \end{enumerate}
 
 \subsubsection{令牌环网}
-令牌环网(token ring, IEEE 802.5)通过在站点之间传递令牌防止冲突并且具有\textemph{优先权}的星形\textemph{LAN}，为\underline{轮流协议}(take turns protocol)，要与以太网的随机访问协议区分。
+令牌环网(token ring, IEEE 802.5)通过在站点之间传递令牌防止冲突并且具有\textemph{优先权}的星形\textemph{LAN}，为\underline{轮流协议}(take turns protocol)，要与以太网的\underline{随机访问协议}区分。
 
 多站点接入部件称为MSAU(multistation access unit)
 \begin{figure}[H]
@@ -312,7 +310,7 @@ IEEE 802.3规定以太网物理层标准：
 	\item 当没有数据帧要发送或者持有时间到，当前的发送站点要释放令牌；被释放的令牌继续绕环而行
 \end{itemize}
 
-注意：以太网没有确认机制，没有优先权。
+注意：\textemph{以太网没有确认机制，没有优先权。}
 令牌环网必然有特殊的站点（监控站点）产生令牌帧，选举出监控站点（MAC地址最小）。
 
 光纤分布式数据接口(Fiber Distributed Data Interface, FDDI)是另一种采用了令牌环的局域网，是一种100 Mbps的光纤局域网。
@@ -431,17 +429,10 @@ IEEE 802.3规定以太网物理层标准：
 	\end{itemize}
 \end{analysis}
 
-\myhline
-多生成树协议：管理员规定哪些VLAN为一组，构成多生成树，其余的用公共生成树
-\begin{itemize}
-	\item 公共生成树(common spanning tree, CST)
-	\item 多生成树(Multiple spanning tree protocol, MSTP)
-\end{itemize}
-
 \subsection{虚拟局域网}
 虚拟局域网(Virtual LAN, VLAN, IEEE 802.1Q)将原来的局域网分割成多个相互隔离的局域网，只在具有相同标号(VLAN ID)的端口间转发。
 
-如果所有交换机都是连通的，并且交换机连至交换机的接口都配置为干道(trunk)接口，交换机连至主机的接口都配置为VLAN接口（主机接口），则所有连至相同的VLAN接口的主机都位于同一个广播域，连至不同VLAN接口的主机位于不同的广播域。
+如果所有交换机都是连通的，并且交换机连至交换机的接口都配置为干道(trunk)接口，交换机连至主机的接口都配置为VLAN接口（主机接口），则所有连至相同的VLAN接口的主机都位于\textemph{同一个广播域}，连至不同VLAN接口的主机位于不同的广播域。
 
 每次扩散到帧内指定的端口或\textemph{干道端口}，同样查MAC地址表转发。
 只有发往干道端口的帧才需要\textemph{加上VLAN ID}。
@@ -462,17 +453,24 @@ IEEE 802.3规定以太网物理层标准：
 \end{analysis}
 
 \begin{center}
-	虚拟局域网帧格式\\
+	\textbf{虚拟局域网帧格式}\\
 	\begin{tabular}{|c|c|c|c|c|c|c|}\hline
 		6B & 6B & 2B & 2B & 2B & 46B-1500B & 4B\\\hline
 		目的地址 & 源地址 & 协议(\verb'0x8100') & \begin{tabular}{l}3b 优先权\\1b 标准格式指示位\\12b VLAN ID\end{tabular} & 类型 & 数据 & CRC-32\\\hline
 	\end{tabular}
 \end{center}
 
+多生成树协议：管理员规定哪些VLAN为一组，构成多生成树，其余的用公共生成树
+\begin{itemize}
+	\item 公共生成树(common spanning tree, CST)
+	\item 多生成树(Multiple spanning tree protocol, MSTP)
+\end{itemize}
+
 \subsection{物理设备}
 集线器(hub)属于物理层的器件，采用电子线路方法模拟总线方式的以太网，若两台主机同时发送会产生冲突，所以是\textemph{半双工}工作。
-如果通过两个接口同时发送数据会产生冲突，则这两个接口属于同一个冲突域(collision domain)。
-一个广播帧可以到达的所有接口属于同一个广播域。
+如果通过两个接口同时发送数据会产生冲突，则这两个接口属于同一个\underline{冲突域}(collision domain)。
+
+一个广播帧可以到达的所有接口属于同一个\underline{广播域}。
 属于同一个冲突域的以太网部分称为\underline{网段}(segment)。
 \begin{example}
 	下图的冲突域和广播域个数？
@@ -496,7 +494,7 @@ IEEE 802.3规定以太网物理层标准：
 \myhline
 交换结构(fabrics)
 \begin{itemize}
-	\item 共享总线式：冲突问题
+	\item 共享总线式：存在冲突问题
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.6\linewidth]{fig/switch-share.png}
@@ -512,8 +510,8 @@ IEEE 802.3规定以太网物理层标准：
 交换机转发方法
 \begin{itemize}
 \item 存储转发(store and forward)：交换机收到\textemph{整个帧}后转发，大多数采用该模式，转也要依照CSMA/CD来转发
-\item 直通(cut through)：收到帧的硬件地址后立即转发它，出现碎片
-\item 无碎片(fragment free)：交换机不用收到整个帧而是收到64B（冲突窗口，\textemph{最小帧保证}）后，都没冲突才开始转发
+\item 直通(cut through)：收到帧的\textemph{硬件地址}后立即转发它，出现碎片
+\item 无碎片(fragment free)：交换机不用收到整个帧而是收到\textemph{64B（冲突窗口，最小帧保证}）后，都没冲突才开始转发
 \item 适应性交换(adaptive switching)：自动在上面三种方式中选择
 \end{itemize}
 
@@ -535,16 +533,12 @@ IEEE 802.3规定以太网物理层标准：
 集线器、交换机、路由器的区别如下\footnote{\url{http://www.qianjia.com/html/2017-08/09_274208.html}}：
 \begin{itemize}
 	\item 集线器(hub)：\textemph{物理层/一层}，广播，排队，冲突，共享型设备（一个端口往另一个端口发数据，其他端口就处于等待状态，全部端口属于一个冲突域），半双工，监听，响应
-	\item 交换机(switch)：\textemph{数据链路层/二层}，MAC地址，建立连接，独享信道，全双工，\underline{增加冲突域数量，减少冲突范围大小}
+	\item 交换机(switch)：\textemph{数据链路层/二层}，MAC地址，建立连接，独享信道，全双工，\\\underline{增加冲突域数量，减少冲突范围大小}
 	\item 路由器(router)：\textemph{网络层/三层}，建立路由表，IP地址，路由选择
 \end{itemize}
 
-路由器能连接不同类型的网络，我们常见的集线器和交换机一般都是用于连接以太网的，但是如果将两种网络类型连接起来，比如以太网与ATM网，集线器和交换机就派不上用场了。
-路由器能够连接不同类型的局域网和广域网，如以太网、ATM网、FDDI网、令牌环网等。
-不同类型的网络，其传送的数据单元---帧的格式和大小是不同的，数据从一种类型的网络传输至另一种类型的网络，必须进行帧格式转换。
-路由器就有这种能力，而交换机和集线器就没有。
-而互联网就是由各种路由器连接起来的，因为互联网上存在各种不同类型的网络，集线器和交换机根本不能胜任这个任务，所以必须由路由器来担当这个角色。
+路由器能连接\textemph{不同类型的网络}，如以太网、ATM网、FDDI网、令牌环网等，并实现\textemph{帧类型的转换}，但集线器和交换机一般只用于连接以太网。
 
-小范围的局域网，如我们的校园网大多采用交换机，路由少。
+小范围的局域网，如我们的校园网大多采用交换机，路由器少。
 
 注意交换机\textemph{相当于\textcolor{red}{透明}网桥}，故路由器不会知道，路由器只知道下一跳。

@@ -3,12 +3,14 @@
 \section{应用层}
 应用层协议一般都是采用客户-服务器结构
 \begin{center}
-\begin{tabular}{|c|c|c|}\hline
-应用 & 应用层协议 & 传输层协议\\\hline
-Email & SMTP [RFC 2821] & TCP \\\hline
-远程终端访问 & Telnet [RFC 854] & TCP\\\hline
-Web & HTTP [RFC 2616] & TCP\\\hline
-文件传输 & FTP [RFC 959] & TCP\\\hline
+\begin{tabular}{|c|c|c|c|}\hline
+应用 & 应用层协议 & 传输层协议 & 端口号\\\hline
+Email & SMTP [RFC 2821] & TCP & 25\\\hline
+远程终端访问 & Telnet [RFC 854] & TCP & -\\\hline
+Web & HTTP [RFC 2616] & TCP & -\\\hline
+文件传输 & FTP [RFC 959] & TCP & 21\\\hline
+域名解析服务 & DNS & UDP & 53\\\hline
+简单网络管理协议 & SNMP & UDP & 161\\\hline
 \end{tabular}
 \end{center}
 
