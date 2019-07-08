@@ -31,7 +31,8 @@
 \end{itemize}
 
 \subsubsection{简单的尝试}
-第一种尝试：两个进程轮流进入临界区
+第一种尝试（单标志法）：两个进程轮流进入临界区
+
 \begin{minipage}{0.5\linewidth}
 \begin{lstlisting}
 while (turn != 0)
@@ -48,6 +49,7 @@ while (turn != 1)
 turn = 0;
 \end{lstlisting}
 \end{minipage}
+
 可以保证互斥，硬性规定进入的顺序，但是
 \begin{itemize}
     \item 忙等待，白白消耗CPU时间
@@ -154,12 +156,12 @@ void P1()
     \begin{itemize}
         \item TestSet(TS)指令，比较并交换的bool形式
 \begin{lstlisting}
-int compare_and_swap ( int *word, int testval, int newval)
+int compare_and_swap (int *word, int testval, int newval)
 bool testset (int i)
 \end{lstlisting}
         \item Exchange/swap指令(x86\verb'xchg'指令)：同上，适用于单核多核，多变量多临界区，但需要忙等待(busy waiting)/自旋等待(spin waiting)，可能饥饿或死锁
 \begin{lstlisting}
-void exchange(int register, int memory)
+void exchange (int register, int memory)
 \end{lstlisting}
     \end{itemize}
 \end{itemize}
@@ -180,12 +182,13 @@ void exchange(int register, int memory)
 解决RC问题一种简单高效的方法
 
 \subsubsection{基本操作}
+记录信号量
 \begin{itemize}
     \item 整数：可用资源数($\geq 0$)，需要初始化
     \item P操作(proberen,\verb'semWait')：信号量的值\textbf{减1}（申请一个单位的资源），若信号量变为\textbf{负数}，则执行P操作进程阻塞，\textbf{让权等待}
     \item V操作(verhogen,\verb'semSignal')：信号量的值\textbf{加1}（释放一个单位的资源），若信号量\textbf{不是正数}（绝对值=现被阻塞的进程数/等待队列的长度），则使一个因P操作被阻塞的进程解除阻塞（唤醒）
 \end{itemize}
-需要保证P操作和V操作的原子性
+需要保证P操作和V操作的\textbf{原子性}！
 \begin{lstlisting}
 struct semaphore {
     int count;
@@ -203,7 +206,7 @@ void V(semaphore s) { // semSignal
         WakeUp(s.L);
 }
 \end{lstlisting}
-注意P操作是\textbf{小于0}，V操作\textbf{小于等于0}\footnote{理解为先判断是否小于0（阻塞队列非空），然后再++会比较好}，且一个进程只会在一个信号量的阻塞队列中
+注意P操作是\textbf{小于0}，V操作\textbf{小于等于0}\footnote{理解为先判断是否小于0（阻塞队列非空），然后再++会比较好}，且一个进程只会在一个信号量的阻塞队列中。
 
 信号量的优点是简单且表达能力强，用P、V操作可解决多种类型的同步/互斥问题，但不够安全，P、V操作使用不当会产生死锁。
 
@@ -262,7 +265,6 @@ void consumer() {
 
 读者优先
 \begin{lstlisting}
-/* program reader_and_writer */
 int readcount;
 semaphore x=1, wsem=1;
 void reader() {
@@ -290,7 +292,6 @@ void writer() {
 
 写者优先
 \begin{lstlisting}[multicols=2]
-/* program reader_and_writer */
 int readcount, writecount;
 semaphore x=1, y=1, z=1, rsem=1, wsem=1;
 void reader() {
@@ -327,7 +328,7 @@ void writer() {
 \end{lstlisting}
 
 \subsection{管程(monitor)}
-管程(monitor)：通过集中管理（封装同步机制与同步策略）以保证安全
+管程(monitor)：通过集中管理（封装同步机制与同步策略）以保证安全（类似于OOP中的抽象类）
 
 主要特点：
 \begin{itemize}
@@ -342,9 +343,6 @@ void writer() {
 \end{itemize}
 
 \subsection{消息传递}
-\begin{itemize}
-    \item send
-    \item receive
-\end{itemize}
+send和receive。
 
 同样可以实现互斥，相当于在进程间传递一个可使用临界区的令牌

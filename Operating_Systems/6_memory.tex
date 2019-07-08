@@ -16,9 +16,9 @@
 
 动态分区放置算法：
 \begin{itemize}
-    \item 首次适配(first fit)：从前端开始扫描内存，直到找到一个足够大的空闲区
+    \item 首次适配(first fit)：从前端开始扫描内存，直到找到一个足够大的空闲区，通常性能比较好
     \item 下次适配/邻近适配(next fit)：从上次分配结束的地方开始扫描内存，直到找到一个足够大的空闲区
-    \item 最佳适配(best fit)算法：扫描整个内存，找出一个足够大的最小的空闲区
+    \item 最佳适配(best fit)算法：扫描整个内存，找出一个足够大的最小的空闲区，会产生很多外部碎片
 \end{itemize}
 
 伙伴系统(buddy system)：固定分区和动态分区的折中方案
@@ -41,6 +41,9 @@
     \item 将进程划分为若干页(page)
     \item 进程加载时，所有页面被载入可用帧，同时建立页表
 \end{itemize}
+
+设页大小为$L$，逻辑地址$A$，物理地址$E$，则
+\[\text{页号}P=A/L\qquad\text{页内偏移量}W=A\%L\]
 
 \begin{example}
     16位编址，若页面大小为1K(1024)，则需（低）10位表示页内偏移，剩下（高）6位表示页号，则
@@ -83,7 +86,13 @@
     \item 分段存在外碎片，分页只有小的内碎片，分页内存利用率比分段高
 \end{itemize}
 
+段表只能有一个，而页表可以有多个
+
+段页式系统中，逻辑地址被分为段号S、页号P和页内偏移量W
+
 \subsection{虚拟存储}
+传统的存储方式都是一次性加载，并且驻留在内存中。
+而虚拟存储器则是基于程序的局部性原理，在程序装入时，将程序一部分装入内存，其余部分留在外存。
 \begin{itemize}
     \item 采用部分加载，内存中可同时容纳更多的进程。
 每个进程都只加载一部分，更多进程中应该也会有更多的就绪进程，从而提高CPU利用率
@@ -124,6 +133,7 @@
     \includegraphics[width=0.8\linewidth]{fig/two-level_paging.png}
 \end{figure}
 
+快表/联想存储器(TLB)
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{fig/TLB.png}

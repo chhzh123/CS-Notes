@@ -15,7 +15,7 @@
 进程控制块(Process Control Block, PCB)，在Unix是proc，在Linux是task\_struct
 \begin{itemize}
 	\item 进程标识符/ID
-	\item 状态：运行、就绪、等待/阻塞、新建、退出
+	\item 五状态：运行、就绪、等待/阻塞、创建、结束
 	\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.6\linewidth]{fig/5-state-process-model.jpg}
@@ -30,6 +30,12 @@
 \end{itemize}
 
 % 如果想要进程之间交互，则通过文件进行，如sublime编辑文件，gcc对其进行编译
+进程间的通信
+\begin{itemize}
+	\item 共享存储：进程到共享空间再到进程
+	\item 消息传递：直接进程到进程
+	\item 管道通信：进程到缓冲区到进程，管道即共享文件，半双工通信
+\end{itemize}
 
 进程控制由原语(primitive)完成，由若干条指令完成，也可被视为原子操作
 
@@ -52,9 +58,11 @@
 % 可再入/不可再入内核
 
 处理器上下文即处理器寄存器的内容
+\begin{center}
 \begin{tikzcd}
-\text{就绪}\arrow[bend left]{rr}{\text{分派}} & & \text{运行}\arrow[bend right]{ll}{\text{超时}}
+\text{就绪}\arrow[bend left]{rr}{\text{分派}} & & \text{运行}\arrow[bend left]{ll}{\text{超时}}
 \end{tikzcd}
+\end{center}
 
 % shell：用户控制台，解释用户指令
 
@@ -62,6 +70,6 @@
 \begin{itemize}
 	\item 时钟中断：时间片结束
 	\item IO中断：IO完成
-	\item 硬件中断/陷阱(trap)/异常：
+	\item 硬件中断/陷阱(trap)/异常
 	\item 系统调用：\verb'int'
 \end{itemize}

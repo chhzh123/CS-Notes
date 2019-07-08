@@ -12,11 +12,13 @@
 	\item 异步：两件事不知道何时发生
 \end{itemize}
 
+并发和共享是操作系统两个最基本的特征
+
 % 对称多处理器(symmetric multiple processors, SMP)：共享内存（访存时间大致相同）、IO设备，所有处理器/核可执行相同功能（对称性）
 
 \subsection{发展历史}
 \begin{itemize}
-	\item 串行处理(1940s)：没有OS，人工调度，准备时间长
+	\item 串行处理/手工操作(1940s)：没有OS，人工调度，准备时间长
 	\item 简单批处理系统(1950s)：
 	\begin{itemize}
 		\item 使用监控程序(monitor)，读入用户程序执行
@@ -24,7 +26,7 @@
 		\item 两种操作模式：用户态、内核态(mode)
 		\item 单道程序(uniprogramming)批处理：处理器必须等到IO指令结束后才能继续
 	\end{itemize}
-	\item 多道程序批处理(1950s末)：多个作业同时进入主存，切换运行，\textbf{充分利用处理器}
+	\item 多道程序批处理(1950s末)：多个作业同时进入主存，切换运行，\textbf{充分利用处理器}；用户响应时间长，不提供人机交互能力
 	\item 分时系统(1961)：MIT CTSS(Compatible Time-Sharing System)，满足用户与计算机交互的需要，\textbf{减小响应时间}；多个交互作业，多个用户，把运行时间分成很短的时间片轮流分配
 	\item 实时系统：专用，工业、金融、军事
 \end{itemize}
