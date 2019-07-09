@@ -26,8 +26,8 @@
 		\item 两种操作模式：用户态、内核态(mode)
 		\item 单道程序(uniprogramming)批处理：处理器必须等到IO指令结束后才能继续
 	\end{itemize}
-	\item 多道程序批处理(1950s末)：多个作业同时进入主存，切换运行，\textbf{充分利用处理器}；用户响应时间长，不提供人机交互能力
-	\item 分时系统(1961)：MIT CTSS(Compatible Time-Sharing System)，满足用户与计算机交互的需要，\textbf{减小响应时间}；多个交互作业，多个用户，把运行时间分成很短的时间片轮流分配
+	\item 多道程序批处理(1950s末)：多个作业同时进入主存，切换运行，\textbf{充分利用处理器}（大块处理时间，少交换上下文的调度）；用户响应时间长，不提供人机交互能力
+	\item 分时系统(1961)：MIT CTSS(Compatible Time-Sharing System)，满足用户与计算机交互的需要，\textbf{减小响应时间}（分时间片小块调度）；多个交互作业，多个用户，把运行时间分成很短的时间片轮流分配
 	\item 实时系统：专用，工业、金融、军事
 \end{itemize}
 

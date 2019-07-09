@@ -82,12 +82,28 @@
 \end{itemize}
 
 \subsection{死锁避免}
-进程启动拒绝
+进程启动拒绝：考虑一个有$n$个进程和$m$种不同类型资源的系统。定义以下向量和矩阵：
+\begin{center}
+    \begin{tabular}{c|c}\hline
+        Resource=$\vr=\bmat{R_1 & R_2 & \cdots & R_m}$ & 系统中每种资源的总量\\\hline
+        Available=$\vv=\bmat{V_1 & V_2 & \cdots & V_m}$ & 未分配给进程的每种资源的总量\\\hline
+        Claim=$C=\bmat{C_{11} & \cdots & C_{1m}\\\vdots &\ddots & \vdots\\C_{n1} & \cdots & C_{nm}}$ & $C_{ij}$为进程$i$对资源$j$的请求\\\hline
+        Allocation=$A=\bmat{A_{11} & \cdots & A_{1m}\\\vdots &\ddots & \vdots\\A_{n1} & \cdots & A_{nm}}$ & $A_{ij}$为分配给进程$i$资源$j$的数目\\\hline
+    \end{tabular}
+\end{center}
+有下列关系式成立：
+\begin{enumerate}
+    \item $\forall j:\;\disp r_j=v_j+\sum_{i=1}^n A_{ij}$。所有资源要么可用，要么已经被分配
+    \item $\forall i,j:\;A_{ij}\leq C_{ij}\leq R_i$：分配小于等于最大请求，最大请求小于等于资源总量
+\end{enumerate}
+
+进而可以定义死锁避免策略：若一个新进程的资源需求会导致死锁，则拒绝启动这个进程，当且仅当
+\[\forall j:\;R_j\geq C_{(n+1)j}+\sum_{i=1}^n C_{ij}\]
 
 进程分配拒绝：银行家算法(Dijkstra)
-% 具体图示
+\[\forall j:\;C_{ij}-A_{ij}\leq v_j\]
 \begin{itemize}
-    \item 只要系统处于安全状态，必定不会进入死锁状态
+    \item 只要系统处于安全状态（至少有一个资源分配序列不会导致死锁，即所有进程都能运行到结束），必定不会进入死锁状态
     \item 不安全状态不一定是死锁状态，但不能保证不会进入死锁状态
     \item 如果一个新进程的资源请求会导致不安全状态，则拒绝启动这个进程
 \end{itemize}
@@ -104,6 +120,52 @@
     \item 分配的资源数目是固定的
     \item 占有资源时进程不能退出
 \end{itemize}
+
+\begin{example}
+    在如下条件下考虑银行家算法。\\
+    6个进程：P0-P5\\
+    4种资源：A（15单位）、B（6单位）、C（9单位）、D（10单位）\\
+    时间T0时的情况，左侧为分配矩阵$A$，右侧为请求矩阵$C$
+    \begin{center}
+        \begin{tabular}{|c|c|c|c|c||c|c|c|c|}\hline
+            & A & B & C & D & A & B & C & D\\\hline
+            P0 & 2 & 0 & 2 & 1 & 9 & 5 & 5 & 5\\\hline
+            P1 & 0 & 1 & 1 & 1 & 2 & 2 & 3 & 3\\\hline
+            P2 & 4 & 1 & 0 & 2 & 7 & 5 & 4 & 4\\\hline
+            P3 & 1 & 0 & 0 & 1 & 3 & 3 & 3 & 2\\\hline
+            P4 & 1 & 1 & 0 & 0 & 5 & 2 & 2 & 1\\\hline
+            P5 & 1 & 0 & 1 & 1 & 4 & 4 & 4 & 4\\\hline
+            v & 6 & 3 & 5 & 4 & & & &\\\hline
+            All & 15 & 5 & 9 & 10 & & & &\\\hline
+        \end{tabular}
+    \end{center}
+\end{example}
+\begin{analysis}
+    需求矩阵$C-A$
+    \begin{center}
+        \begin{tabular}{|c|c|c|c|c|}\hline
+            P0 & 7 & 5 & 3 & 4\\\hline
+            P1 & 2 & 1 & 2 & 2\\\hline
+            P2 & 3 & 4 & 4 & 2\\\hline
+            P3 & 2 & 3 & 3 & 1\\\hline
+            P4 & 4 & 1 & 2 & 1\\\hline
+            P5 & 3 & 4 & 3 & 3\\\hline
+        \end{tabular}
+    \end{center}
+    看有没有进程所请求的资源都小于等于可用资源，用完则将当前分配资源还回可用资源中
+    \begin{center}
+        \begin{tabular}{|c|c|c|c|c|}\hline
+            原来 & 6 & 3 & 5 & 4\\\hline
+            P1 & 6 & 4 & 6 & 5\\\hline
+            P2 & 10 & 5 & 6 & 7\\\hline
+            P3 & 11 & 5 & 6 & 8\\\hline
+            P4 & 12 & 6 & 6 & 8\\\hline
+            P5 & 13 & 6 & 7 & 9\\\hline
+            P0 & 15 & 6 & 9 & 10\\\hline
+        \end{tabular}
+    \end{center}
+    如果某一个进程的请求后，需求矩阵每一行均小于等于可用资源的话，基于死锁避免原则，则该请求应该被拒绝
+\end{analysis}
 
 \subsection{死锁检测}
 检测方法：

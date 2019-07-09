@@ -66,6 +66,14 @@ turn = 0;
     \item 双标志延迟礼让：活锁
 \end{itemize}
 
+\begin{example}
+    忙等待效率一定比阻塞等待效率低吗
+\end{example}
+\begin{analysis}
+    一般情况下确实如此，因为忙等待一直在消耗CPU资源。
+    但特殊情况下，忙等待能立即响应请求完成（条件判断结束），对于性能要求较高的应用有好处；而阻塞等待还需等OS调度才能继续执行下面的工作。
+\end{analysis}
+
 \subsubsection{软件方法}
 Dekker算法：避免无原则礼让，规定各进程进入临界区的顺序；逻辑复杂，正确性难以证明，存在轮流问题，存在忙等待；初始化\verb'flag'都为\verb'false'，\verb'turn'为1
 % https://www.cnblogs.com/zhengruin/p/4994188.html
@@ -177,6 +185,28 @@ void exchange (int register, int memory)
     \item 忙等待/自旋等待
     \item 可能饥饿或死锁
 \end{itemize}
+
+\begin{example}
+    利用\verb'xchg'实现一套互斥机制并给出使用该机制的框架
+\end{example}
+\begin{analysis}
+    由于\verb'xchg'可以交换两个变量的内容，且为原子操作，故如果临界区未被占用，经过\verb'xchg'操作后，\verb'lock_var'被置为1；而其他进程再要访问临界区时，\verb'lock_var'和\verb'ax'均为1，交换后不会发生改变，进而不断进行\verb'lock_loop'循环。
+\begin{lstlisting}[language={[x86masm]Assembler}]
+    lock_var db 0 ; not used critical section
+lock:
+    mov ax, 1
+lock_loop:
+    xchg [lock_var], ax
+    cmp ax, 0
+    jnz lock_loop
+\end{lstlisting}
+    解锁操作则只需将\verb'lock_var'置0即可
+\begin{lstlisting}[language={[x86masm]Assembler}]
+unlock:
+    mov ax, 0
+    xchg [lock_var], ax
+\end{lstlisting}
+\end{analysis}
 
 \subsection{信号量(semaphore)}
 解决RC问题一种简单高效的方法

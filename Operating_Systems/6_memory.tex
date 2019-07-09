@@ -86,9 +86,11 @@
     \item 分段存在外碎片，分页只有小的内碎片，分页内存利用率比分段高
 \end{itemize}
 
-段表只能有一个，而页表可以有多个
+段表只能有一个，而页表可以有多个。
 
-段页式系统中，逻辑地址被分为段号S、页号P和页内偏移量W
+段页式系统中，逻辑地址被分为段号S、页号P和页内偏移量W。
+
+逻辑地址偏移量只需小于段的长度即可。
 
 \subsection{虚拟存储}
 传统的存储方式都是一次性加载，并且驻留在内存中。
@@ -123,6 +125,13 @@
 \item 页表起始地址保存在一个CPU专用寄存器里(\verb'cr3')
 \end{itemize}
 
+虚拟地址转换为物理地址流程：
+\begin{itemize}
+    \item 将虚拟地址分割为虚页号和偏移量两个部分
+    \item 通过虚页号在页表中寻找对应的表项
+    \item 从中获取页框号后，乘页尺寸，加上偏移量，得到物理地址
+\end{itemize}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{fig/memory_address_transformation.png}
@@ -143,7 +152,13 @@
 
 \begin{itemize}
     \item 调页策略：按需调页、预先调页
-    \item 替换策略：Opt(Belady)、LRU、FIFO、Clock
+    \item 替换策略：
+    \begin{itemize}
+        \item Opt(Belady)：置换下次访问距当前时间最长的页
+        \item LRU：最近最少使用
+        \item FIFO：先进先出
+        \item Clock：时钟，需要附加位，首次/被置换放入置为1，顺序循环扫描页表，将1置0，并选择第一个原来就是0的页表项放置
+    \end{itemize}
 \end{itemize}
 
 Linux的内存管理
