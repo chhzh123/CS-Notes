@@ -16,10 +16,12 @@
 
 动态分区放置算法：
 \begin{itemize}
-    \item 首次适配(first fit)：从前端开始扫描内存，直到找到一个足够大的空闲区，通常性能比较好
+    \item 首次适配(first fit)：\textbf{最简单也性能最好}，从前端开始扫描内存，直到找到一个足够大的空闲区，通常性能比较好
     \item 下次适配/邻近适配(next fit)：从上次分配结束的地方开始扫描内存，直到找到一个足够大的空闲区
-    \item 最佳适配(best fit)算法：扫描整个内存，找出一个足够大的最小的空闲区，会产生很多外部碎片
+    \item 最佳适配(best fit)算法：\textbf{性能最差}，扫描整个内存，找出一个足够大的最小的空闲区，会产生很多外部碎片
 \end{itemize}
+
+分区存储管理中，存储保护硬件由\underline{基址}和\underline{限长}两个寄存器配合地址转换。
 
 伙伴系统(buddy system)：固定分区和动态分区的折中方案
 \begin{itemize}
@@ -55,10 +57,11 @@
 
 类似固定分区，不同在于：
 \begin{itemize}
-    \item 分页中的“分区”（页帧）非常小（从而内碎片也小）
-    \item 分页中一个进程可占用多个“分区” （页帧）（从而不需要覆盖）
-    \item 分页中不要求一个进程占用的多个“分区”（页帧）连续（充分利用空闲“分区”）
+    \item 分页中的页帧非常小（从而内碎片也小）
+    \item 分页中一个进程可占用多个页帧（从而不需要覆盖）
+    \item 分页中不要求一个进程占用的多个页帧连续（充分利用空闲“分区”）
 \end{itemize}
+
 存在问题：
 \begin{itemize}
 \item 不易实现共享和保护（不反映程序的逻辑组织）
@@ -74,8 +77,8 @@
     \item 页大小是系统固定的，而段大小则通常不固定
     \item 逻辑地址表示
     \begin{itemize}
-    \item 分页是一维的，各个模块在链接时必须组织成同一个地址空间
-    \item 分段是二维的，各个模块在链接时可以每个段组织成一个地址空间
+        \item 分页是一维的，各个模块在链接时必须组织成同一个地址空间
+        \item 分段是二维的，各个模块在链接时可以每个段组织成一个地址空间
     \end{itemize}
     \item 通常段比页大，因而段表比页表短，可以缩短查找时间，提高访问速度
     \item 分段对程序员可见，从而可用来对程序和数据进行模块化组织
@@ -86,6 +89,10 @@
     \item 分段存在外碎片，分页只有小的内碎片，分页内存利用率比分段高
 \end{itemize}
 
+总的来说，分段反映了程序的逻辑组织、易实现保护和共享、便于\underline{动态链接和数据结构的动态增长}（线性地址空间），但是分段会产生\underline{外部碎片}，段的长度不一，不利于虚拟存储；
+分页采用较小的等长分块、\underline{内部碎片小}，而且可以\underline{不连续存储}、\underline{无外部碎片}，易于\underline{部分加载和交换}、支持\underline{虚拟存储}，但是分页不支持\underline{保护、共享、动态链接和增长}；
+所以分段用于\textbf{内存保护}、分页用于\textbf{虚拟存储}。
+
 段表只能有一个，而页表可以有多个。
 
 段页式系统中，逻辑地址被分为段号S、页号P和页内偏移量W。
@@ -93,8 +100,10 @@
 逻辑地址偏移量只需小于段的长度即可。
 
 \subsection{虚拟存储}
-传统的存储方式都是一次性加载，并且驻留在内存中。
+\subsubsection{简介}
+传统的存储方式都是\textbf{一次性}加载，并且\textbf{驻留}在内存中。
 而虚拟存储器则是基于程序的局部性原理，在程序装入时，将程序一部分装入内存，其余部分留在外存。
+\underline{动态地址转换、不连续分配和部分加载}是虚拟存储的主要特征。
 \begin{itemize}
     \item 采用部分加载，内存中可同时容纳更多的进程。
 每个进程都只加载一部分，更多进程中应该也会有更多的就绪进程，从而提高CPU利用率
@@ -104,13 +113,12 @@
 \item 逻辑地址空间可以比物理地址空间大，例如，设物理内存64KB，1KB/页，则物理地址需要16位，而逻辑地址可以是28位！
 \item 虚拟存储由内存和外存结合实现
     \end{itemize}
+    \item 程序重定位
 \end{itemize}
-
-虚拟存储技术的特征：不连续性、部分交换、大空间
 
 抖动(thrashing)问题：交换操作太过频繁
 
-页表
+\subsubsection{页表}
 \begin{itemize}
 \item 页表项（Page Table Entry，简称为PTE）的一般内容：
 \begin{itemize}
@@ -134,32 +142,80 @@
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{fig/memory_address_transformation.png}
+    \includegraphics[width=0.6\linewidth]{fig/memory_address_transformation.png}
 \end{figure}
 
+由于分页后页表项太多了，故要采用多级页表，通常32位CPU用两级页表，64位CPU用三级页表
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{fig/two-level_paging.png}
+    \includegraphics[width=0.6\linewidth]{fig/two-level_paging.png}
 \end{figure}
+\begin{example}
+    在Intel x86系列的32位CPU 中，分页硬件用二级页表结构。
+    页大小为4KB，一级页表/根页表/页目录和二级页表/用户页表的每个表项占4B。
+    回答下列问题：
+    \begin{enumerate}
+        \item 32位的线性地址中，根页表的索引、用户页表的索引和页内偏移量各占哪些位。
+        \item 如果有一个十六进制的线性地址为 01E5F1A4，那么对应的页目录索引值、页表索引值和页内偏移量分别是多少？
+        \item 如果进程实际地址空间使用了20MB，那么该进程的根页表和用户页表中有用表项占用多少内存？
+    \end{enumerate}
+\end{example}
+\begin{analysis}
+    用户地址空间4GB，二级页表4MB，一级页表4KB
+    \begin{enumerate}
+        \item 二级页表：$2^{32}/2^{12}=2^{20}$页表项，每个表项4B，故是4MB\\
+        一级页表是二级页表的页表，同样以4KB划分一页，故有$4MB/4KB=2^{10}$个页表项\\
+        因此32位线性地址\footnote{逻辑地址cs:eip，线性地址即虚拟32位地址，物理地址为真实32位地址}，高10位为根页表索引，中间10位位用户页表索引，低12位为页内偏移量
+        \item 按照上面的划分可得一级0x007，二级0x25F，页内偏移0x1A4
+        \item 该进程需要用$20*2^{20}B/2^{12}B=20*2^8$个用户页，在二级页表中占$20*2^8*4B/2^{12}B=5$个页大小，故总共的表项占用空间为$(256*20+5)*4B=20500B$
+    \end{enumerate}
+\end{analysis}
 
-快表/联想存储器(TLB)
+快表/联想存储器(TLB)相当于页表的cache
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{fig/TLB.png}
+    \includegraphics[width=0.6\linewidth]{fig/TLB.png}
 \end{figure}
 
 常见页面大小介于1KB-8KB
 
 \begin{itemize}
-    \item 调页策略：按需调页、预先调页
+    \item 分配策略：确定驻留集大小（每个进程读入主存多少页），分配给一个进程的存储量越小，则任何时候驻留在主存中的进程数就越多，提高CPU利用效率，但单一程序的局部性差
+    \begin{itemize}
+        \item 固定分配局部置换：为每个进程分配一定数目的物理块，在整个运行时间都不改变。若进程在运行时发生缺页，则只能从该进程在内存的页面中选出一页换出，再调入需要的页。难以确定每个进程应分配的物理块数目：太少会频繁出现缺页中断，太多会使CPU及其他资源利用率下降。
+        \item 可变分配全局置换：为每个进程分配一定数目的物理块，操作系统自身也保持一个空闲的物理块队列。缺页时则从空闲物理块中取出一个分配给该进程。可以动态增加进程物理块，但是盲目增加物理块数目会导致系统多道程序并发能力下降。
+        \item 可变分配局部置换：为每个进程分配一定数目的物理块，进程缺页时，只允许进程从内存的页面中选一页换出；若该进程频繁缺页，则操作系统再为该进程分配若干物理块，直到该进程缺页率趋于适当程度；反之缺页率低的就减少分配的物理块。但开销较大。
+    \end{itemize}
+    \item 调页策略：\underline{按需调页、预先调页}
     \item 替换策略：
     \begin{itemize}
-        \item Opt(Belady)：置换下次访问距当前时间最长的页
+        \item Opt(Belady)：置换下次访问距当前时间最长的页，最长时间内不被访问，如页1之后都不再用，则将页1替换出去
         \item LRU：最近最少使用
-        \item FIFO：先进先出
-        \item Clock：时钟，需要附加位，首次/被置换放入置为1，顺序循环扫描页表，将1置0，并选择第一个原来就是0的页表项放置
+        \item FIFO：先进先出，可能出现Belady异常（物理块数增大而页故障数不降反增）
+        \item Clock：时钟/最近未用(NRU)，比较实用的算法。需要附加位，\textbf{首次/被访问}时置为1；指针始终指向下一访问的表项；不管命中哪一个表项，指针都不会移动；\textbf{当需要置换时}，顺序循环扫描页表，\textbf{将1置0}，并选择第一个原来就是0的页表项放置
     \end{itemize}
 \end{itemize}
+\begin{example}
+    时钟调度的例子如下
+    \begin{center}
+        % Table generated by Excel2LaTeX from sheet 'Sheet1'
+\begin{tabular}{|r|r|r|r|r|r|r|r|r|r|r|r|r|r|}
+\hline
+1     & 4     & 5     & 2     & 1     & 4     & 3     & 5     & 4     & 3     & 1     & 2     & 1     & 5 \bigstrut\\
+\hline
+1*    & 1*    & 1*    & $\to$1*   & $\to$1*   & $\to$1*   & 3*    & 3*    & 3*    & 3*    & $\to$3*   & 3     & 3     & 3 \bigstrut\\
+\hline
+$\to$     & 4*    & 4*    & 4*    & 4*    & 4*    & $\to$4    & $\to$4    & $\to$4*   & $\to$4*   & 4     & 2*    & 2*    & 2* \bigstrut\\
+\hline
+      & $\to$     & 5*    & 5*    & 5*    & 5*    & 5     & 5*    & 5*    & 5*    & 5     & $\to$5    & $\to$5    & $\to$5* \bigstrut\\
+\hline
+      &       & $\to$     & 2*    & 2*    & 2*    & 2     & 2     & 2     & 2     & 1*    & 1*    & 1*    & 1* \bigstrut\\
+\hline
+F     & F     & F     & F     &       &       & F     &       &       &       & F     & F     &       &  \bigstrut\\
+\hline
+\end{tabular}%
+    \end{center}
+\end{example}
 
 Linux的内存管理
 \begin{itemize}

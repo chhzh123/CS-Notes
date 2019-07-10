@@ -9,7 +9,7 @@
     \item 活锁(livelock)：两个及以上进程，为响应其他进程中的变化，而不断改变自己的状态，但是没有做任何有用的工作
     \item 互斥(mutual exclusion)：当一个进程在\textbf{临界区访问共享资源}时，不允许其他进程进入访问
     \item 竞争条件(race condition, RC)：多个进程/线程读写共享数据，其结果依赖于它们执行的相对速度
-    \item 饥饿(starvation)：可运行的进程长期未被调度执行
+    \item 饥饿(starvation)：可运行的进程长期未被\textbf{调度执行}
 \end{itemize}
 
 核心内容
@@ -192,7 +192,7 @@ void exchange (int register, int memory)
 \begin{analysis}
     由于\verb'xchg'可以交换两个变量的内容，且为原子操作，故如果临界区未被占用，经过\verb'xchg'操作后，\verb'lock_var'被置为1；而其他进程再要访问临界区时，\verb'lock_var'和\verb'ax'均为1，交换后不会发生改变，进而不断进行\verb'lock_loop'循环。
 \begin{lstlisting}[language={[x86masm]Assembler}]
-    lock_var db 0 ; not used critical section
+    lock_var db 0 ; not using critical section
 lock:
     mov ax, 1
 lock_loop:
@@ -249,6 +249,8 @@ void V(semaphore s) { // semSignal
     \item 出临界区\textbf{之后}进行\textbf{V操作}
 \end{itemize}
 
+操作系统实现提供互斥的方法包括\underline{信号量和消息传递}。
+
 \subsubsection{同步}
 同步：后续动作必须在前驱动作执行完后才能进行
 \begin{itemize}
@@ -295,18 +297,20 @@ void consumer() {
 
 读者优先
 \begin{lstlisting}
-int readcount;
-semaphore x=1, wsem=1;
+int readercount;
+semaphore x = 1, wsem = 1;
 void reader() {
     while(true) {
-        P(x);
-        readcount++;
-        if (readcount==1) P(wsem);
+        P(x); // mutex for modifying readercount
+        readercount++;
+        if (readcount == 1) P(wsem); // mutex, the more readers need not lock
         V(x);
+
         READUNIT();
+
         P(x);
-        readcount--;
-        if (readcount==0) V(wsem);
+        readercount--;
+        if (readcount == 0) V(wsem); // only when no readers, the mutex will be unlocked
         V(x);
     }
 }
@@ -322,20 +326,64 @@ void writer() {
 
 写者优先
 \begin{lstlisting}[multicols=2]
-int readcount, writecount;
-semaphore x=1, y=1, z=1, rsem=1, wsem=1;
+int readercount, writercount;
+semaphore x = 1, y = 1, z = 1, rsem = 1, wsem = 1;
 void reader() {
     while(true) {
         P(z); P(rsem);
         P(x);
-        readcount++;
-        if (readcount==1) P(wsem);
+        readcounter++;
+        if (readcounter == 1) P(wsem); // when there is a reader, writer should not write
         V(x);
         V(rsem); V(z);
+
         READUNIT();
+
         P(x);
         readcount--;
-        if (readcount==0) V(wsem);
+        if (readcount == 0) V(wsem);
+        V(x);
+    }
+}
+
+void writer() {
+    // the same as the original reader
+    while(true) {
+        P(y);
+        writercount++;
+        if (writercount == 1) P(rsem);
+        V(y);
+
+        P(wsem);
+        WRITEUNIT();
+        V(wsem);
+
+        P(y);
+        writercount--;
+        if (writercount == 0) V(rsem);
+        V(y);
+    }
+}
+\end{lstlisting}
+
+读写公平
+\begin{lstlisting}[multicols=2]
+int readercount, writercount;
+semaphore x = 1, y = 1, wrsem = 1;
+void reader() {
+    while(true) {
+        P(y);
+        P(x);
+        readcounter++;
+        if (readcounter == 1) P(rwsem);
+        V(x);
+        V(y);
+
+        READUNIT();
+
+        P(x);
+        readcount--;
+        if (readcount == 0) V(rwsem);
         V(x);
     }
 }
@@ -343,22 +391,18 @@ void reader() {
 void writer() {
     while(true) {
         P(y);
-        writecount++;
-        if (writecount==1) P(rsem);
-        V(y);
-        P(wsem);
+        P(wrsem);
+
         WRITEUNIT();
-        V(wsem);
-        P(y);
-        writecount--;
-        if (writecount==0) V(rsem);
+
+        V(wrsem);
         V(y);
     }
 }
 \end{lstlisting}
 
 \subsection{管程(monitor)}
-管程(monitor)：通过集中管理（封装同步机制与同步策略）以保证安全（类似于OOP中的抽象类）
+管程(monitor)由程序设计语言提供，通过集中管理（封装同步机制与同步策略）以保证安全（类似于OOP中的抽象类），实现同步互斥等功能
 
 主要特点：
 \begin{itemize}
