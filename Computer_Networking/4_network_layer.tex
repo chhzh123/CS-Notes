@@ -250,43 +250,6 @@ IPv4地址不够用的解决方案
 	私有地址只能用于内部网络。主干网上的路由器会过滤掉目的地址为私有地址的IP数据报。因此，离开内部网络的IP数据报必须使用由IANA分配的全局地址作为目的地址。
 \end{itemize}
 
-\subsubsection{IPv6}
-IPv6地址由128位二进制数组成，分割成8段16位组，然后把每段16位组换算成4个十六进制数来表示，每段十六进制数值的范围是0000-FFFF，每段之间使用冒号来分隔。
-
-简化规则如下：
-\begin{itemize}
-\item 每一个段中开头的0可以省略不写，但末尾的0不能省略\\
-原始IPv6地址：\verb'3ffe:1944:0100:000a:0000:00bc:2500:0d0b'\\
-简化后IPv6地址：\verb'3ffe:1944:100:a:0:bc:2500:d0b'
-\item 如果某段或连续几段全是0，则可以使用一个\verb':'来代替\\
-原始IPv6地址：\verb'ff02:0000:0000:0000:0000:0000:0000:0005'\\
-简化后IPv6地址：\verb'ff02::5'
-\item 如果128位全部为0的地址，则可以使用一个\verb'::'来表示\\
-原始IPv6地址: \verb'0000:0000:0000:0000:0000:0000:0000:0000'\\
-简化后IPv6地址：\verb'::'
-\item IPv4地址的表示方法：\verb'0:0:0:0:0:0:d.d.d.d'\\
-IPv4地址: \verb'170.1.2.3'\\
-用IPv6地址表示：\verb'0:0:0:0:0:0: 170.1.2.3' 或 \verb'::170.1.2.3'
-\end{itemize}
-注意：在IPv6地址中，只能使用一次双冒号。
-如\verb'2001:0d02:0000:0000:0014:0000:0000:0095'
-以下两种缩写方式都是正确的：
-\begin{lstlisting}
-2001:d02::14:0:0:95
-2001:d02:0:0:14::95
-\end{lstlisting}
-但下面这种缩写方式是错误的：
-\begin{lstlisting}
-2001:d02::14::95
-\end{lstlisting}
-
-多种IPv4过渡IPv6方式
-\begin{itemize}
-\item 双栈：即在接口上同时配置IPv4和IPv6
-\item 使用IPv4隧道来传输IPv6数据
-\item 在IPV4和IPv6之间进行NAT转换
-\end{itemize}
-
 \subsection{IP数据报相关协议}
 \subsubsection{地址解析协议}
 \begin{itemize}
@@ -900,4 +863,145 @@ $O(n^2)$算法需要$O(nE)$条消息\\
 \begin{itemize}
 	\item IGMPv1协议只能对某个接口查询所有组，如果三次查询在十秒内都没有收到响应报告，则认为该接口没有任何组成员。
 	\item IGMPv2协议可以直接针对某个组进行查询，而且主机加入组和离开组都要发通告。
+\end{itemize}
+
+\subsection{IPv6}
+\subsubsection{IP数据报}
+IPv4的缺点有很多，如服务类型(ToS)没有用、选项长度太少、分段给路由器CPU造成很大的压力等。
+因此IPv6解决了IPv4存在的问题
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\linewidth]{fig/ipv6-format.png}
+\end{figure}
+\begin{itemize}
+	\item 版本号：取值为6，表示IPv6。
+	\item 流量类别：数据流的类别或优先级，即IPv4的服务类型。
+	\item 流标签：用于区分相同信源和信宿之间的不同数据流。取值0时，表示未用该标签。
+	\item 有效载荷长度：包括扩展头和上层PDU，最多65535字节。超过这一字节数的负载，该字段值置为“0”，使用扩展头逐个跳段(Hop-by-Hop)选项中的巨量负载(Jumbo Payload)选项。
+	\item 下一包头：指出紧随IPv6头部之后的包头(Header)类型，如扩展头（有的话）或某个传输层协议头（如TCP/UDP/ICMPv6），对应IPv4的选项。
+	\begin{itemize}
+		\item 逐跳选项(Hop-by-Hop)/0：要求每个路由器都必须检查选项部分， 必须作为第一个选项，而且只允许出现一次。如用于传送超大分组（有效载荷的字节
+		数用32b表示）的Jumbo Payload选项。
+		\item 目的地选项(Destination)/60：用于为目的地传送信息，只在目的地检查该选项。
+		\item 路由选择选项(Routing)/43：类似于IPv4的松散源路由。
+		\item 分段选项(Fragmentation)/44：提供分段和重组服务，\textemph{IPv6只能在源主机进行分段}。
+		\item 认证(Authentication)/51：提供数据源认证、数据完整性检查和反重播保护。
+		\item ESP选项(Encrypted security payload)/50：提供加密服务。
+	\end{itemize}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.4\linewidth]{fig/next-header.png}
+	\end{figure}
+	\item 跳数限制：类似于IPv4的TTL。每次转发减1，减到0时如果还没有到达目的地则被丢弃。
+	\item 源地址/目的地址：IPv6将IP地址扩充至\textemph{128位}（不是64！），确保物联网的地址足够用
+	\item IPv6只在源端分段，中间不能分段。
+\end{itemize}
+
+\subsubsection{地址书写与简化}
+IPv6地址由128位二进制数组成，分割成8段16位组，然后把每段16位组换算成4个十六进制数来表示，每段十六进制数值的范围是0000-FFFF，每段之间使用冒号来分隔。
+
+简化规则如下：
+\begin{itemize}
+\item 每一个段中开头的0可以省略不写，但末尾的0不能省略\\
+原始IPv6地址：\verb'3ffe:1944:0100:000a:0000:00bc:2500:0d0b'\\
+简化后IPv6地址：\verb'3ffe:1944:100:a:0:bc:2500:d0b'
+\item 如果某段或连续几段全是0，则可以使用一个\verb':'来代替\\
+原始IPv6地址：\verb'ff02:0000:0000:0000:0000:0000:0000:0005'\\
+简化后IPv6地址：\verb'ff02::5'
+\item 如果128位全部为0的地址，则可以使用一个\verb'::'来表示\\
+原始IPv6地址: \verb'0000:0000:0000:0000:0000:0000:0000:0000'\\
+简化后IPv6地址：\verb'::'
+\item IPv4地址的表示方法：\verb'0:0:0:0:0:0:d.d.d.d'\\
+IPv4地址: \verb'170.1.2.3'\\
+用IPv6地址表示：\verb'0:0:0:0:0:0: 170.1.2.3' 或 \verb'::170.1.2.3'
+\end{itemize}
+注意：在IPv6地址中，只能使用一次双冒号。
+如\verb'2001:0d02:0000:0000:0014:0000:0000:0095'
+以下两种缩写方式都是正确的：
+\begin{lstlisting}
+2001:d02::14:0:0:95
+2001:d02:0:0:14::95
+\end{lstlisting}
+但下面这种缩写方式是错误的：
+\begin{lstlisting}
+2001:d02::14::95
+\end{lstlisting}
+
+\subsubsection{地址类型}
+IPv6单个接口可以分配多个任意类型的地址，包括以下三种
+\begin{itemize}
+	\item 单播地址：标识单个节点
+	\begin{itemize}
+		\item Global全局：从\verb'2000::/3'开始，由IANA分配
+		\item Reserved保留：被IETF使用
+		\item Private私有：局部链接（从\verb'FE80::/10'开始）
+		\item Loopback环回(\verb'::1')
+		\item Unspecified未指明(\verb'::')
+	\end{itemize}
+	\item 组播地址：标识一组节点（前8个bit为1111 1111）
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.5\linewidth]{fig/ipv6-group-broadcast.png}
+	\end{figure}
+	\item 任意播地址：标识一组节点中任何一个成员， 即源节点的数据流被转发到组里最近的节点
+	\begin{itemize}
+		\item 任意播地址直接采用全局单播地址
+		\item 多台设备设置相同的任意播地址
+		\item 任意播地址的广泛使用会带来的混乱和危险
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{地址格式}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/ipv6-network-prefix.png}
+\end{figure}
+
+全球网络前缀是由几个层次来构成的，根据地址分配空间来决定的。
+\begin{center}
+IANA(\verb'2000::/3') - RIR(\verb'/12') - ISP/LIR(\verb'/32') - 组织机构(\verb'/48') - 本地子网(\verb'/64')
+\end{center}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/EUI-64.png}
+\end{figure}
+EUI-64是通过在\textemph{48位MAC地址插入}“FFFE”作为中间16位形成的。所选的MAC地址要求是全球唯一， U/L位要设置为1(0为本地范围)。
+
+\subsubsection{兼容性}
+IPv6和IPv4不兼容，故各种路由协议都要为IPv6单独设计。
+
+多种IPv4过渡IPv6方式
+\begin{itemize}
+\item 双栈：即在接口上同时配置IPv4和IPv6
+\item 使用IPv4隧道来传输IPv6数据（加IPv4的头部）
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/v4-to-v6.png}
+\end{figure}
+\item 在IPV4和IPv6之间进行NAT转换
+\end{itemize}
+
+\subsubsection{优点}
+\begin{itemize}
+	\item 提供更大的地址空间
+\begin{itemize}
+	\item 改善全球的可达性和灵活性
+	\item 通过严格的地址分配和聚类(Aggregation)大大减小路由表的长度
+	\item 自动配置链路层地址，从而实现\textemph{即插即用}功能：无需配置NAT即可实现端到端的通信，简化了重新编址和修改地址的机制
+\end{itemize}
+	\item 支持移动性和安全性
+\begin{itemize}
+	\item IPv6有加密与鉴别选项
+	\item IPv6移动性内置
+\end{itemize}
+	\item 报头更简单
+\begin{itemize}
+	\item 路由选择效率更高，提高性能转发速率
+	\item 没有广播，不会出现广播风暴
+	\item 不需要处理检验和
+	\item 报头扩展机制更简单
+	\item 流标签无需查看传输层信息即能识别各种流
+\end{itemize}
+	\item 多种IPv4过渡IPv6方式
 \end{itemize}
