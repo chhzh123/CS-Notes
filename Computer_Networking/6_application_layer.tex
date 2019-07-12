@@ -142,15 +142,6 @@ Email有三个主要组件：
 \end{itemize}
 
 \subsubsection{DNS服务器}
-\begin{example}
-如果客户希望获得www.amazon.com的IP地址：
-\begin{itemize}
-\item 客户先到根服务器上查询comDNS服务器的IP地址
-\item 然后到com DNS服务器上查询amazon.com的DNS服务器
-\item 最后查询amazon.com DNS服务器获得www.amazon.com的IP地址
-\end{itemize}
-\end{example}
-
 根名字服务器
 \begin{itemize}
 \item 公开的IP地址，不需要解析名字，由本地名字服务器直接联系
@@ -158,7 +149,6 @@ Email有三个主要组件：
 \item 根服务器主要用来管理互联网的主目录，全世界只有13台：1个为主根服务器，放置在美国。其余12个均为辅根服务器，其中9个放置在美国，欧洲2个，位于英国和瑞典，亚洲1个，位于日本。
 \end{itemize}
 
-\myhline
 权威服务器
 \begin{itemize}
 \item 顶级域名提供了权威DNS服务器的IP地址，包括com, org, net, edu, uk, fr, ca, jp等
@@ -168,6 +158,11 @@ Email有三个主要组件：
 \item 权威服务器由大型组织或服务提供商维护
 \end{itemize}
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{fig/dns-example.png}
+\end{figure}
 
 \subsubsection{资源记录}
 采用分布数据库保存资源记录(resource records, RR)
@@ -191,25 +186,65 @@ Email有三个主要组件：
 \subsubsection{基本特性}
 无线局域网(WiFi)IEEE 802.11
 \begin{itemize}
-\item 不同标准MAC层一样，改进的是物理层（发、编码、怎么收）
-\item 无线信道特点：信号衰减快
+\item 不同标准MAC层一样，改进的是\textemph{物理层}（发、编码、怎么收）
+\item 无线信道特点：信号衰减快、抗干扰能力差、发送速率慢、共享信道有限带宽
 \end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{fig/802-11.png}
+\end{figure}
 
-\subsubsection{设施}
-\begin{itemize}
-\item 无固定设施（自组织）：独立基本服务集(Basic Service Set, BSS)，不需要路由器，可以几台PC直接连
-\item 有固定设施：有个接入点(Access Point, AP)，有路由器，连成基本服务集；
-扩展的服务集(ESS)，完全无缝连接，自动迁移到下一个AP
-\end{itemize}
-
-\subsubsection{底层配置}
 MAC层一般用分布协调功能(DCF)
 \begin{itemize}
 \item 原子操作：发完数据等待28$\mu$s后才发ACK
 \item CSMA/CA(Carrier Avoidance)算法：尽可能少冲突，尽可能少重传；即使空闲也要随机等一段时间
 \end{itemize}
 
-\myhline
+\subsubsection{设施}
+\begin{itemize}
+\item 无固定设施（自组织IBSS）：独立基本服务集(Basic Service Set, BSS)，不需要路由器，可以几台PC直接连
+\item 有固定设施：有个接入点(Access Point, AP)，有路由器，连成基本服务集；
+扩展的服务集(ESS)，完全无缝连接，自动迁移到下一个AP
+\end{itemize}
+
+\subsubsection{帧格式}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{fig/802-11-frame.png}
+\end{figure}
+
+802.11的帧一共有\textemph{4个地址}，并没有指出上层协议的部分，所以数据部分(payload)加了\textemph{SNAP}的头部，里面包含了类型指明上层协议。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{fig/802-11-frame-2.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{fig/802-11-frame-3.png}
+\end{figure}
+
+\subsubsection{家用小路由器}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{fig/wlan-example.png}
+\end{figure}
+
+\begin{itemize}
+\item 很多家用小路由器的内网IP都设成192.168.1.0/24
+\item 默认网关配成虚接口的地址(192.168.1.1)
+\item 三层交换机的路由表：两个直线网(192.168.1.0/24、202.116.64.9)、默认路由(202.116.64.1)，访问因特网就会匹配上默认路由（有线方式）
+\item 无线方式：发出来有三个地址
+\begin{itemize}
+    \item TA（左侧电脑无线网卡的MAC地址）作为SA（源地址）
+    \item DA（虚接口的MAC地址）作为目的地址
+    \item RA（AP的MAC地址/BSSID），因为有很多个AP，所以要指定RA
+\end{itemize}
+AP收下帧后，把802.11的帧转化为以太网的帧（有源地址和目的地址了，同时SNAP中也给出了类型），然后用以太网协议发送，三层交换机收到（虚接口地址），再查路由表转发给对应主机或访问外网
+\item 当然DA也可以直接写目的主机的IP地址，这样的话交换机就作为透明网桥使用
+\end{itemize}
+
+\subsubsection{其他技术}
 \begin{itemize}
 \item 翻译网桥：一种帧转换为另一种帧
 \item 不同频率的WiFi：5GHz WiFi干扰小（不是说现在的5G）
@@ -221,10 +256,10 @@ MAC层一般用分布协调功能(DCF)
 SNMP协议：Simple Network Management Protocol
 
 \subsection{广域网}
-ADSL不是用语音传，是用数据传的，现在都不用电话线连了
+ADSL不是用语音传，是用数据传的，现在都不用电话线连了。
 
 \subsection{软件定义网络}
-软件定义网络(Software Defined Network, SDN)：原来路由器交换机都是固定电路，但现在可编程，是未来网络发展方向，最大的好处在于\textemph{虚拟化}
+软件定义网络(Software Defined Network, SDN)：原来路由器交换机都是固定电路，但现在可编程，是未来网络发展方向，最大的好处在于\textemph{虚拟化}。
 
 \begin{center}
 \begin{tikzcd}
@@ -234,7 +269,7 @@ ADSL不是用语音传，是用数据传的，现在都不用电话线连了
 \end{tikzcd}
 \end{center}
 
-控制器相当于一个电脑，用来修改下面（几十台）转发器的路由表
+控制器相当于一个电脑，用来修改下面（几十台）转发器的路由表。
 
 \subsection{多媒体网络}
 \begin{itemize}

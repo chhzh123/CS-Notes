@@ -763,38 +763,34 @@ $O(n^2)$算法需要$O(nE)$条消息\\
 边界网关协议(Border Gateway Protocol, BGP)可以用于图，随便连
 \begin{itemize}
 \item 采用可靠扩散(reliable flooding)的方法把AS内的网络的信息传遍整个因特网
-\item 每个AS需要分配一个号码。与IP地址分配相同，全局AS号(1 - 64511)由ICANN的下属机构进行统一分配。 64512 - 65535为私有AS号。
+\item 每个AS需要分配一个号码。与IP地址分配相同，全局AS号(1 - 64511)由ICANN的下属机构进行统一分配。64512 - 65535为私有AS号。
 \end{itemize}
 
 \myhline
 工作原理
 \begin{itemize}
-\item 运行了BGP协议的路由器被称为BGP路由器，所运行的BGP协议称为BGP发言人(speaker)，其他路由器为内部路由器
-\item 在BGP路由器之间可以通过TCP连接（端口号为179）建立相邻关系，由AS管理员指定，也可以采用自动产生(重发布)和聚合产生。这些指定网络只有发布路由表中存在才会被改路由器扩散出去。如果它们失效，则会把撤销路由的消息扩散出去。
-\item AS内的两个BGP路由器之间建立的相邻关系称为iBGP(interior BGP)相邻关系，而位于不同AS的两个BGP路由器之间建立的相邻关系称为eBGP(exterior BGP)相邻关系
-\item  BGP协议所扩散的网络前缀/网络号称为网络层可达信息(Network Layer Reachablility Information， NLRI)，BGP路由器可以把NLRI连同它们的属性一起通过相邻关系扩散给邻居，进而扩散到因特网中所有的BGP路由器
-\item BGP路由器在NLRI引入BGP协议时扩散一次，并不定期扩散
+\item 运行了BGP协议的路由器被称为BGP路由器，所运行的BGP协议称为BGP发言人(speaker)，其他路由器为内部路由器。
+\item 在BGP路由器之间可以通过\textemph{TCP连接}（端口号为179）建立相邻关系，由AS管理员指定，也可以采用自动产生（重发布）和聚合产生。这些指定网络只有发布路由表中存在才会被改路由器扩散出去。如果它们失效，则会把撤销路由的消息扩散出去。
+\item AS内的两个BGP路由器之间建立的相邻关系称为\underline{iBGP}(interior BGP)相邻关系，而位于不同AS的两个BGP路由器之间建立的相邻关系称为\underline{eBGP}(exterior BGP)相邻关系
+\item  BGP协议所扩散的网络前缀/网络号称为网络层可达信息(Network Layer Reachablility Information, NLRI)，BGP路由器可以把NLRI连同它们的属性一起通过相邻关系扩散给邻居，进而扩散到因特网中所有的BGP路由器
+\item BGP路由器在NLRI引入BGP协议时扩散一次，并\textemph{不定期扩散}
 \end{itemize}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\linewidth]{fig/NLRI.png}
 \end{figure}
 
+\myhline
+NLRI分组发送
 \begin{itemize}
 \item BGP路由器可以聚合若干NLRI网络形成一个新的NLRI。
-\item 如果从多条路径收到同一个NLRI，在默认情况下选择AS-PATH中AS数最少的路径。
+\item 如果从多条路径收到同一个NLRI，在默认情况下选择\textemph{AS-PATH中AS数最少的路径}。
 \item BGP路由器根据NLRI的属性NEXT HOP查询IGP路由表得到NEXT HOP， 就可以使用该路由。如果没有查询到匹配项，则丢弃该NLRI。
 \item 如果设置了IGP同步并且NLRI在IGP路由表中没有匹配项，该NLRI不能转发给eBGP邻居。
-\item BGP路由器可以把多个路由聚合(aggregate)为一个路由，\\其NLRI的ORIGIN属性要改为IMCOMPLETE。
-\item 如果iBGP邻居之间的路由要经过内部路由器，那么就要给IGP路由表中注入AS外的路由，或者通过隧道技术连接iBGP邻居。
-\item 内部路由用默认路由转到BGP路由，然后连到世界上任一台路由器；
-在路径上的路由不可设默认路由，否则只能转到一个方向
-\end{itemize}
-
-内部路由如何发到外部？
-\begin{itemize}
-\item 查next hop，BGP注入IGP路由，但非BGP路由承受不住；或将路径上所有路由都变为BGP路由
-\item 在IP层运用了虚电路（等于挖了个隧道），不用记中间路由器，现在都用这种方式
+\item BGP路由器可以把多个路由聚合(aggregate)为一个路由，\\其NLRI的\verb'ORIGIN'属性要改为\verb'IMCOMPLETE'。
+\item 如果iBGP邻居之间的路由要经过内部路由器，那么就要给IGP路由表中\textemph{注入AS外的路由}（但很可能非BGP路由承受不住），或者通过\textemph{隧道技术}（虚电路）连接iBGP邻居。
+\item 内部路由用\textemph{默认路由}转到BGP路由，然后连到世界上任一台路由器；
+在路径上的路由不可设默认路由，否则只能转到一个方向。
 \end{itemize}
 
 \myhline
@@ -802,6 +798,15 @@ $O(n^2)$算法需要$O(nE)$条消息\\
 \begin{itemize}
 \item 内部：从iBGP邻居收到的NLRI Update分组不能再发给邻居
 \item 之间：利用AS Path防止回路
+\end{itemize}
+
+BGP同步：BGP路由器不应该使用或向EBGP邻居通告从IBGP邻居那里学习到的BGP路由信息，除非该路由是本地的或者该路由存在于IGP数据库，即该路由也能从IGP学习到。
+
+同步规则要求BGP库与IGP库同步。这么做是为了使AS内的所有路由器都能达到同步，确保能够转发其它AS因使用该AS通告的路由而发送到该AS的那些数据。BGP同步规则也保证了整个AS中路由信息的一致性，避免了AS内的路由“黑洞”。
+
+\begin{itemize}
+	\item 同步开启，BGP和IGP必须同步，且有可达的下一跳（运行了IGP的情况下，一般来说就能保证下一跳可达）。
+	\item 同步关闭，必须有可达的下一跳。
 \end{itemize}
 
 \subsection{IP多播}
@@ -871,7 +876,7 @@ IPv4的缺点有很多，如服务类型(ToS)没有用、选项长度太少、�
 因此IPv6解决了IPv4存在的问题
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.5\linewidth]{fig/ipv6-format.png}
+	\includegraphics[width=0.6\linewidth]{fig/ipv6-format.png}
 \end{figure}
 \begin{itemize}
 	\item 版本号：取值为6，表示IPv6。
@@ -974,7 +979,7 @@ IPv6和IPv4不兼容，故各种路由协议都要为IPv6单独设计。
 多种IPv4过渡IPv6方式
 \begin{itemize}
 \item 双栈：即在接口上同时配置IPv4和IPv6
-\item 使用IPv4隧道来传输IPv6数据（加IPv4的头部）
+\item 使用IPv4\textemph{隧道}来传输IPv6数据（加IPv4的头部）
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\linewidth]{fig/v4-to-v6.png}
