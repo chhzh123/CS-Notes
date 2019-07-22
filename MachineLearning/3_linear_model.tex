@@ -1,0 +1,71 @@
+% !TEX root = main.tex
+
+\section{线性模型}
+线性模型
+\[f(\vx)=\vw^\T\vx+\vb\]
+由于$\vw$直观表达了各属性在预测中的重要性，因此线性模型具有很好的可解释性(comprehensibility)。
+
+\subsection{线性回归}
+数据集$D=\{(\vx_i,y_i\}_{i=1}^m$，每个样本$\vx_i$都由$d$个属性描述，多元线性回归希望(multivariate linear regression)学到
+\[f(\vx_i)=\vw^\T\vx_i+b,\;s.t.\,f(\vx_i)\simeq y_i\]
+
+将$\vw$和$b$写在一起变成$\vw\gets\bmat{\vw & b}$，并设
+\[X=\bmat{x_{11} & x_{12} & \cdots & x_{1d} & 1\\x_{21} & x_{22} & \cdots & x_{2d} & 1\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\x_{m1} & x_{m2} & \cdots & x_{md} & 1}=\bmat{\vx_1^\T & 1\\\vx_2^\T & 1\\\vdots & \vdots\\\vx^\T_m & 1}\]
+为已知，$\vw$为需要训练的权重。
+再将标记写成向量形式$\vy=\bmat{y_1 & y_2 &\cdots & y_m}$，进而得到最小二乘优化
+\[\vw^\star=\argmin_\vw\norm{\vy-X\vw}_2^2\]
+
+对$\vw$求导有
+\[\nabla_\vw E_\vw=2X^\T(X\vw-\vy)\]
+当$X^\T X$满秩或正定时，令上式为0有
+\[\vw^\star=(X^\T X)^{-1} X^\T\vy\]
+但现实中大多数时候$X^\T X$都非可逆阵，故常用正则化方法。
+
+\subsection{线性分类}
+单位阶跃(unit-step)函数
+\[y=\begin{cases}
+0 & z<0\\
+0.5 & z=0\\
+1 & z>1
+\end{cases}\]
+不连续，故用对数几率(logistic)函数替代
+\[y=\frac{1}{1+\ee^{-z}}\]
+这是一种Sigmoid函数，将线性表达式代入有
+\[y=\frac{1}{1+\ee^{-(\vw^T\vx+b)}}\]
+进而有
+\[\vw^\T\vx+b=\ln\frac{y}{1-y}\]
+将$y$视为样本$\vx$为正例的可能性，则$1-y$为反例可能性，两者比值$y/(1-y)$称为几率(odds)，反映了$\vx$作为正例的相对可能性。
+对数几率又称logit，故这种方法又称为逻辑斯蒂(logistic)回归，但其实是分类学习方法。
+
+将$y$视为后验概率估计，有
+\[\ln\frac{\prc{y=1}{\vx}}{\prc{y=0}{\vx}}=\vw^\T\vx+b\]
+显然有
+\[\begin{aligned}
+\prc{y=1}{\vx}&=\frac{\ee^{\vw^\T+b}}{1+\ee^{\vw^\T\vx+b}}\\
+\prc{y=0}{\vx}&=\frac{1}{1+\ee^{\vw^\T\vx+b}}
+\end{aligned}\]
+
+给定数据集$\{(\vx_i,y_i)\}_{i=1}^m$，由极大似然法估计$\vw$和$b$有
+\[\ell(\vw,b)=\sum_{i=1}^m\ln\prc{y_i}{\vx_i;\,\vw,b}\]
+
+\subsection{线性判别分析}
+线性判别分析(Linear Discriminant Analysis, LDA)[Fisher, 1936]同样用于二分类，希望将样例投影到一条直线上，使得同类样例投影点尽可能近，异类样例投影点尽可能远。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/LDA.png}
+\end{figure}
+
+最优化广义瑞利商
+\[J=\frac{\vw^\T S_b\vw}{\vw^\T S_w\vw}\]
+其中$S_w$为类内散度矩阵，$S_b$为类间散度矩阵。
+
+LDA也是经典的监督降维技术。
+
+\subsection{类别不平衡问题}
+\begin{itemize}
+	\item 欠采样(undersampling)：减少样例
+	\item 过采样(oversampling)：增加样例
+	\item 阈值移动(threshold-moving)/再缩放(rescaling)
+	\[\frac{y'}{1-y'}=\frac{y}{1-y}\times\frac{m^-}{m^+}\]
+\end{itemize}
