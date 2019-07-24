@@ -1,0 +1,8 @@
+% !TEX root = main.tex
+
+\section{聚类}
+\subsection{原型聚类}
+给定样本集$D=\{\vx_1,\vx_2,\ldots,\vx_m\}$，Kmeans针对聚类所得簇划分$\mathcal{C}=\{C_1,C_2,\ldots,C_k\}$最小化平方误差
+\[MSE=\sum_{i=1}^k\sum_{\vx\in C_i}\norm{\vx-\vmu_i}_2^2\]
+其中$\vmu_i$为簇$C_i$的均值向量。
+上式一定程度上刻画了簇内样本围绕簇均值向量的紧密程度，$MSE$越小则簇内样本相似度越高。

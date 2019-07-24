@@ -14,3 +14,4 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 | Data Structures and Algorithms | 2018 Autumn |           |
 | Operating Systems     | 2019 Spring | :white_check_mark: |
 | Computer Networking   | 2019 Spring | :white_check_mark: |
+| Machine Learning      |             | :ballot_box_with_check: |
