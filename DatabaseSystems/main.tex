@@ -1,0 +1,25 @@
+\documentclass{note}
+\usepackage[cpp,table]{mypackage}
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\title{数据库系统原理笔记}
+\author{陈鸿峥}
+\date{{\builddatemonth\today}\protect\footnote{\text{Build \builddate\today}}} % protect!
+
+\begin{document}
+
+\maketitle
+\renewcommand{\thefootnote}{\arabic{footnote}}
+\setcounter{footnote}{0}
+
+\setcounter{tocdepth}{2}%设置深度
+\tableofcontents
+
+\bigskip\bigskip
+
+\input{1_introduction}
+
+\end{document}

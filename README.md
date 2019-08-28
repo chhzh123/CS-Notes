@@ -14,4 +14,13 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 | Data Structures and Algorithms | 2018 Autumn |           |
 | Operating Systems     | 2019 Spring | :white_check_mark: |
 | Computer Networking   | 2019 Spring | :white_check_mark: |
-| Machine Learning      |             | :ballot_box_with_check: |
+| Python Programming    | 2019 Spring |                    |
+| Parallel Computing    | 2019 Spring |  [:page_facing_up:](https://chhzh123.github.io/summary/parallel-computing/) |
+| Database Systems      | 2019 Autumn | :white_check_mark: |
+| Distributed Systems   | 2019 Autumn |                    |
+| Artificial Intelligence | 2019 Autumn | :white_check_mark: |
+| Computer Graphics     | 2019 Autumn | :white_check_mark: |
+| Natural Language Processing | 2019 Autumn | :white_check_mark: |
+| Pattern Recognition   | 2019 Autumn | :white_check_mark: |
+| Digital Image Processing | 2019 Autumn | :white_check_mark: |
+| Machine Learning      | 2020 Spring | :ballot_box_with_check: |
