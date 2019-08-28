@@ -1,3 +1,42 @@
 % !TEX root = main.tex
 
 \section{数据库系统概述}
+早期的数据库直接建立在文件系统上，但这会导致：
+\begin{itemize}
+	\item 数据冗余与不一致
+	\item 访问数据非常麻烦
+	\item 完整性问题：难以添加限制（如年龄为非负整数）
+	\item 更新的原子性
+	\item 多用户的并发访问
+	\item 安全性问题：权限
+\end{itemize}
+
+查询过程：解释编译+求值(evaluation)
+
+\section{关系型数据库}
+纵向为属性(attributes/columns)，横向为元组(tuples/rows)
+
+注意关系都是无序的，元组可以以任意顺序存储
+
+\begin{itemize}
+	\item Schema：\verb'instructor(ID,name,dept_name,salary)'
+	\item Instance：局部数据
+	\item 键值(keys)$R$
+	\item 超键(superkey)$K\subset R$
+	\item 候选键(candidate key)$K$为原子/不可分割/最小键
+\end{itemize}
+
+关系代数(relational algebra)
+\begin{itemize}
+	\item 选择$\sigma$：挑选出符合一定性质的元组
+	\[\sigma_{\text{Sub="Phy"}\land\text{age}>30}(\text{teachers})\]
+	\item 投影$\Pi$：只选出对应属性
+	\[\Pi_{\text{ID,name,salary}}(\text{teachers})\]
+	\item 笛卡尔积$\times$：将两个关系整合（简单并置，需要进一步筛选）
+	\item 合并$r\Join_\theta s=\sigma_\theta(r\times s)$
+	\item 并集$\cup$：数目应相同，属性可兼容
+	\item 交集$\cap$
+	\item 差集$-$
+	\item 赋值$\gets$
+	\item 重命名$\rho_x(E)$：给$E$的返回值赋名为$x$
+\end{itemize}
