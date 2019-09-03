@@ -1,0 +1,186 @@
+% !TEX root = main.tex
+
+\section{搜索}
+搜索主要包括无信息(uninformed)搜索和有信息搜索。
+\begin{itemize}
+	\item 状态空间(state space)
+	\begin{itemize}
+		\item 传统搜索：状态空间可见、动作确定性
+		\item 非传统搜索：局部搜索、模拟退火、爬坡
+	\end{itemize}
+	\item 动作(action)：不同状态之间的转换
+	\item 初始状态(initial state)
+	\item 目标/期望(goal)
+\end{itemize}
+% 对抗搜索(adversarial)：博弈树（minimax）、$\alpha-\beta$剪枝
+
+树搜索，边界集(frontier)是未探索的状态集合
+\begin{algorithm}[H]
+\caption{Tree Search}
+\begin{algorithmic}[1]
+\Procedure{TreeSearch}{(Frontier, Successors, Goal?)}
+\If{Frontier is empty}
+\State \Return failure
+\EndIf
+\State Curr $=$ select state from Frontier
+\If{Goal?(Curr)}
+\State \Return Curr
+\EndIf
+\State $\text{Frontier'} = (\text{Frontier} - \{\text{Curr}\}) \cup \text{Successors(Curr)}$
+\State \Return TreeSearch(Frontier',Successors,Goal?)
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+搜索需要关注的几个特性：
+\begin{itemize}
+	\item 完备性：若解存在，搜索是否总能找到解
+	\item 最优性：是否总能找到最小代价的解
+	\item 时间复杂性：最大需要被\textbf{生成或展开}\footnote{而不是探索的结点数目}的结点数
+	\item 空间复杂性：最大需要被存储在内存中的结点数
+\end{itemize}
+
+\subsection{无信息搜索}
+\subsubsection{宽度优先搜索(BFS)}
+将后继加入边界集的后面，$b$为最大状态后继数目/分支因子(branching factor)，$d$为最短距离解的行动数（注意是\textbf{边数}，而不是层数！）
+\begin{itemize}
+	\item 完备性与最优性：所有短路总在长路前被探索，某一长度只有有限多条路径，最终可以检测所有长度为$d$的路径，从而找到最优解
+	\item 时间复杂度：$1+b+b^2+\cdots+b^d+(b^d-1)b=O(b^{d+1})$，最差情况在最后一层的最后一个节点才探索到最优解，从而前面$b$个节点都要展开第$d+1$层
+	\item 空间复杂度：$b(b^d-1)=O(b^{d+1})$，需要将边界集都存储下来
+\end{itemize}
+
+\subsubsection{深度优先搜索(DFS)}
+将后继加入边界集的前面，即总是展开边界集中最深的节点
+\begin{itemize}
+	\item 完备性
+	\begin{itemize}
+		\item 无限状态空间：不能保证
+		\item 有限状态空间无限路径：不能保证
+		\item 有限状态空间+路径/重复状态剪枝：可以保证
+	\end{itemize}
+	\item 最优性：因完备性不能保证，故最优性也不能保证
+	\item 时间复杂性：$O(b^m)$，其中$m$为状态空间的最长路的长度（若$m>>d$，则非常糟糕；但如果有大量解路径，则会快于BFS）
+	\item 空间复杂性：$O(bm)$，\textbf{线性空间复杂性}是DFS最大的优点。边界集只包含当前路径的最深节点以及回溯节点（backtrack points为当前路径上节点的未探索的兄弟sibling）
+\end{itemize}
+
+\subsubsection{一致代价(Uniform-cost)}
+一致代价搜索(Uniform cost search, UCS)\footnote{至于为什么叫Uniform，可以看\url{https://math.stackexchange.com/questions/112734/in-what-sense-is-uniform-cost-search-uniform}和\url{https://cs.stackexchange.com/questions/6072/why-is-uniform-cost-search-called-uniform-cost-search}，比较合理的解释是到达同一结点的cost都被认为是相同的（寻找最优解时）。一致的算法总是选择边界集中第一个元素。}的边界集以路径开销升序排序，总是先展开最低开销的路径。
+如果每一个动作都是一样的代价，则一致代价等价于BFS。
+\begin{itemize}
+	\item 完备性与最优性：假设所有转移都有代价$\geq\eps>0$，所有更低代价的路径都在高代价路径之前被展开，只有有限多的路径开销小于最优解的开销，故最终一定会到达最优解
+	\item 时间复杂性：$O(b^{C^\star/\eps+1})$，对应着BFS中$d=C^\star/\eps$，其中$C^\star$为最优解的开销，最坏情况就是每一层开销都很小为$\eps$
+	\item 空间复杂性：$O(b^{C^\star/\eps+1})$
+\end{itemize}
+
+\subsubsection{深度受限搜索(Depth-limited)}
+执行只在最大深度执行DFS，因此无穷路径长不会存在问题
+\begin{itemize}
+	\item 完备性与最优性：不能保证，若解的深度大于$L$
+	\item 时间复杂度：$O(b^L)$
+	\item 空间复杂度：$O(bL)$
+\end{itemize}
+
+\subsubsection{迭代加深搜索(Iterative Deepening)}
+迭代加深搜索(Iterative Deepening Searching, IDS)逐渐增加最大深度$L$，对每一个$L$做深度受限搜索
+\begin{itemize}
+	\item 完备性：可以保证
+	\item 最优性：如果开销一致\footnote{若开销不一致，则可以采用代价界(cost bound)来代替：仅仅展开那些路径开销小于代价界的路径，同时要记录每一层深搜的最小代价。这种方式的搜索开销会非常大，有多少种不同路径开销就需要多少次迭代循环。}，则可以保证
+	\item 时间复杂性：$(d+1)b^0+db+(d-1)b^2+\cdots+b^d=O(b^d)$，第$0$层搜了$(d+1)$次，可以看到时间复杂度是\textbf{比BFS优}的
+	\item 空间复杂性：$O(bd)$，同DFS
+\end{itemize}
+
+\subsubsection{双向搜索(Bidirectional)}
+从源结点和汇结点同时采用BFS，直到两个方向的搜索汇聚到中间。
+\begin{itemize}
+	\item 完备性：由BFS保证
+	\item 最优性：若一致代价则可保证
+	\item 时间复杂性：$O(b^{d/2})$
+	\item 空间复杂性：$O(b^{d/2})$
+\end{itemize}
+
+\subsubsection{环路/路径检测}
+\begin{itemize}
+	\item 环路(cycle)检测：检测当前状态是否与已探索的状态重复(BFS)
+	\item 路径(path)检测：只检测当前状态是否与该路径上的状态重复(DFS)
+\end{itemize}
+注意不能将环路检测运用在BFS上，因为开销太大。
+
+环路检测运用到UCS上依然\textbf{可以保证最优性}\footnote{注意这在启发式搜索中不一定成立}。
+因为UCS第一次探索到某一状态的时候已经发现最小代价路径，因而再次探索该状态不会发现路径比原有的更小。
+
+\subsubsection{总结}
+\begin{center}
+\begin{tabular}{ccccccc}\hline
+& BFS & UCS & DFS & Depth-limited & IDS & Bidirectional\\\hline
+完备性 & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark\\
+时间复杂度 & $O(b^d)$ & $O(b^{\lfloor C^\star/\eps\rfloor+1})$ & $O(b^m)$ & $O(b^l)$ & $O(b^d)$ & $O(b^{d/2})$\\
+空间复杂度 & $O(b^d)$ & $O(b^{\lfloor C^\star/\eps\rfloor+1})$ & $O(bm)$ & $O(bl)$ & $O(bd)$ & $O(b^{d/2})$\\ 
+最优性 & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark\\\hline
+\end{tabular}
+\end{center}
+
+\begin{example}
+$N$个传教士和$N$个食人族要过河，他们都在河的左岸。
+现在只有一条船能够运载$K$个人，要把他们都运往右岸。
+要满足无论何时何地，传教士的数目都得大于等于食人族的数目，或者传教士数目为0。
+\end{example}
+\begin{analysis}
+考虑对问题形式化为搜索问题
+\begin{itemize}
+	\item 状态$(M,C,B)$，其中$M$为左岸传教士数目，$C$为左岸食人族数目，$B=1$指船在左岸
+	\item 动作$(m,c)$指运$m$个传教士和$c$个食人族到对岸
+	\item 先决条件：传教士数目和食人族数目满足限制
+	\item 效果：$(M,C,1)\stackrel{(m,c)}{\implies}(M-m,C-c,0)$\\
+	$(M,C,0)\stackrel{(m,c)}{\implies}(M+m,C+c,1)$
+\end{itemize}
+\end{analysis}
+
+\subsection{有信息搜索}
+在无信息搜索中，我们从不估计边界集中最有期望(promising)获得最优解的结点，而是无区别地选择当前边界集中第一个结点。
+然而事实上，针对不同问题我们是有对结点的先验知识(apriori knowledge)的，即从当前结点到目标结点的开销有多大。
+而这就是有信息搜索(informed)，或者称为启发式搜索(heuristics)。
+
+关键在于领域特定启发式函数$h(n)$的设计，它估计了从结点$n$到目标结点的开销(cost)。
+注意满足目标状态的结点$h(n)=0$。
+
+\subsubsection{贪心最优搜索(Greedy Best-First Search)}
+直接使用$h(n)$对边界集进行排序，但这会导致贪心地选择\textbf{看上去}离目标结点开销最小的路径。
+
+如果存在环路，贪心最优搜索是不完备的，会陷入死循环。
+
+\subsubsection{A$^\star$搜索}
+综合考虑当前已走的开销和未来估计的开销。
+定义一个估值函数
+\[f(n)=g(n)+h(n)\]
+其中$g(n)$为路径到节点$n$的代价，$h(n)$为从$n$到目标节点的代价，采用$f(n)$对边界集内的节点进行排序。
+
+$f(n)$需要满足下列两个性质。
+\begin{definition}[可采纳的(admissibility)]
+假设所有代价$c(n1\to n2)\geq\eps>0$，令$h^\star(n)$为从$n$到目标节点$\infty$的最优解\footnote{如果没有路径则$h^\star(n)=\infty$}，若
+\[\forall n:\;h(n)\leq h^\star(n)\]
+则称$h(n)$是可采纳的。
+即一个可采纳的启发式函数总是\textbf{低估}了当前结点到目标结点的真实开销（这样才能保证最优解不被排除）。
+\end{definition}
+\begin{definition}[一致性(consistency)/单调性(monotonicity)]
+若对于所有的结点$n_1$和$n_2$，$h(n)$满足（三角不等式）
+\[h(n_1)\leq c(n_1\to n_2)_h(n_2)\]
+则称$h(n)$是单调的。
+\end{definition}
+
+\begin{theorem}
+一致性蕴含可采纳性
+\end{theorem}
+\begin{analysis}
+分类讨论
+\begin{itemize}
+	\item 当结点$n$没有到目标结点的路径，则$h(n)\leq h^\star(n)=\infty$恒成立
+	\item 令$n=n_1\to n_2\to\cdots\to n_k$为从结点$n$到目标结点的最优路径，则可以用数学归纳法证明$\forall i:\;h(n_i)\leq h^\star(n_i)$，如下从后往前推
+	\[h(n_{i})\leq c(n_i\to n_{i+1})+h(n_{i+1})\leq c(n_i\to n_{i+1}) + h^\star(n_{i+1})=h^(n_i)\]
+\end{itemize}
+\end{analysis}
+
+\begin{theorem}
+可采纳性蕴含最优性
+\end{theorem}
+\begin{analysis}
+\end{analysis}
