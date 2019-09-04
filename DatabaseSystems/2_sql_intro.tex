@@ -1,0 +1,100 @@
+% !TEX root = main.tex
+
+\section{SQL简介}
+结构化查询语言(Structured Query Language, SQL)
+
+数据定义语言(Data Definition Language, DDL)
+\begin{lstlisting}[language=sql]
+create table instructor (
+	ID char(5),
+	name varchar(20),
+	dept_name varchar(20),
+	salary numeric(8,2),
+	primary key (ID),
+	foreign key (dept_name) references department);
+\end{lstlisting}
+
+查询语言
+\begin{lstlisting}[language=sql]
+select A1, A2, ..., An
+from r1, r2, ..., rm
+where P
+\end{lstlisting}
+其中$A_i$为属性(attribute)、$R_i$为一个关系(relation)/一个表、$P$是谓词(preicate)
+
+\begin{lstlisting}[language=sql]
+select distinct dept_name
+from instructor
+
+select all dept_name
+from instructor
+
+select *
+from instructor
+
+select '437' as FOO
+
+select ID, name, salary/12 as monthly_salary
+
+select name
+from instructor
+where dept_name = 'Comp. Sci.' and salary > 80000
+
+select *
+from instructor, teaches -- Cartesian product
+
+select distinct T.name
+from instructor as T, instructor as S -- rename
+where T.salary > S.salary and S.dept_name = 'Comp. Sci.'
+
+/**
+percent ( % ). The % character matches any substring.
+underscore ( _ ). The _ character matches any character.
+**/
+select name
+from instructor
+where name like '%dar%' matches any string containing "dar" as a substring
+
+select distinct name
+from instructor
+order by name
+
+select name
+from instructor
+where salary between 90000 and 100000 -- both contain
+
+(select course_id from section where sem = 'Fall' and year = 2017)
+union -- intersect, except
+(select course_id from section where sem = 'Spring' and year = 2018)
+
+select name
+from instructor
+where salary is null
+
+-- arg, min, max, sum, count
+select avg (salary)
+from instructor
+where dept_name= 'Comp. Sci.';
+
+select count (distinct ID)
+from teaches
+where semester = 'Spring' and year = 2018;
+\end{lstlisting}
+
+三值逻辑，添加了Unknown
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+AND & OR & NOT\\\hline
+\begin{tabular}{l}
+$T \land U = U$\\
+$F \land U = F$\\
+$U \land U = U$
+\end{tabular} & 
+\begin{tabular}{l}
+$T \lor U = T$\\
+$F \lor U = U$\\
+$U \lor U = U$
+\end{tabular} &
+$\lnot U = U$\\\hline
+\end{tabular}
+\end{center}

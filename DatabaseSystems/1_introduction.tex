@@ -1,5 +1,7 @@
 % !TEX root = main.tex
 
+本课程采用书目Avi Silberschatz, Henry F. Korth, S. Sudarshan, \emph{Database System Concepts (6th ed)}\footnote{\url{http://www.db-book.com}}。
+
 \section{数据库系统概述}
 早期的数据库直接建立在文件系统上，但这会导致：
 \begin{itemize}
@@ -27,16 +29,25 @@
 \end{itemize}
 
 关系代数(relational algebra)
-\begin{itemize}
-	\item 选择$\sigma$：挑选出符合一定性质的元组
-	\[\sigma_{\text{Sub="Phy"}\land\text{age}>30}(\text{teachers})\]
-	\item 投影$\Pi$：只选出对应属性
-	\[\Pi_{\text{ID,name,salary}}(\text{teachers})\]
-	\item 笛卡尔积$\times$：将两个关系整合（简单并置，需要进一步筛选）
-	\item 合并$r\Join_\theta s=\sigma_\theta(r\times s)$
-	\item 并集$\cup$：数目应相同，属性可兼容
-	\item 交集$\cap$
-	\item 差集$-$
-	\item 赋值$\gets$
-	\item 重命名$\rho_x(E)$：给$E$的返回值赋名为$x$
-\end{itemize}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+选择 & $\sigma$ &
+\begin{tabular}{l}
+挑选出符合一定性质的元组\\
+$\sigma_{\text{Sub="Phy"}\land\text{age}>30}(\text{teachers})$
+\end{tabular}\\\hline
+投影 & $\Pi$ & 
+\begin{tabular}{l}
+只选出对应属性\\
+$\Pi_{\text{ID,name,salary}}(\text{teachers})$
+\end{tabular}\\\hline
+笛卡尔积 & $\times$ & 将两个关系整合（简单并置，需要进一步筛选）\\\hline
+合并 & $r\Join_\theta s=\sigma_\theta(r\times s)$ & \\\hline
+并集 & $\cup$ & 数目应相同，属性可兼容\\\hline
+交集 & $\cap$ & \\\hline
+差集 & $-$ & \\\hline
+赋值 & $\gets$ & \\\hline
+重命名 & $\rho_x(E)$ & 给$E$的返回值赋名为$x$\\\hline
+\end{tabular}
+\end{center}
