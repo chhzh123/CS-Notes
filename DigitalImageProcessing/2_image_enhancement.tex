@@ -47,7 +47,6 @@
 \end{figure}
 \end{itemize}
 
-\subsection{位图}
 位图切割：8位灰度图象可以分割成8个位面，每个是一个二值图像。
 \textbf{高位}表示了\textbf{重要的信息}，\textbf{低位}给出了\textbf{不同程度的细节}。
 \begin{figure}[H]
@@ -67,6 +66,7 @@
 除以总数$n$就得到归一化的直方图。
 \end{definition}
 
+\subsubsection{直方图均衡化}
 有亮度差才能看到细节，均衡分布
 \begin{figure}[H]
 \centering
@@ -100,3 +100,59 @@
 % 黑白图像
 % 1. 获取直方图 并均衡
 % 2. gamma校正 亮->暗 暗->亮
+
+\subsubsection{直方图匹配}
+当两幅图像比对时，通常要使其直方图形式一致（如不同光照条件下的同一场景）。
+
+做法是使两幅图像均衡化后的结果相同，即
+\[\begin{aligned}
+s&=T(r)=\intabu{0}{r}{p_r(w)}{w}\\
+s&=G(z)=\intabu{0}{z}{p_z(t)}{t}
+\implies z&=G^{-1}(s)=G^{-1}(T(r))
+\end{aligned}\]
+
+\begin{definition}[$n$阶矩]
+设$p_r(r_k)=n_k/n$，则$r$的第$n$阶中心矩为
+\[\mu_r(r_k)=\sum_{i=0}^{L-1}(r_i-m)^np(r_k)\]
+其中$m=\sum_{i=1}^{L-1}r_ip(r_i)$为$r$的平均值。
+特别地，当$n=2$时为方差。
+\end{definition}
+
+
+\subsection{空间滤波基础}
+滤波的概念来自信号处理中的傅里叶变换，空间滤波指的是直接对图像像素进行处理的操作。
+滤波器(filter)有时也叫掩模(mask)、核(kernel)、模板(template)或窗口(window)。
+
+\subsubsection{线性滤波}
+空间域线性滤波基本公式：
+\[g(x,y)=\sum_{s=-a}^a\sum_{t=-b}^b w(s,t)f(x+s,y+t)\]
+
+一个$M\times N$的滤波器$w(x,y)$与图像$f(x,y)$的相关操作定义为
+\[w(x,y)\circ f(x,y)=\sum_{s=-a}^a\sum_{t=-b}^b w(s,t)f(x+s,y+t)\]
+一个$M\times N$的滤波器$w(x,y)$与图像$f(x,y)$的卷积定义为
+\[w(x,y)*f(x,y)=\sum_{s=-a}^a\sum_{t=-b}^b w(s,t)f(x+s,y+t)\]
+
+空间滤波对边界的处理方法
+\begin{itemize}
+	\item 重复边缘值
+	\item 卷绕输入图像
+	\item 补零
+	\item 勿略
+\end{itemize}
+
+常用的光滑滤波器（左侧是均值滤波）
+\begin{center}
+\begin{tabular}{|c|c|c||c|c|c|}\hline
+1/9 & 1/9 & 1/9 & 1/16 & 1/8 & 1/16\\\hline
+1/9 & 1/9 & 1/9 & 1/8 & 1/4 & 1/8 \\\hline
+1/9 & 1/9 & 1/9 & 1/16 & 1/8 & 1/16\\\hline
+\end{tabular}
+\end{center}
+
+一般公式
+\[g(x,y)=\frac{\sum_{s=-a}^a\sum_{t=-b}^b w(s,t)f(x+s,y+t}{\sum_{s=-a}^a\sum_{t=-b}^b w(s,t)}\]
+
+\subsubsection{非线性滤波}
+排序统计滤波器是一种非线性的、 非卷积滤波器。
+排序统计滤波器在滤波器包围的像素范围内排序，然后由统计排序结果决定的值代替中心像素的值。
+按排序输出的位置分，可分为：中值滤波、最大值滤波、最小值滤波。
