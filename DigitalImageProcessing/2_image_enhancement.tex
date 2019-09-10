@@ -103,6 +103,7 @@
 
 \subsubsection{直方图匹配}
 当两幅图像比对时，通常要使其直方图形式一致（如不同光照条件下的同一场景）。
+先是做空间归一化（伸缩、旋转），然后再做像素的归一化。
 
 做法是使两幅图像均衡化后的结果相同，即
 \[\begin{aligned}
@@ -140,7 +141,7 @@ s&=G(z)=\intabu{0}{z}{p_z(t)}{t}
 	\item 勿略
 \end{itemize}
 
-常用的光滑滤波器（左侧是均值滤波）
+常用的平滑滤波器（左侧是均值滤波）
 \begin{center}
 \begin{tabular}{|c|c|c||c|c|c|}\hline
 1/9 & 1/9 & 1/9 & 1/16 & 1/8 & 1/16\\\hline
@@ -156,3 +157,103 @@ s&=G(z)=\intabu{0}{z}{p_z(t)}{t}
 排序统计滤波器是一种非线性的、 非卷积滤波器。
 排序统计滤波器在滤波器包围的像素范围内排序，然后由统计排序结果决定的值代替中心像素的值。
 按排序输出的位置分，可分为：中值滤波、最大值滤波、最小值滤波。
+
+中值滤波比均值滤波更适合做椒盐噪声的去除，因为噪声总是最大最小，故做中值滤波容易去除。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/salt-and-pepper-noise.png}
+\end{figure}
+
+同理除了中值滤波，也可以构造第$X$百分点的滤波器。
+通常$X<50$图像趋于变暗，$X>50$图像趋于变亮。
+
+
+\subsection{图像锐化}
+\subsubsection{图像微分}
+\textbf{积分运算可以做平滑，微分运算可以做锐化！}
+锐化的目的即突出图像中的细节或者增强被模糊的细节。
+
+考虑离散情况
+\[\begin{cases}
+\pd{f}{x}&=f(x+1)-f(x)\\
+\pdd{f}{x}&=f(x+1)+f(x-1)-2f(x)
+\end{cases}\]
+
+斜边缘、$\delta$/冲击边缘、阶梯边缘
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/differential.png}
+\end{figure}
+\begin{itemize}
+\item 一阶微分产生较“宽”的边界，二阶微分产生较“细”的边界
+\item 二阶微分处理对细节有较强的响应，如细线和孤立点
+\item 一阶微分对阶梯状的灰度变化有较强的响应
+\item 二阶微分在处理阶梯状灰度变化时产生双响应
+\item 如果灰度的变化相似，二阶微分对线的反应比对阶梯强，对点的反应比对线强
+\end{itemize}
+
+\subsubsection{拉普拉斯算子}
+\begin{definition}[拉普拉斯(Laplacian)算子]
+对连续函数情形，最简单且各向同性的二阶微分算子是拉普拉斯算子
+\[\nabla^2 f=\pdd{f}{x}+\pdd{f}{y}\]
+离散情况
+\[\nabla^2=f(x+1,y)+f(x-1,y)+f(x,y+1)+f(x,y-1)-4f(x,y)\]
+\end{definition}
+拉普拉斯变换目的是获得细节，加回原图像才能进行锐化。
+
+其实直接从滤波器的表示也可以直观看出这种滤波对图像的突变有比较强的响应（即在突变的位置有较大的输出值），对灰度变化缓慢的区域滤波响应的值会变得很小（变暗）。因此，用拉普拉斯算子作用后，产生的图像将是在暗背景上的一些灰色边线和一些突变点。若将原始图像叠加到拉普拉斯变换后的图像，既可以保护拉普拉斯锐化处理的效果，同时又能复原背景信息。 
+拉普拉斯图像增强基本方法：
+\[g(x,y)=\begin{cases}
+f(x,y)-\nabla^2f & \text{拉普拉斯滤波中心系数为负}\\
+f(x,y)+\nabla^2f & \text{拉普拉斯滤波中心系数为正}
+\end{cases}\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/Laplacian.png}
+\end{figure}
+
+\begin{definition}[反锐化掩膜(unsharp masking)]
+把原图的一个模糊过的图像从原图中减去，从而得到一个相对清晰的图像
+\[f_s(x,y)=f(x,y)-\bar{f}(x,y)\]
+就像一个模糊的负片和一个正片放在一起冲洗出相对清晰的照片
+\end{definition}
+\begin{definition}[高提升滤波(high-boost filtering)]
+添加一个系数项$A$得到
+\[f_{hb}(x,y)=Af(x,y)-\bar{f}(x,y)=(A-1)f(x,y)+f_s(x,y)\]
+其中$A\geq 1$，目的为提升原图亮度，前一部分调整了原图的灰度，后一部分是锐化过的图像。
+$A$越大则细节越不清晰，因为原图变亮了。
+\end{definition}
+
+可以得到基于拉普拉斯算子的高提升滤波
+\[f_{hb}(x,y)=
+\begin{cases}
+Af(x,y)-\nabla^2 f & \text{Laplacian中心系数为负}\\
+Af(x,y)+\nabla^2 f & \text{Laplacian中心系数为正}
+\end{cases}\]
+当$A=1$时就是拉普拉斯图像增强方法，当$A$足够大时，锐化效果将变得不明显。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/high-boost.png}
+\end{figure}
+
+\subsubsection{梯度}
+一阶微分在灰度的跳跃性间断处（边界处）有较强的响应，所以在一些情况下也可以用于图像增强。
+考虑二维函数的梯度
+\[\nabla\vf=\bmat{G_x & G_y}=\bmat{\pd{f}{x} & \pd{f}{y}}\]
+定义$L_2$范数/模
+\[\nabla f=(G_x^2+G_y^2)^{1/2}=\lrp{\lrp{\pd{f}{x}}^2+\lrp{\pd{f}{x}}^2}^{1/2}\]
+$L_2$模具有各向同性的性质，但计算不方便，故常用$L_1$范数做代替
+\[\nabla f\approx |G_x|+|G_y|\]
+注意：通常在不引起混淆的情况下，把梯度的模称为梯度。
+\begin{itemize}
+\item Robert交叉梯度算子
+\[\nabla f=|z_9-z_5|+|z_8-z_6|\]
+\item Sobel算子
+\[\nabla f=|(z_y+2z_8+z_9)-(z_1+2z_2+z_3)|+|(z_3+2z_6+z_9)-(z_1+2z_4+z_7)|\]
+\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/sobel_and_robert.png}
+\end{figure}
+
+通常实际使用时是多种滤波器混合使用。
