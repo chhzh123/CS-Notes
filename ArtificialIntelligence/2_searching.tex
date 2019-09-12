@@ -279,8 +279,8 @@ minimax算法：自己选max，对方选min
 	\item 回溯整棵树，然后将每个结点都标记上收益
 \[U(n)=
 \begin{cases}
-\min\{U(c):\;c \text{is a child of} n\} & n \text{is a Min node}\\
-\max\{U(c):\;c \text{is a child of} n\} & n \text{is a Max node}
+\min\{U(c):\;c \text{ is a child of } n\} & n \text{ is a Min node}\\
+\max\{U(c):\;c \text{ is a child of } n\} & n \text{ is a Max node}
 \end{cases}\]
 \end{itemize}
 \begin{figure}[H]
@@ -328,3 +328,18 @@ $\alpha$-$\beta$剪枝
 但在现实生活的游戏中，即使采用了$\alpha$-$\beta$剪枝，博弈树也太过庞大。
 如棋类的分支因子大致是35，深度为10的树已经到$2.7\times 10^{14}$个结点。
 因此不能将整棵博弈树展开，需要采用一些启发式方式进行估计。
+
+评价函数(evaluation)的一些需求：
+\begin{itemize}
+	\item 对于终止状态，评价函数的序应与真实的收益函数相同
+	\item 对于非终止状态，评价函数则应该与真实的胜率相关联
+	\item 计算时间不能花太长
+	\item 通常取多个特征，然后进行加权求和（先验知识）
+\end{itemize}
+
+在线(online)/实时(real-time)搜索
+\begin{itemize}
+	\item 没有办法展开全部的边界集，因此限制展开的大小（在没找到去目标的真实路径就做出决定/直接选一条路就开始走）
+	\item 在这种情况下，评价函数不仅仅引导搜索，更是提交真实的动作
+	\item 虽然找不到最优解，但是求解时间大大缩减
+\end{itemize}
