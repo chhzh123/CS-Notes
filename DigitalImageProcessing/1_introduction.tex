@@ -13,8 +13,20 @@
 \subsection{人类视觉}
 \begin{itemize}
 \item 人的视觉由眼睛中两部分光接收器（感受细胞）组成的：\underline{锥状体}和\underline{杆状体}。
+它们主要分布在视网膜的中间部分，称为\underline{中间凹}，且对颜色高度敏感。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{fig/eye.png}
+\end{figure}
 \item 成像原理：与光学透镜相似，但适应性强。看远处物体，肌肉会迫使晶状体变得扁平，晶状体的聚焦中心向前移动；物体离眼睛近时，肌肉使晶状体变厚，光心向视网膜成像区域靠近。
-\item 韦伯比：$\Delta I_c/I$，度量人的眼睛特定的\underline{适应级别}对\underline{亮度变化}的辨别力。在\textbf{低的照明}级别，\textbf{亮度辨别较差}（杆状体起作用）。在背景照明增强时，亮度辨别得到明显的改善（锥状体起作用），即对亮的东西敏感。
+\item 具体数据：中心凹为视网膜中直径为1.5mm的圆形凹坑，或看为1.5mm$\times$ 1.5mm的方形传感器阵列。
+锥状体密度大约为150,000个/mm$^2$，数量约337,000个。
+晶状体中心和视网膜沿视轴的距离/焦距为17mm。
+\item 韦伯比：$\Delta I_c/I$，度量人的眼睛特定的\underline{适应级别}对\underline{亮度变化}的辨别力。在\textbf{低的照明}级别，\textbf{亮度辨别较差}（杆状体起作用/微光视觉/暗视觉）。在背景照明增强时，亮度辨别得到明显的改善（锥状体起作用/白昼视觉/亮视觉），即对亮的东西敏感。
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.4\linewidth]{fig/webb.png}
+\end{figure}
 \item 亮度不是简单的强度函数，下面是两个现象
 \begin{itemize}
 	\item 视觉系统倾向于不同强度区域边界周围的欠调(undershoot)和过调(overshoot)
@@ -30,20 +42,37 @@
 \end{itemize}
 \end{itemize}
 
+\subsection{光和电磁波谱}
+\begin{itemize}
+\item 波长$\lambda$与频率$v$关系：$c=\lambda v$
+\item 没有颜色的光称为单色光/无色光，其唯一属性是它的\underline{强度}。
+因感知单色光的强度从黑色到灰色变化，最后到白色，灰度级通常用来表示单色光的强度。
+\end{itemize}
+
 \subsection{图像数字化}
+\subsubsection{基本概念}
+用形如$f(x,y)$的二维函数来表示图像，$0<f(x,y)<\infty$，其可以用两个分量来表征
+\[f(x,y)=i(x,y)r(x,y)\]
+其中$i(x,y)\in\rr^+$为入射到被观察场景的光源照射总量，$r(x,y)\in(0,1)$为场景中物体所反射的光照总量。
+
+记单色图像在坐标$(x_0,y_0)$处的强度/灰度为$\ell=f(x_0,y_0)\in[L_{\min},L_{\max}]$，通常令区间为$[0,L-1]$，其中$\ell=0$为黑色，$\ell=L-1$为白色，其余中间值则为灰度色调。
+
 图像数字化包括两个步骤
 \begin{itemize}
-\item 取样（时空域）：剖分为像素，用一个像素值代替这一块，$f(x,y)\in[0,+\infty)$
-\item 量化（光色强度）：变为$[0,255]$之间的整数
+\item 取样（时空域）：对坐标值进行数字化，剖分为像素，用一个像素值代替这一块，$f(x,y)\in[0,+\infty)$
+\item 量化（光色强度）：对幅值数字化，变为$[0,255]$之间的整数
 \end{itemize}
-\[f(x,y)=\bmat{f(0,0) & f(0,1) & \cdots & f(0,N-1)\\f(1,0) & f(1,1) & \cdots & f(m)}\]
-即数字图像包括位置属性$(x,y)$和像素大小$f(x,y)$两个特征，用上面的二维矩阵表示，每个元素称为图像的像素。
+\[f(x,y)=\bmat{f(0,0) & f(0,1) & \cdots & f(0,N-1)
+\\f(1,0) & f(1,1) & \cdots & f(1,N-1)
+\\\vdots & \vdots & \ddots & \vdots
+\\f(M-1,0) & f(M-1,1) & \cdots & f(M-1,N-1)}\]
+即数字图像包括位置属性$(x,y)$和像素大小$f(x,y)$两个特征，用上面的二维矩阵表示，每个元素称为图像的像素，左上角为零点，向下为x正方向，向右为y正方向。
 \begin{itemize}
 \item 像素越大越精确，每一块分得越细
 \item 计算机中字节处理最快，所以才用8位色(256位)
 \end{itemize}
 
-两种不同的分辨率
+\subsubsection{图像分辨率}
 \begin{itemize}
 \item 空间分辨率：\textbf{图像中可分辨的最小细节}，即图像大小（行$\times$列）
 \item 灰度分辨率：\textbf{一个像素值单位幅度上包含的灰度级数}，通常是2的整数幂级数，如：用一个byte存一个像素值为256级
@@ -57,7 +86,12 @@
 \end{itemize}
 \end{itemize}
 
-放大与缩小：近邻插值、双线性插值
+\subsubsection{图像缩放}
+\begin{itemize}
+	\item 最近邻插值：将最邻近像素的灰度将其赋值给新图像中的值
+	\item 双线性插值\footnote{注意这种方法其实不是线性的}：$v(x,y)=ax+by+cxy+d$，四个系数可以用4个最近邻点的位置方程确定
+	\item 双三次内插：$v(x,y)=\disp\sum_{i=0}^3\sum_{j=0}^3a_{ij}x^iy^j$
+\end{itemize}
 
 \subsection{像素间基本关系}
 \begin{definition}[邻域]
@@ -96,4 +130,6 @@
 如果S中全部像素之间存在一个4/8通路，或者说S仅有一个连通分量，那么称S是4/8连通集。 
 \end{definition}
 
-% 2.1、2.6、2.9、2.11、2.15
+\begin{definition}[距离度量]
+欧氏距离$D_e$、城市街区距离(Manhattan)$D_4$、棋盘距离$D_8$（8邻域到中心点的距离都相同）
+\end{definition}
