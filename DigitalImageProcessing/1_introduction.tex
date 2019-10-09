@@ -66,16 +66,17 @@
 \\f(1,0) & f(1,1) & \cdots & f(1,N-1)
 \\\vdots & \vdots & \ddots & \vdots
 \\f(M-1,0) & f(M-1,1) & \cdots & f(M-1,N-1)}\]
-即数字图像包括位置属性$(x,y)$和像素大小$f(x,y)$两个特征，用上面的二维矩阵表示，每个元素称为图像的像素，左上角为零点，向下为x正方向，向右为y正方向。
+即数字图像包括位置属性$(x,y)$和像素大小$f(x,y)$两个特征，用上面的二维矩阵表示，每个元素称为图像的像素，左上角为零点，向下为$x$正方向，向右为$y$正方向。
 \begin{itemize}
-\item 像素越大越精确，每一块分得越细
+\item 像素越多越精确，相当于每一块分得越细
 \item 计算机中字节处理最快，所以才用8位色(256位)
 \end{itemize}
 
 \subsubsection{图像分辨率}
+一副数字图像占用空间$M\times N\times k$
 \begin{itemize}
 \item 空间分辨率：\textbf{图像中可分辨的最小细节}，即图像大小（行$\times$列）
-\item 灰度分辨率：\textbf{一个像素值单位幅度上包含的灰度级数}，通常是2的整数幂级数，如：用一个byte存一个像素值为256级
+\item 灰度分辨率：\textbf{一个像素值单位幅度上包含的灰度级数}，通常是2的整数幂级数$L=2^k$，如：用一个byte存一个像素值为256级
 \begin{itemize}
 	\item 人眼对灰度分辨率的敏感程度与图像内容复杂程度有关，如更偏爱人脸，而对人群不敏感
 	\item 当灰度分辨率不够，会产生伪轮廓
@@ -87,9 +88,12 @@
 \end{itemize}
 
 \subsubsection{图像缩放}
+将新位置\textbf{放缩回原图}，然后有下列方法
 \begin{itemize}
 	\item 最近邻插值：将最邻近像素的灰度将其赋值给新图像中的值
-	\item 双线性插值\footnote{注意这种方法其实不是线性的}：$v(x,y)=ax+by+cxy+d$，四个系数可以用4个最近邻点的位置方程确定
+	\item 双线性(bilinear)插值\footnote{注意这种方法其实不是线性的，计算方法可见\url{https://www.wikihow.com/Do-a-Double-Linear-Interpolation}}：$v(x,y)=ax+by+cxy+d$，用周围4个最邻近点进行逼近，4个系数可以用由4个最近邻点的位置方程确定。
+	即设$Q_{11}=(x_1,y_1),Q_{12} = (x_1, y_2), Q_{21} = (x_2, y_1), Q_{22} = (x_2, y_2)$，进而
+	\[\begin{bmatrix}1&x_{1}&y_{1}&x_{1}y_{1}\\1&x_{1}&y_{2}&x_{1}y_{2}\\1&x_{2}&y_{1}&x_{2}y_{1}\\1&x_{2}&y_{2}&x_{2}y_{2}\end{bmatrix}\begin{bmatrix}d\\a\\b\\c\end{bmatrix}=\begin{bmatrix}f(Q_{11})\\f(Q_{12})\\f(Q_{21})\\f(Q_{22})\end{bmatrix}\]
 	\item 双三次内插：$v(x,y)=\disp\sum_{i=0}^3\sum_{j=0}^3a_{ij}x^iy^j$
 \end{itemize}
 
@@ -109,7 +113,7 @@
 \begin{itemize}
 	\item 4邻接：$q\in N_4(p)$且$q,p\in V$
 	\item 8邻接：$q\in N_8(p)$且$q,p\in V$
-	\item m邻接混合邻接：要么(1)4邻接，要么(2)$q\in N_D(p)$且$N_4(p)\cap N_4(q)\notin V$
+	\item m邻接/混合邻接：要么(i) 4邻接，要么(ii) $q\in N_D(p)$且$N_4(p)\cap N_4(q)$没有来自$V$中数值的像素
 \end{itemize}
 若$S_1$中的某些像素和$S_2$中的某些像素邻接，则这两个集合是邻接的。
 \end{definition}
@@ -121,9 +125,7 @@
 \end{figure}
 
 \begin{definition}[通路]
-若$(x,y)$到$(s,t)$有4/8通路，则存在
-\[(x_0,y_0),(x_1,y_1),\ldots,(x_n,y_n)\]
-其中$(x_0,y_0)=(x,y),(x_n,y_n)=(s,t)$且$(x_i,y_i)$和$(x_{i-1},y_{i-1})$是4/8邻接的
+若存在$(x_0,y_0),(x_1,y_1),\ldots,(x_n,y_n)$，其中$(x_0,y_0)=(x,y),(x_n,y_n)=(s,t)$且$(x_i,y_i)$和$(x_{i-1},y_{i-1})$是4/8邻接的，则称$(x,y)$到$(s,t)$有4/8通路。
 \end{definition}
 
 \begin{definition}[连通集]
@@ -131,5 +133,6 @@
 \end{definition}
 
 \begin{definition}[距离度量]
-欧氏距离$D_e$、城市街区距离(Manhattan)$D_4$、棋盘距离$D_8$（8邻域到中心点的距离都相同）
+正定性、对称性、三角不等式。
+图像中主要采用欧氏距离$D_e$、城市街区距离(Manhattan)$D_4$、棋盘距离$D_8$（8邻域到中心点的距离都相同）。
 \end{definition}

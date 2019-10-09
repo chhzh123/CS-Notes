@@ -3,17 +3,16 @@
 \section{频率域滤波}
 \subsection{傅里叶级数与傅里叶变换}
 \begin{definition}[傅里叶级数]
-$f(t)$为以$T$为周期的函数，绝对可积
-\[f(t)=\sum_{n=-\infty}^{\infty}c(n)\ee^{j\frac{2\pi n}{T}t}\]
-其中
-\[c(n)=\frac{1}{T}\intabu{-T/2}{T/2}{f(t)\ee^{-j\frac{2\pi n}{T}t}}{t},\,n=0,\pm 1,\pm 2,\ldots\]
+设$f(t)$为以$T$为周期的函数，绝对可积，则$f(t)$可表示为
+\[f(t)=\sum_{n=-\infty}^{\infty}c_n\ee^{j\frac{2\pi n}{T}t}\]
+其中$j$为虚数单位，
+\[c_n=\frac{1}{T}\intabu{-T/2}{T/2}{f(t)\ee^{-j\frac{2\pi n}{T}t}}{t},\,n=0,\pm 1,\pm 2,\ldots\]
 \end{definition}
 
 傅里叶级数中每一个基函数都是一个单频谐波，对应的系数/频谱表明原函数对这种频率成分贡献的大小（原函数在这个谐波上的投影）
-\[a_k=\frac{1}{T}\intab{0}{T}{f(x)\cdot\ee^{-jk\frac{2\pi}{T}x}}\]
 
 \begin{definition}[冲激/狄利克$\delta$函数]
-面积为1的长方形不断压扁，最后变成宽为0，高为无穷大的函数
+面积为1的长方形不断压扁，最后变成宽为0，高为无穷大的函数（左侧为连续情况，右侧为离散情况）
 \[\delta(t)=\begin{cases}
 \infty & t=0\\
 0 & t\ne 0
@@ -41,10 +40,11 @@ $f(t)$为以$T$为周期的函数，绝对可积
 \end{figure}
 
 \begin{definition}[傅里叶变换与反变换]
-傅里叶变换（函数投影，取负号得共轭）
-\[F(u)=\Im[f(t)]=\intabu{-\infty}{+\infty}{f(t)\ee^{-j 2\pi ut}}{t}\]
-反变换
-\[f(t)=\Im^{-1}[F(u)]\intabu{-\infty}{+\infty}{F(u)\ee^{j 2\pi ut}}{u}\]
+连续情形的傅里叶变换（函数投影，取负号得共轭）和反变换为
+\[\begin{aligned}
+F(u)&=\Im[f(t)]=\intabu{-\infty}{+\infty}{f(t)\ee^{-j 2\pi ut}}{t}\\
+f(t)&=\Im^{-1}[F(u)]=\intabu{-\infty}{+\infty}{F(u)\ee^{j 2\pi ut}}{u}
+\end{aligned}\]
 这两者构成一个傅里叶变换对。
 对于离散情形有
 \[\begin{aligned}
@@ -100,28 +100,25 @@ f(t)h(t)\iff F(\mu)*H(\mu)\]
 \end{aligned}\]
 \end{analysis}
 
-\begin{definition}[相关]
-相关性相当于算内积
-\[g(x,y)=f(x,y)\circ h(x,y)=\sum_{m=0}^{M-1}\sum_{n=0}^{N-1}f^\star(m,n)h(x+m,y+n)\]
-\end{definition}
-\begin{theorem}[相关定理]
-\[\begin{aligned}
-f(x,y)\circ h(x,y)&\iff F^\star(u,v)H(u,v)\\
-f^\star(x,y)h(x,y)&\iff F(u,v)\circ H(u,v)
-\end{aligned}\]
-\end{theorem}
-
 \subsection{取样函数}
-模拟取样
-\[\tilde{f}(t)=f(t)s_{\Delta T}(t)=\sum_{n=-\infty}^\infty f(t)\delta(t-n\Delta T)\]
-可以得到采样函数$\tilde{f}(t)$的傅里叶变换$\tilde{F}(u)$为
-\[\tilde{F}(u)=\Im\{\tilde{f}(t)\}=\Im\{f(t)s_{\Delta T}(t)\}=F(u)*S(u)\]
-其中
-\[S(u)=\frac{1}{\Delta T}\sum_{n=-\infty}^{\infty}\delta\lrp{u-\frac{n}{\Delta T}}\]
-进而
-\[\tilde{F}(u)=F(u)*S(u)=\intabu{-\infty}{\infty}{F(\tau)S(u-\tau)}{\tau}=\frac{1}{\Delta T}\sum_{n=-\infty}^{\infty}F\lrp{u-\frac{n}{\Delta T}}\]
+\begin{example}
+求取样函数
+\[\tilde{f}(t)=f(t)s_{\Delta T}(t)=\sum_{n=-\infty}^{\infty}f(t)\delta(t-n\Delta T)\]
+的傅里叶变换
+\end{example}
+\begin{analysis}
+由卷积定理
+\[\begin{aligned}
+\tilde{F}(u)&=\Im[\tilde{f}(t)]=\Im[f(t)s_{\Delta T}(t)]\\
+&=F(u)*S(u)=\intabu{-\infty}{\infty}{F(\tau)S(u-\tau)}{\tau}\\
+&=\frac{1}{\Delta T}\intabu{-\infty}{\infty}{F(\tau)\sum_{n=-\infty}^{\infty}\delta\lrp{u-\tau-\frac{n}{\Delta T}}}{\tau}\\
+&=\frac{1}{\Delta T}\sum_{n=-\infty}^{\infty}F\lrp{u-\frac{n}{\Delta T}}
+\end{aligned}\]
+\end{analysis}
+
 \begin{theorem}[奈奎斯特(Nyquist)采样定理]
-如果以超过函数最高频率的两倍的采样率来获得样本，则连续的带限函数可以完全从它的样本集恢复，即
+如果以超过函数最高频率的两倍的采样率来获得样本，则连续的带限函数\footnote{对于以原点为中心的有限区间（带宽）之外的频率值，其傅里叶变换为零。
+}可以完全从它的样本集恢复，即
 \[\frac{1}{\Delta T}>2\mu_{\max}\]
 \end{theorem}
 
@@ -131,8 +128,8 @@ f^\star(x,y)h(x,y)&\iff F(u,v)\circ H(u,v)
 \includegraphics[width=0.8\linewidth]{fig/nyquist.png}
 \end{figure}
 
-空间域表达式
-\[f(t)=\sum_{n=-\infty}^{\infty}f(n\Delta T)\sinc[(t-n\Delta T)/\Delta T]\]
+由取样数据重建函数
+\[f(t)=\sum_{n=-\infty}^{\infty}f(n\Delta T)\sinc\lrs{\frac{t-n\Delta T}{\Delta T}}\]
 
 \subsection{二维傅里叶变换}
 \begin{definition}[二维冲激]
@@ -150,37 +147,46 @@ f^\star(x,y)h(x,y)&\iff F(u,v)\circ H(u,v)
 \begin{definition}[二维离散傅里叶变换]
 二维连续傅里叶变换对
 \[\begin{aligned}
-F(u,v)&=\intabu{-\infty}{\infty}{\intabu{-\infty}{\infty}{f(t,z)\ee^{-j2\pi(ut+vz)}}{t}}{z}
+F(u,v)&=\intabu{-\infty}{\infty}{\intabu{-\infty}{\infty}{f(t,z)\ee^{-j2\pi(ut+vz)}}{t}}{z}\\
 f(t,z)&=\intabu{-\infty}{\infty}{\intabu{-\infty}{\infty}{F(u,v)\ee^{j2\pi(ut+vz)}}{u}}{v}
 \end{aligned}\]
 二维离散傅里叶变换对
 \[\begin{aligned}
-F(u,v)&=\sum_{x=0}^{M-1}\sum_{y=0}^{N-1}f(x,y)\ee^{-2j\pi ux/M+vy/N}\\
+F(u,v)&=\sum_{x=0}^{M-1}\sum_{y=0}^{N-1}f(x,y)\ee^{-2j\pi (ux/M+vy/N)}\\
 f(x,y)&=\frac{1}{MN}\sum_{u=0}^{M-1}\sum_{v=0}^{N-1}F(u,v)\ee^{2\pi j(ux/M+vy/N)}
 \end{aligned}\]
 \end{definition}
 \begin{theorem}[二维采样定理]
+二维取样基于二维冲激串
+\[\tilde{f}(t,z)=f(t,z)s_{\Delta T\Delta Z}(t,z)=\sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^{\infty}f(t,z)\delta(t-m\Delta T,z-n\Delta Z)\]
 取样率需要满足
 \[\frac{1}{\Delta T}>2\mu_{\max}\qquad\frac{1}{\Delta Z}>2v_{\max}\]
 \end{theorem}
 \begin{definition}[傅里叶谱和相角]
 由于二维DFT通常为复函数，因此用极坐标形式表示
-\[F(u,v)=|F(u,v)|\ee^{j\phi(u,v)}\]
+\[F(u,v)=|F(u,v)|\ee^{j\varphi(u,v)}\]
 其中幅度
 \[|F(u,v)|=\sqrt{\Real^2(u,v)+\Imag^2(u,v)}\]
 称为傅里叶谱，而
-\[\phi(u,v)=\arctan\lrs{\frac{\Imag(u,v)}{\Real(u,v)}}\]
+\[\varphi(u,v)=\arctan\lrs{\frac{\Imag(u,v)}{\Real(u,v)}}\]
 为相角，
 \[P(u,v)=|F(u,v)|^2\]
 为功率谱
 \end{definition}
 
+注意$F(u,v)$的大小只是代表某一频率分量的数目，类似于直方图的概念。
 频率域的坐标轴为$u,v$，因此中心点为$(0,0)$，
 \[F(0,0)=\sum_{x=0}^{M-1}\sum_{y=0}^{N-1}f(x,y)=MN\bar{f}(x,y)\]
 为图像的平均灰度。
 即$u$方向和$v$方向上最低频的位置，零点处两个方向的频率都为零，因此这个量经常也被称为频谱的直流分量(DC)。
 
-$F(u,v)$的大小只是代表某一频率的分量大小，类似于直方图的概念。
+\begin{example}[陷波滤波器(notch filter)]
+使得处理后的图像均值为0，从而使图像的整体灰度降低
+\[H(u,v)=\begin{cases}
+0 & (u,v)=(M/2,N/2)\\
+1 & \text{others}
+\end{cases}\]
+\end{example}
 
 \begin{figure}[H]
 \centering
@@ -193,13 +199,15 @@ $F(u,v)$的大小只是代表某一频率的分量大小，类似于直方图的
 \includegraphics[width=\linewidth]{fig/spectrum_angle_example.png}
 \end{figure}
 
-二维卷积定理
+\begin{theorem}[二维卷积定理]
+二维的卷积定义如下
 \[f(x,y)*h(x,y)=\sum_{m=0}^{M-1}\sum_{n=0}^{N-1}f(m,n)h(x-m,y-n)\]
 同样有傅里叶变换对
 \[\begin{aligned}
 f(x,y)*h(x,y)\iff F(u,v)H(u,v)\\
 f(x,y)h(x,y) \iff F(u,v)*H(u,v)
 \end{aligned}\]
+\end{theorem}
 注意周期靠近会导致互相干扰而导致缠绕错误，因此需要进行零延拓(padding)。
 
 假设函数$f(x)$和$h(x)$分别有$A$个和$B$个点组成，对这两个函数同时添加零，使其具有相同的周期
@@ -214,14 +222,26 @@ h(x) & 0\leq x\leq B-1\\
 \end{cases}\]
 同样对于二维图像滤波，若$f(x,y)$大小为$A\times B$，$h(x,y)$大小为$C\times D$，则延拓函数
 \[f_e(x,y)=\begin{cases}
-f(x,y) & 0\leq x\leq A-1\land 0\leq y\leq B\\
-0 & A\leq x\leq P\lor B\leq x\leq Q
+f(x,y) & 0\leq x\leq A-1\land 0\leq y\leq B-1\\
+0 & A\leq x\leq P\lor B\leq y\leq Q
 \end{cases}
 \qquad
 h_e(x,y)=\begin{cases}
-h(x,y) & 0\leq x\leq C-1\land 0\leq y\leq D\\
-0 & C\leq x\leq P\lor D\leq x\leq Q
+h(x,y) & 0\leq x\leq C-1\land 0\leq y\leq D-1\\
+0 & C\leq x\leq P\lor D\leq y\leq Q
 \end{cases}\]
+其中$P\geq A+C-1$，$Q\geq B+D-1$，通常可取$P=2M$，$Q=2N$。
+
+\begin{definition}[相关]
+相关性相当于算内积
+\[g(x,y)=f(x,y)\circ h(x,y)=\sum_{m=0}^{M-1}\sum_{n=0}^{N-1}f^\star(m,n)h(x+m,y+n)\]
+\end{definition}
+\begin{theorem}[相关定理]
+\[\begin{aligned}
+f(x,y)\circ h(x,y)&\iff F^\star(u,v)H(u,v)\\
+f^\star(x,y)h(x,y)&\iff F(u,v)\circ H(u,v)
+\end{aligned}\]
+\end{theorem}
 
 
 \subsection{频率域滤波}
@@ -236,8 +256,11 @@ $H(u,v)=\dfrac{1}{1+[D(u,v)/D_0]^{2n}}$ &
 $H(u,v)=\ee^{-D^2(u,v)/2D_0^2}$\\\hline
 \end{tabular}
 \end{center}
-由于截止频率点处跳变太直接，物理无法实现，故是理想滤波器
-\item 高通滤波器：$H_{hp}(u,v)=1-H_{lp}(u,v)$，锐化图像（噪声、边缘、细节），只获得高频特征，丢掉特征，没有背景，留下细节
+原点在频率中心，半径为$r$的圆包含的功率为
+\[\alpha=\lrp{\sum_u\sum_v \frac{P(u,v)}{P_T}}\times 100\%=\lrp{\sum_u\sum_v \frac{P(u,v)}{\sum_{u=0}^{M-1}\sum_{v=0}^{N-1}|F(u,v)|^2}}\times 100\%\]
+由于截止频率点处跳变太直接，物理无法实现，故是理想滤波器；而且会产生滤波模糊和振铃现象。
+一阶BLPF没有振铃，二阶BLPF振铃很小，随着阶数增高振铃增大，故通常用二阶。
+\item 高通滤波器：$H_{hp}(u,v)=1-H_{lp}(u,v)$，锐化图像（噪声、边缘、细节），只获得高频特征，没有背景，留下细节
 \begin{center}
 \begin{tabular}{c|c|c}\hline
 理想(IGPF) & $n$阶布特沃斯(BGPF) & 高斯\\\hline
@@ -246,21 +269,41 @@ $H(u,v)=\dfrac{1}{1+[D_0/D(u,v)]^{2n}}$ &
 $H(u,v)=1-\ee^{-D^2(u,v)/2D_0^2}$\\\hline
 \end{tabular}
 \end{center}
+\item 拉普拉斯滤波
+\[H(u,v)=-4\pi^2\lrs{(u-P/2)^2+(v-Q/2)^2}=-4\pi^2D^2(u,v)\]
+前面的系数可以去掉。拉普拉斯图像由下式给出
+\[\nabla^2f(x,y)=\Im^{-1}[H(u,v)F(u,v)]\]
+图像增强可以由下式实现
+\[g(x,y)=f(x,y)+c\nabla^2 f(x,y)\]
 \item 高频增强滤波：锐化/加强图像，高频增强，细节变得明显
-\[g(x,y)=f(x,y)+k\cdot g_{mask}(x,y)\]
+\[\begin{aligned}
+F_{lp}(u,v)&=H_{lp}(u,v)F(u,v)\\
+F_{hp}(u,v)&=F(u,v)-F_{lp}(u,v)\\
+&=(1-H_{lp}(u,v))F(u,v)\\
+&=H_{hp}(u,v)F(u,v)\\
+G(u,v)&=F(u,v)+F_{hp}(u,v)\\
+&=(1+H_{hp}(u,v))F(u,v)
+\end{aligned}\]
 其中$k=1$为钝化模板，$k>1$为高提升滤波
-\item 同态滤波器：高频增强，整个图像亮度又不能太亮（一片的亮度与低频有关）=>抑制低频/环境光，提升高频/细节
+\item 同态滤波器：高频增强，整个图像亮度又不能太亮（一片的亮度与低频有关）$\implies$抑制低频/环境光，提升高频/细节
 \[f(x,y)=i(x,y)r(x,y)\]
 其中$i(x,y)\in(0,\infty)$为照射分量（影响低频，一片）；$0<r(x,y)<1$，反射率影响边缘/高频。
-先取对数，然后再做傅里叶变换
+先取对数，然后再做傅里叶变换，最后记得取指数返回
 \[\ln f(x,y)=\ln i(x,y)+\ln r(x,y)\]
 同态滤波器
-\[H(u,v)=(r_H-r_L)[1-\ee^{-c(D^2(u,v)/D_0^2)}+r_L\]
-其中$c$用于控制滤波器函数斜面的锐化
-\[r_L<1,r_H>1\]
+\[H(u,v)=(r_H-r_L)[1-\ee^{-c(D^2(u,v)/D_0^2)}]+r_L\]
+其中$c$用于控制滤波器函数斜面的锐化，$r_L<1$，$r_H>1$
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{fig/homo_filter.png}
+\end{figure}
 \end{itemize}
 
 频率域滤波的步骤
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/filter_pass.png}
+\end{figure}
 \begin{enumerate}
 	\item 给定大小为$M\times N$的输入图像$f(x,y)$，选择填充参数$P=2M$，$Q=2N$
 	\item 对$f(x,y)$添加必要的0，形成大小为$P\times Q$的填充后的图像$f_p(x,y)$
@@ -270,12 +313,14 @@ $H(u,v)=1-\ee^{-D^2(u,v)/2D_0^2}$\\\hline
 	用阵列相乘得到$G(u,v)=H(u,v)F(u,v)$
 	\item 计算上式得到的IDFT，并恢复原图像
 	\[g_p(x,y)=\Real[\Im[G(u,v)]](-1)^{x+y}\]
-	\item 通过从$g_p(x,y)$的左上角提取$M\times N$大小的趋于，得到最终结果$g(x,y)$
+	\item 通过从$g_p(x,y)$的左上角提取$M\times N$大小的区域，得到最终结果$g(x,y)$
 \end{enumerate}
 
 \subsection{总结}
 傅里叶变换的一些性质
 \begin{itemize}
+	\item 线性性：
+	\[af_1(x,y)+bf_2(x,y)\iff aF_1(u,v)+bF_2(u,v)\]
 	\item 平移性质：
 	\[\begin{aligned}
 	&f(x,y)\ee^{j2\pi(u_0x/M+v_0y/N)}\iff F(u-u_0,v-v_0)\\
@@ -286,8 +331,8 @@ $H(u,v)=1-\ee^{-D^2(u,v)/2D_0^2}$\\\hline
 	&f(x,y)(-1)^{x+y}\iff F(u-M/2,v-N/2)\\
 	&f(x-M/2,y-N/2)\iff F(u,v)(-1)^{u+v}
 	\end{aligned}\]
-	\item 旋转性质：使用极坐标$x=r\cos\theta,y=r\sin\theta,u=\omega\cos\phi,v=\omega\sin\phi$，有
-	\[f(r,\theta+\theta_0)\iff F(\omega,\phi+\phi_0)\]
+	\item 旋转性质：使用极坐标$x=r\cos\theta,y=r\sin\theta,u=\omega\cos\varphi,v=\omega\sin\varphi$，有
+	\[f(r,\theta+\theta_0)\iff F(\omega,\varphi+\varphi_0)\]
 	\item 周期性：
 	\[\begin{aligned}
 	F(u,v)&=F(u+k_1M,v+k_2N)\\
@@ -299,7 +344,20 @@ $H(u,v)=1-\ee^{-D^2(u,v)/2D_0^2}$\\\hline
 	而虚函数$f(x,y)$的傅里叶变换是共轭反对称的
 	\[F^\star(-u,-v)=-F(u,v)\]
 	\item 可分性：2D-FFT可变成两个1D-FFT
+	\[F(u,v)=\sum_{x=0}^{M-1}\lrp{\sum_{y=0}^{N-1}f(x,y)\ee^{-j2\pi ux/M}}\ee^{-j2\pi vy/N}\]
 \end{itemize}
+
+常见函数的傅里叶变换
+\begin{center}
+\begin{tabular}{|c|l|}\hline
+离散单位冲激 & $\delta(x,y)\iff 1,\;1\iff\delta(u,v)$\\\hline
+矩形函数 & $\mathrm{rect}[a,b]\iff ab\frac{\sin(\pi ua)}{\pi ua}\frac{\sin(\pi ub)}{\pi ub}\ee^{-j\pi(ua+vb)}$\\\hline
+正弦函数 & $\sin(2\pi u_0x+2\pi v_0y)\iff j\frac{1}{2}[\delta(u+Mu_0,v+Nv_0)-\delta(u-Mu_0,v-Nv_0)]$\\\hline
+余弦函数 & $\cos(2\pi u_0x+2\pi v_0y)\iff j\frac{1}{2}[\delta(u+Mu_0,v+Nv_0)+\delta(u-Mu_0,v-Nv_0)]$\\\hline
+微分 & $\frac{\diff^n f(x)}{\diff x^n}\iff (ju)^n F(u),\;\lrp{\pd{}{t}}^m\lrp{\pd{}{z}}^nf(t,z)\iff(j2\pi u)^m(j2\pi v)^nF(u,v)$\bigstrut\\\hline
+高斯 & $A2\pi\sigma^2\ee^{-2\pi^2\sigma^2(t^2+z^2)}\iff A\ee^{-(u^2+v^2)/2\sigma^2}$\\\hline
+\end{tabular}
+\end{center}
 
 用前向变换计算傅里叶反变换，以消除两套冗余电路
 \[MNf^\star(x,y)=\sum_{u=0}^{M-1}\sum_{v=0}^{N-1} F^\star(u,v)\ee^{-j2\pi (ux/M+vy/N)}\]
