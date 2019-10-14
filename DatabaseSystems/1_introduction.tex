@@ -3,6 +3,7 @@
 本课程采用书目Avi Silberschatz, Henry F. Korth, S. Sudarshan, \emph{Database System Concepts (6th ed)}\footnote{\url{http://www.db-book.com}}。
 
 \section{数据库系统概述}
+\subsection{高层概述}
 早期的数据库直接建立在文件系统上，但这会导致：
 \begin{itemize}
 	\item 数据冗余与不一致
@@ -13,41 +14,46 @@
 	\item 安全性问题：权限
 \end{itemize}
 
-查询过程：解释编译+求值(evaluation)
-
-\section{关系型数据库}
-纵向为属性(attributes/columns)，横向为元组(tuples/rows)
-
-注意关系都是无序的，元组可以以任意顺序存储
-
+数据抽象包括：
 \begin{itemize}
-	\item Schema：\verb'instructor(ID,name,dept_name,salary)'
-	\item Instance：局部数据
-	\item 键值(keys)$R$
-	\item 超键(superkey)$K\subset R$
-	\item 候选键(candidate key)$K$为原子/不可分割/最小键
+	\item 物理层：存储块、物理组织
+	\item 逻辑层：通过类型定义进行描述，同时记录类型之间的相互关系
+	\item 视图层：屏蔽数据类型细节的一组应用程序，同时提供了访问权限
 \end{itemize}
 
-关系代数(relational algebra)
+查询过程：解释编译+求值(evaluation)
+
+\subsection{数据库语言}
+\begin{itemize}
+\item 数据操纵语言(Data Manipulation Language, DML)
+\item 数据定义语言(Data Definition Language, DDL)：DDL的输出放在数据字典中，数据字典包含元数据(metadata)，需要满足一致性约束
+\begin{itemize}
+	\item 域约束：如整型、字符型等
+	\item 参照完整性(referential integrity)：一个关系中给定属性集上的取值也在另一关系的某一属性集的取值中出现
+	\item 断言(assertion)：域约束和参照完整性只是断言的特殊形式，如“每一学期每一个系必须至少开设5门课程”
+	\item 权限(authorization)
+\end{itemize}
+\end{itemize}
+
+\subsection{关系型数据库}
+每一个表(table)都是一个关系(relation)，纵向为属性(attributes/columns)，横向为元组(tuples/rows)。
+一组特定的行称为关系实例(instance)。
 \begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-选择 & $\sigma$ &
-\begin{tabular}{l}
-挑选出符合一定性质的元组\\
-$\sigma_{\text{Sub="Phy"}\land\text{age}>30}(\text{teachers})$
-\end{tabular}\\\hline
-投影 & $\Pi$ & 
-\begin{tabular}{l}
-只选出对应属性\\
-$\Pi_{\text{ID,name,salary}}(\text{teachers})$
-\end{tabular}\\\hline
-笛卡尔积 & $\times$ & 将两个关系整合（简单并置，需要进一步筛选）\\\hline
-合并 & $r\Join_\theta s=\sigma_\theta(r\times s)$ & \\\hline
-并集 & $\cup$ & 数目应相同，属性可兼容\\\hline
-交集 & $\cap$ & \\\hline
-差集 & $-$ & \\\hline
-赋值 & $\gets$ & \\\hline
-重命名 & $\rho_x(E)$ & 给$E$的返回值赋名为$x$\\\hline
+\begin{tabular}{|c|c|c|}\hline
+ID & name & dept\_name\\\hline
+12345 & Chen & CS\\
+10001 & Bob & Biology\\
+10101 & Alice & Physics\\\hline
 \end{tabular}
 \end{center}
+注意关系都是无序的，元组可以以任意顺序存储。
+
+数据库模式(schema)是数据库的逻辑设计，如\verb'instructor(ID,name,dept_name,salary)'；
+数据库实例(instance)则是给定时刻数据库中数据的一个快照，与具体数据相关。
+
+\begin{itemize}
+\item 超码(superkey)：某些属性的集合使得在一个关系中可以唯一地标识一个元组，如ID属性
+\item 候选码(candidate key)：最小超码，即其任意真子集都不能成为超码
+\item 主码(primary key)：用在一个关系中区分不同元组的候选码
+\item 外码(foreign key)：外部参照关系
+\end{itemize}

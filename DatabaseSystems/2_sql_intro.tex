@@ -1,35 +1,56 @@
 % !TEX root = main.tex
 
 \section{SQL简介}
-结构化查询语言(Structured Query Language, SQL)
+SQL即结构化查询语言(Structured Query Language, SQL)
 
-数据定义语言(Data Definition Language, DDL)
+\subsection{数据定义语言}
+数据类型
+\begin{itemize}
+	\item \verb'char(n)'：固定长度字符串
+	\item \verb'varchar(n)'：可变长度字符串，用得最多
+	\item \verb'int'
+	\item \verb'smallint'
+	\item \verb'numeric(p,d)'：定点数，共$p$位（包括符号位），其中$d$位在小数点右侧
+	\item \verb'real', \verb'double precision'
+	\item \verb'float(n)'：精度至少为$n$位的浮点数
+\end{itemize}
 \begin{lstlisting}[language=sql]
 create table instructor (
 	ID char(5),
 	name varchar(20),
 	dept_name varchar(20),
 	salary numeric(8,2),
-	primary key (ID),
+	primary key (ID), -- integrity constraints
 	foreign key (dept_name) references department);
 \end{lstlisting}
 
-查询语言
+\subsection{数据查询语言}
+基本的形式如下所示
 \begin{lstlisting}[language=sql]
 select A1, A2, ..., An
 from r1, r2, ..., rm
 where P
 \end{lstlisting}
-其中$A_i$为属性(attribute)、$R_i$为一个关系(relation)/一个表、$P$是谓词(preicate)
+其中$A_i$为属性(attribute)、$R_i$为一个关系(relation)/一个表、$P$是谓词(preicate)，返回满足关系的数组。
+
+\begin{itemize}
+	\item 自然连接(natural join)：将两个关系的各个元组进行连接，并且只考虑那些在两个关系模式中都出现的属性上取值相同的元组对（相当于取\textbf{交}）
+	\item 连接(join)：只考虑$A$这个属性进行连接，\verb'join ... using (A)'
+\end{itemize}
+
+字符串运算：模式匹配
+\begin{itemize}
+	\item \verb'upper(s)'、\verb'lower(s)'
+	\item \verb'%'：匹配任意字串
+	\item \verb'_'：匹配任意一个字符
+	\item \verb'like'：以这些字符串进行匹配
+\end{itemize}
 
 \begin{lstlisting}[language=sql]
 select distinct dept_name
 from instructor
 
-select all dept_name
-from instructor
-
-select *
+select * -- all attributes
 from instructor
 
 select '437' as FOO
@@ -44,8 +65,9 @@ select *
 from instructor, teaches -- Cartesian product
 
 select distinct T.name
-from instructor as T, instructor as S -- rename
+from instructor as T, instructor as S -- rename, Cartesian product
 where T.salary > S.salary and S.dept_name = 'Comp. Sci.'
+-- salary between 90000 and 100000
 
 /**
 percent ( % ). The % character matches any substring.
@@ -59,9 +81,9 @@ select distinct name
 from instructor
 order by name
 
-select name
+select *
 from instructor
-where salary between 90000 and 100000 -- both contain
+order by salary desc, name asc;
 
 (select course_id from section where sem = 'Fall' and year = 2017)
 union -- intersect, except
@@ -72,13 +94,20 @@ from instructor
 where salary is null
 
 -- arg, min, max, sum, count
-select avg (salary)
+select dept_name, avg (salary) as avg_salary
 from instructor
-where dept_name= 'Comp. Sci.';
+where dept_name= 'Comp. Sci.'
+group by dept_name;
 
 select count (distinct ID)
 from teaches
 where semester = 'Spring' and year = 2018;
+
+-- group constraints
+select dept_name, avg(salary) as avg_salary
+from instructor
+group by dept_name
+having avg(salary) > 42000;
 \end{lstlisting}
 
 三值逻辑，添加了Unknown
@@ -98,3 +127,63 @@ $U \lor U = U$
 $\lnot U = U$\\\hline
 \end{tabular}
 \end{center}
+
+集合成员资格通过\verb'in'来判断，同时有\verb'some'和\verb'all'的关系测试
+\begin{lstlisting}
+select name
+from instructor
+where salary > some (select salary
+					from instructor
+					where dept_name = 'Biology')
+
+select S.ID, S.name
+from student as S
+where not exists ((select course_id
+				from course
+				where dept_name = 'Biology')
+				except
+				(select T.course_id
+				from takes as T
+				where S.ID = T.ID))
+
+select T.course_id
+from course as T
+where 1 >= (select count(R.course_id)
+			from section as R
+			where T.course_id = R.course_id and R.year = 2009);
+-- not unique
+
+with max_budget(value) as
+	(select max(budget)
+	from department)
+select budget
+from department, max_budget
+where department.budget = max_budget.value;
+
+select dept_name,
+	(select count(*)
+	from instructor
+	where department.dept_name = instructor.dept_name)
+	as num_instructors
+from department; -- scalar subquery
+\end{lstlisting}
+
+数据库的修改操作如下
+\begin{lstlisting}
+delete from instructor
+where dept_name = 'Finance';
+
+insert into course(course_id, title)
+	values ('CS-437','Database Systems');
+
+update instructor
+set salary = salary * 1.05
+where salary < 70000;
+
+update instructor
+set salary = case
+			when salary <= 1000 then salary * 1.05
+			when salary <= 2000 then salary * 2.05
+			else salary * 1.03
+		end
+\end{lstlisting}

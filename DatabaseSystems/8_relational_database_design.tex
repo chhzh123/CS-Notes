@@ -1,0 +1,37 @@
+% !TEX root = main.tex
+
+\section{关系型数据库设计}
+数据库设计的范式(normal form)
+\begin{itemize}
+	\item 第一范式：原子性，即所有元素都是不可分的单元
+	\item 
+\end{itemize}
+
+\begin{definition}[函数依赖(functional dependency)]
+设$R$为关系模式，$\alpha\subset R,\beta\subset R$，函数依赖$\alpha\to\beta$在$R$上满足，当且仅当对于任意合法的关系$r(R)$，任何两个关于$r$的数对$t_1$和$t_2$，如果满足属性$\alpha$，那么它们也满足属性$\beta$，即
+\[t_1[\alpha]=t_2[\alpha]\implies t_1[\beta]=t_2[\beta]\]
+实际上就是函数单射的概念。
+\end{definition}
+考虑下例$r(A,B)$的关系
+\begin{center}
+\begin{tabular}{|c|c|}\hline
+A & B\\\hline
+1 & 4\\\hline
+1 & 5\\\hline
+3 & 7\\\hline
+\end{tabular}
+\end{center}
+关系$A\to B$不成立，但关系$B\to A$成立。
+
+\begin{definition}[多值依赖(multivalued dependency)]
+设$R$为关系模式，$\alpha\subset R,\beta\subset R$，多值依赖在$R$上满足$\alpha\twoheadrightarrow\beta$，
+当且仅当对于所有数对$t_1$和$t_2$，使得$t_1[\alpha]=t_2[\alpha]$，都存在数对$t_3$和$t_4$使得
+\[\begin{aligned}
+\displaystyle t_{1}[\alpha ]&= t_{2}[\alpha ]=t_{3}[\alpha ]=t_{4}[\alpha ]\\
+\displaystyle t_{3}[\beta ]&= t_{1}[\beta ]\\
+\displaystyle t_{3}[R-\beta ]&= t_{2}[R-\beta ]\\
+\displaystyle t_{4}[\beta ]&= t_{2}[\beta ]\\
+\displaystyle t_{4}[R-\beta ]&= t_{1}[R-\beta ]
+\end{aligned}\]
+简而言之，设${\displaystyle (x,y,z)}$有对应着属性${\displaystyle \alpha ,}{\displaystyle \beta ,}{\displaystyle R-\alpha -\beta }$，则对于任意$R$中的元素${\displaystyle (a,b,c)}$和${\displaystyle (a,d,e)}$，都有${\displaystyle (a,b,e)}$和${\displaystyle (a,d,c)}$在$R$中
+\end{definition}
