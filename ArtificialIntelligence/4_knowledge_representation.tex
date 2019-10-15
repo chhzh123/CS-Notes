@@ -1,0 +1,118 @@
+% !TEX root = main.tex
+
+\section{知识表示与推理}
+一阶逻辑(First-Order Logic,FOL)
+\begin{itemize}
+	\item 个体/常量(0-ary)
+	\item 类型(unary)谓词：$A(x),B(x)$
+	\item 关系（二元谓词）：$L(x,y)$
+\end{itemize}
+
+\begin{definition}[项(term)]
+每一个变量都是一个项。
+若$t_1,\ldots,t_n$都为项，且$f$为$n$参数的的函数，则$f(t_1,\ldots,t_n)$是一个项。
+\end{definition}
+\begin{definition}[公式(formular)]
+公式包括以下几种情况：
+\begin{itemize}
+\item 若$t_1,\ldots,t_n$都是项，且$P$是$n$元的谓词符号，则$P(t_1,\ldots,t_n)$是一个公式
+\item 若$t_1,t_2$都是项，那么$(t_1=t_2)$是一个原子公式
+\item 若$\alpha,\beta$都是公式，$v$是一个变量，则$\lnot\alpha,(\alpha\land\beta),(\alpha\lnot\beta),\exists v.\alpha,\forall v.\alpha$都是公式
+\end{itemize}
+\end{definition}
+\begin{definition}[句子(sentence)]
+没有自由变量的公式
+\end{definition}
+\begin{definition}[替换]
+$\alpha[v/t]$表示$\alpha$中所有自由出现的$v$都用项$t$替代
+\end{definition}
+\begin{definition}[解释(interpretation)]
+一个解释是一个对(pair)$\mI=\lrang{D,I}$，其中
+\begin{itemize}
+	\item $D$是论域，可以是任何非空集
+	\item $I$是从谓词到函数符号的映射
+	\item 如果$P$是一个$n$-参数的谓词符号，$I(P)$是一个在$D$上的$n$-参数的关系，即$I(P)\subset D^n$
+\end{itemize}
+\end{definition}
+\begin{definition}[赋值(denotation)]
+变量指派(assignment)$\mu$是一个从变量集合到论域$D$的映射
+\[\begin{aligned}
+\norm{v}_{\mI,\mu}&=\mu(v)\\
+\norm{f(t_1,\ldots,t_n)}_{\mI,\mu}&=I(f)(\norm{t_1}_{\mI,\mu},\ldots,\norm{t_n}_{\mI,\mu})
+\end{aligned}\]
+\end{definition}
+\begin{definition}[满足]
+$\mI,\mu\models\alpha$读作$\mI,\mu$满足$\alpha$
+\begin{itemize}
+	\item $\mI,\mu\models\alpha\iff\lrang{\norm{t_1}_{\mI,\mu},\ldots,\norm{t_n}_{\mI,\mu}}\in I(P)$
+	\item $\mI,\mu\models(t_1=t_2)\iff\norm{t_1}_{\mI,\mu}=\norm{t_2}_{\mI,\mu}$
+\end{itemize}
+\end{definition}
+\begin{definition}[子句(clause)]
+文字(literal)是原子公式或它的取反，一个子句是文字的析取(disjunction)，如$p\lor\lnot r\lor s$，写作$(p,\lnot r,s)$。
+特殊地，空子句$()$代表为假。
+公式(formula)则是子句的合取(conjunction)。
+\end{definition}
+
+归结(resolution)
+反驳(refutation)
+\[\vdash\]
+% nvDash
+
+\begin{itemize}
+	\item 消除蕴含：$A\to B\iff \lnot A\lor B$
+	\item 将非向内推：德摩根定律
+	\item 标准化变量：重命名变量使得每一个量词都是唯一的
+	\item 消除存在量词(skloemize)：引入新的函数符号，如$\forall x P(x)$改为$P(g(y))$
+	\item 将所有量词带到最前面：只有全局量词，且名字均不同
+	\item 析取分配到合取
+	\item 压平
+	\item 转化为子句：将量词全部移除
+\end{itemize}
+
+\begin{definition}[MGU]
+两个公式$f$和$g$的替换$\sigma$
+\begin{itemize}
+	\item
+	\item
+\end{itemize}
+\end{definition}
+
+计算MGU的算法：不断代入新的元，使其一致
+
+利用归结（两条文字合一变真删除）看是否能得到空子句
+
+答案抽取(answer extraction)
+\begin{itemize}
+\item 将询问$\exists xP(x)$用$\exists x[P(x)\land\lnot\text{answer}(x)]$替换
+（因为取非后变成$\forall x P(x)\implies \text{answer}(x)$）
+\item 直到获得任意子句只包含答案的谓词
+\end{itemize}
+\begin{example}
+对下列查询进行归结及答案查询
+\begin{itemize}
+	\item Whoever can read $R(x)$ is literate $L(x)$
+	\item Dolphins $D(x)$ are not literate
+	\item Flipper is an intelligent dolphin $I(x)$
+\end{itemize}
+Who is intelligent but cannot read?
+\end{example}
+\begin{analysis}
+对语句进行形式化
+\begin{center}
+\begin{tabular}{lll}
+$\forall x (R(x)\to L(x))$ & 1 & $(\lnot R(u),L(u))$\\
+$\forall x (D(x)\to \lnot L(x))$ & 2 & $(\lnot D(v),\lnot L(v))$\\
+$D(Flip)\land I(Flip)$ & 3 & $D(Flip)$\\
+ & 4 & $I(Flip)$\\
+Q:$\exists x (I(x)\land\lnot R(x))$ & 5 & $(\lnot I(y),R(y),answer(y))$\\\hline 
+$R[4,5]/y=Flip$ & 6 & $(R(Flip),answer(Flip))$\\
+$R[1,6]/u=Flip$ & 7 & $(L(Flip),answer(Flip))$\\
+$R[2,7]/v=Flip$ & 8 & $(\lnot D(Flip),answer(Flip))$\\
+$R[3,8]$ & 9 & $(answer(Flip))$
+\end{tabular}
+\end{center}
+因此得到Flipper是聪明的但是不能阅读
+\end{analysis}
+
+一组子句是否可满足是NP完全的[Cook,1972]

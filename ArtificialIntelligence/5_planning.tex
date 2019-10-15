@@ -1,0 +1,46 @@
+% !TEX root = main.tex
+
+\section{规划}
+智能体应该能够对世界做出动作(action)，而不仅仅是通过搜索解决问题或推理及知识表示。
+核心是对动作的效果进行推理，并且计算什么动作能够达成特定的效果。
+
+情景演算(Situation Calculation, SitCalc)三个基本部分
+\begin{itemize}
+	\item 动作(action)
+	\item 情景(situations)：动作序列，$do(a,s)$为动作、情景到新情景的函数映射，$S_0$为初始情景
+	\[do(put(a,b),do(put(b,c),S_0))\]
+	要区别情景与状态(state)，如将硬币转两次，情景/动作历史不同，但状态都是一样的
+	\item 流(fluent)：从情景到情景的谓词或函数（动态变化过程）
+	\item 条件(precondition)：动作执行的前提条件
+	\item 影响(effect)：执行动作后改变的流。 % the fluents that change as the result of performing the action
+	如下在情景$s$下执行修复动作后，$x$就不是破碎的
+	\[\lnot Broken(x,do(repair(r,x)),s)\]
+\end{itemize}
+
+只陈述了执行动作的影响，而没有阐述没影响的部分
+
+框架(frame)问题：找到一种高效的方法来确定动作的非效果(non-effects)而不是显式地将它们全部写下来，用一阶逻辑
+
+利用归结进行情景演算
+
+传统的规划没有完全或确定的信息，假设对于初始状态有完整的信息。
+\begin{definition}[封闭世界假设(Closed-World Assumption, CWA)]
+用于表示世界状态的知识库是一系列正的真实原子事实（与数据库类似）。
+如$emp(A,C)$不在数据库中，则$\lnot emp(A,C)$为真
+\end{definition}
+
+STRIPS(Stanford Research Institute Problem Solver)：
+\begin{itemize}
+	\item 世界被表示成封建世界知识库(CW-KB)，一个STRIPS的动作表示成更新CW-KB的方式
+	\item 一个动作生成新的KB，用以描述新的世界
+\end{itemize}
+
+在SitCalc中我们可能有不完全的信息（用一阶逻辑公式表示），而在STRIPS中，我们有完整的信息（用CW-KB）表示
+
+例子如下：
+$pickup(X)$:
+\begin{itemize}
+\item $Pre: {handempty, clear(X), ontable(X)}$
+\item $Adds: {holding(X)}$
+\item $Dels: {handempty, clear(X), ontable(X)}$
+\end{itemize}
