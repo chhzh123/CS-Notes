@@ -149,3 +149,13 @@ G(u,v)&=F(u,v)+N(u,v)
 	最终得到退化函数
 	\[H(u,v)=\intabu{0}{T}{\ee^{-j2\pi[ux_0(t)+vy_0(t)]}}\]
 \end{itemize}
+
+\subsection{逆滤波}
+对于线性移不变系统的退化模型为
+\[G(u,v)=H(u,v)F(u,v)+N(u,v)\]
+如果知道$H(u,v)$，则可以计算原始图像的傅里叶变换估计（去卷积）
+\[\hat{F}(u,v)=\frac{G(u,v)}{H(u,v)}=F(u,v)+\frac{N(u,v)}{H(u,v)}\]
+如果$H(u,v)$很小，则$N(u,v)/H(u,v)$将很大，估计就会失败。
+
+维纳滤波：最佳去噪滤波器
+\[\hat{F}(u,v)=\frac{P_f(u,v)}{P_f(u,v)+P_k(u,v)}=\frac{P_f(u,v)}{P_f(u,v)+\lrabs{\frac{N(u,v)}{H(u,v)}}}\]

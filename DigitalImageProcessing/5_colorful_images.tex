@@ -1,0 +1,62 @@
+% !TEX root = main.tex
+
+\section{彩色图像处理}
+图像主要包括三方面内容：颜色、形状、纹理
+
+\subsection{颜色特性}
+彩色光的3个基本量：
+\begin{itemize}
+	\item 辐射率：从光源流出能量的总量，用Watt表示
+	\item 光强：观察者从光源接受的能量总和，用流明表示
+	\item 亮度：主观描绘子，人感觉到的
+\end{itemize}
+
+人眼中有600-700万个锥状体分别对红色(700nm)、绿色(546nm)、蓝色(435.8nm)敏感\footnote{注意这里只是人为定义波长，真正的红绿蓝是一段波长区间。}。
+65\%对红光敏感、33\%对绿光敏感、2\%对蓝光敏感。
+
+三基色原理：
+红绿蓝为三种基色，组成RGB三维加性空间
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/rgb_and_cmyk.png}
+\end{figure}
+
+区别颜色的特性：亮度、色调、色饱和度。
+颜色通常用亮度和彩色表征，色调、和饱和度统称为彩色色度。
+设$X,Y,Z$为红绿蓝的系数，则做归一化，得到颜色的唯一比例
+\[\begin{aligned}
+x&=\frac{X}{X+Y+Z}\\
+x&+y+z=1
+\end{aligned}\]
+
+真彩色(24b)：RGB各用一个字节表示，共216种安全色（各种设备都可以正常显示），剩下40个为控制字节
+
+\subsection{颜色空间}
+\begin{itemize}
+	\item RGB：与人眼视觉系统密切相连
+	\item CNY/CNYK：青色(cyan)、品红(magenta)、黄色(yellow)、黑色(key/black)。打印主要靠反射（减性空间），如黄色是白光将蓝色吸收掉。由于油墨很少能将颜色都吸收掉，深色效果较差，故加入一种黑色K。
+	\item HIS/HSL/HSV：色度(hue)、亮度(intensity)、饱和度(saturation)，亮度与色彩分离。广泛应用于计算机视觉、图像检索和视频检索。
+\end{itemize}
+
+\subsection{伪彩色处理}
+根据一定的准则对灰度值赋以彩色的处理。
+之所以需要伪彩色，是因为人类可以辨别上千种颜色和强度，但只能辨别二十几种\textbf{灰度}。
+比如将不同灰度赋予不同颜色，得到热度图(heatmap)。
+
+\subsection{全彩色处理}
+两种处理方式：分通道处理、向量处理。
+
+补色：两种颜色混在一起为白色（RGB补色为CMY）
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/complements.png}
+\end{figure}
+
+\subsection{彩色分割}
+\begin{itemize}
+	\item HSI颜色空间分割直观，H色调图像方便描述彩色，S饱和度图像做模板分离感兴趣的特征区，I强度图像不携带彩色信息。如用门限产生二值图像，大于门限的像素赋为1，其他赋为0。
+	\item RGB彩色空间直接，用欧式距离度量。
+\end{itemize}
+% 彩色空间的人脸检测
+
+如果直接采用3个独立平面形成的合成梯度图可能导致彩色边缘检测错误，因此要采用Di Zenzo提出的方法。
