@@ -1,0 +1,42 @@
+% !TEX root = main.tex
+
+\section{语言模型}
+\subsection{统计语言模型}
+考虑语句的先验概率
+\[p(s)=\prod_{i=1}^{m}p(w_i\mid w_1\cdots w_{i-1}),\;p(w_1\mid w_0)=p(w_1)\]
+其中$w_i$可以是字、词、短语等，称为\textbf{统计基元}，通常用\underline{词}代之。
+
+为减少历史基元的个数，将$w_1w_2\cdots w_{i-1}$映射到等价类$S(w_1w_2\cdots w_{i-1})$，使等价类的数目远小于原来不同历史基元的数目，则有
+\[p(w_i\mid w_1\cdots w_{i-1})=p(w_i\mid S(w_1\cdots w_{i-1}))\]
+
+n元文法(n-gram)模型
+\begin{itemize}
+	\item 当$n=1$时，出现在第$i$位上的基元$w_i$独立于历史，1元文法也被uni-gram或monogram
+	\item $n=2$时，2-gram(bi-gram)称为1阶马尔可夫链
+	\item $n=3$时，3-gram(tri-gram)称为2阶马尔可夫链，以此类推
+\end{itemize}
+实际操作加上句首\verb'<BOS>'和句尾标记\verb'<EOS>'。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/n-gram.png}
+\end{figure}
+
+应用：
+\begin{itemize}
+	\item 音字转换问题：给定拼音转为汉字串
+	\item 汉语分词问题
+\end{itemize}
+
+对于n-gram，由最大似然估计求得
+\[p(w_i\mid w_{i-n+1}^{i-1}=f(w_i\mid w_{i-n+1}^{i-1})=\frac{c(w_{i-1+1})}{\sum_{w_i}c(w_{i-n+1}^i)}\]
+其中$\sum_{w_i}c(w_{i-n+1}^i)$是历史串$w_{i-n+1}^{i-1}$在给定语料中出现的次数，即$c(w_{i-n+1}^{i-1})$。
+
+为避免数据匮乏/稀疏导致的零概率问题，需要做数据平滑：调整最大似然估计的概率值，使零概率增值，使非零概率下调，消除零概率，改进模型的整体正确率。
+\begin{itemize}
+	\item 加一法：
+	\[p(w_i\mid w_{i-1}=\frac{1+c(w_{i-1}w_i)}{|V|+\sum_{w_i}c(w_{i-1}w_i)}\]
+	\item 减值法/折扣法：将剩余概率量分配给未见概率
+\end{itemize}
+
+\subsection{神经语言模型}
+词向量、RNN

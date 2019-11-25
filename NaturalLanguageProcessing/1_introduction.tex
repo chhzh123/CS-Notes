@@ -1,0 +1,45 @@
+% !TEX root = main.tex
+
+\section{简介}
+自然语言处理(natrual language processing, NLP)的主要内容：机器翻译、信息检索、自动文摘、观点挖掘、问答系统、信息抽取、文档分类、文字编辑和自动校对、语音识别、文语转换、语音合成、说话人识别/认同/验证。
+
+\begin{definition}[熵]
+概率分布为$p(x)=P(X=x)$，则熵$H(X)$为
+\[H(X)=-\sum_{x\in X}p(x)\log_2p(x)\]
+并约定$0\log 0=0$，单位为二进制位比特(bit)
+\end{definition}
+\begin{definition}[联合熵]
+$X,Y$为离散型随机变量$X,Y\thicksim p(x,y)$，联合熵定义为
+\[H(X,Y)=-\sum_{x\in X}\sum_{y\in Y}p(x,y)\log_2 p(x,y)\]
+\end{definition}
+\begin{definition}[条件熵]
+\[H(Y\mid X)=-\sum_{x\in Y}\sum_{y\in Y}p(x,y)\log_2 p(y\mid x)\]
+\end{definition}
+\begin{definition}[相对熵(KL距离)]
+两个概率分布$p(x)$和$q(x)$的相对熵定义为
+\[D(p||q)=\sum_{x\in X}p(x)\log\frac{p(x)}{q(x)}\]
+\end{definition}
+\begin{definition}[交叉熵]
+若随机变量$X\thicksim p(x)$，$q(x)$用于近似$p(x)$的概率分布，则$X$与模型$q$的交叉熵定义为
+\[H(X,q)=H(X)+D(p||q)=-\sum_x p(x)\log q(x)\]
+其常用来衡量估计模型与真实概率分布之间的差异
+\end{definition}
+\begin{definition}[互信息]
+如果$(X,Y)\thicksim p(x,y)$，则$X,Y$之间的互信息$I(X;Y)$定义为
+\[I(X;Y)=H(X)-H(X\mid Y)=\sum_{x\in X}\sum_{y\in Y}p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}\]
+互信息值越大，表示两个汉字之间的结合越紧密，越有可能成词。
+\end{definition}
+
+基于上下文分类的消歧方法：
+假设多义词$w$所处的上下文语境为$C$，若$w$的多个词义记为$s_i$，则可通过计算$\argmax p(s_i\mid C)$确定$w$的词义。
+
+由贝叶斯公式，并运用独立性假设
+\[p(s_i\mid C)=\frac{p(s_i)\times p(C\mid s_i)}{p(C)}=p(s_i)\prod_{v_k\in C}p(v_k\mid s_i)\Big/ p(C)\]
+因此只需求（可转换为对数加法运算）
+\[\hat{s}_i=\argmax_{s_i}\lrs{p(s_i)}\prod_{v_k\in C}p(v_k\mid s_i)\]
+由统计数据可得
+\[\begin{aligned}
+p(v_k\mid s_i)&=\frac{N(v_k,s_i)}{N(s_i)}\\
+p(s_i)&=\frac{N(s_i)}{N(w)}
+\end{aligned}\]
+其中$N(s_i)$为训练数据中词$w$用于语义$s_i$时的次数，而$N(v_k,s_i)$为$w$用于语义$s_i$时词$v_k$出现在$w$的上下文中的次数，$N(w)$为$w$在训练数据中出现的总次数。
