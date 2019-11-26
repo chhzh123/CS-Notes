@@ -16,17 +16,17 @@
 \end{definition}
 
 \subsection{点检测与线检测}
-点检测(Laplace算子)
+\subsubsection{点检测}
 \begin{center}
 \begin{tabular}{|c|c|c|}\hline
 1 & 1 & 1\\\hline
 1 & -8 & 1\\\hline
-1 & 1 & 1
+1 & 1 & 1\\\hline
 \end{tabular}
 \end{center}
 若作用算子后的图像$|R(x,y)|\geq T$，则记为$1$。
 
-线检测
+\subsubsection{线检测}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\linewidth]{fig/line_detect.png}
@@ -36,28 +36,151 @@
 傅里叶变换无法刻画边缘，只知道高频成分，不知道高频在哪里。
 一种方法是局部傅里叶变换，衍生出小波变换（就是要构造一种高通滤波器）：有震荡信号的位置（小范围震荡且积分为0），可以刻画边缘。
 
-台阶、斜坡、屋顶边缘模型如下。
+台阶/阶梯、斜坡/斜、屋顶/Delta边缘模型如下。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\linewidth]{fig/edge_model.png}
 \end{figure}
 
-边界是封闭的边缘。
-
-二阶导数会增大噪声，因此做边缘检测之前应该先抑制噪声（平滑）。
+如下图所示，二阶导数会增大噪声，因此做边缘检测之前应该先抑制噪声（平滑）。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\linewidth]{fig/edge_detect_noise.png}
 \end{figure}
 
-边缘检测算子
+常用的边缘检测算子：一阶微分-梯度，二阶微分-Laplace算子
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\linewidth]{fig/edge_detect_op.png}
 \end{figure}
 
-Marr-Hildreth边缘检测器
-\[\nabla^2 G(x,y)=\lrs{\frac{x^2+y^2-2\sigma^2}{\sigma^4}}\ee^{-\frac{x^2+y^2}{2\sigma^2}}\]
+\subsubsection{Marr-Hildreth边缘检测器}
+由于拉普拉斯算子的应用通常会放大图像的噪声，因此通常先平滑，再应用拉普拉斯算子。
+假设$f(x,y)$为图像，$h(x,y)$为高斯平滑函数
+\[h(x,y)=-\ee^{-\frac{x^2+y^2}{2\sigma^2}}\]
+则只需做一步操作完成平滑及边缘检测
+\[\nabla^2 [f(x,y)*h(x,y)]=f(x,y)*[\nabla^2 h(x,y)]\]
+其中
+\[\nabla^2 h(x,y)=\frac{2}{\sigma^2}\lrs{1-\frac{x^2+y^2}{2\sigma^2}}\ee^{-\frac{x^2+y^2}{2\sigma^2}}\]
 即高斯拉普拉斯(LoG)变换。
 
-（高斯函数的微分就是一种小波，做微分后负号与负号抵消）
+墨西哥草帽函数。
+（高斯函数的微分就是一种小波，做微分后负号与负号抵消；而且高斯函数有无穷阶导数）
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/LoG.png}
+\end{figure}
+
+得到Marr-Hildreth的边缘检测算法
+\begin{enumerate}
+	\item 计算高斯拉普拉斯变换(LoG)
+	\item 找到零交叉点（边缘正负变化的地方）
+\end{enumerate}
+
+用高斯差分DoG滤波可以近似代替LoG，
+\[DoG(x,y)=\frac{1}{2\pi\sigma_1^2}\ee^{-\frac{x^2+y^2}{2\sigma_1^2}}-\frac{1}{2\pi\sigma_2^2}\ee^{-\frac{x^2+y^2}{2\sigma_2^2}},\;\sigma_1>\sigma_2\]
+以$\sigma_1:\sigma_2=1.6:1$来定，则近似的$\sigma$为
+\[\sigma^2=\frac{\sigma_1^2\sigma_2^2}{\sigma_1^2-\sigma_2^2}\ln\lrs{\frac{\sigma_1^2}{\sigma_2^2}}\]
+
+\subsubsection{Canny边缘检测器}
+目标：
+\begin{itemize}
+	\item 低错误率：边缘一个不落，一个不多
+	\item 边缘点应该被很好定位：标记的边缘点与真实边缘中心之间的距离最小
+	\item 单一边缘点响应：对于真实的边缘点，检测器仅返回一个点，即真实边缘周围的局部最大数应该最小
+\end{itemize}
+
+算法步骤：
+\begin{enumerate}
+	\item 用一个高斯滤波器平滑输入图像
+	\item 计算梯度幅值图像和角度图像（Canny为二阶梯度算子）
+	\[M(x,y)=\sqrt{g_x^2+g_y^2},\quad\alpha(x,y)=\arctan\lrs{\frac{g_y}{g_x}}\]
+	\item 对梯度幅值图像应用非最大抑制
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/canny-margin.png}
+\end{figure}
+\begin{enumerate}
+	\item 寻找最接近$\alpha(x,y)$的方向$d$
+	\item $g_N$代表细化后的边缘
+	\[g_N(x,y)=\begin{cases}0 & M(x,y)\text{的值至少小于沿$d$的两个邻居之一}\\M(x,y) & \text{否则}\end{cases}\]
+\end{enumerate}
+	\item 用双阈值处理和连接分析来检测并连接边缘\\
+	双阈值法：高阈值$T_H$和低阈值$T_L$，比率为$2:1$或$3:1$
+	\[\begin{aligned}
+	g_{NN}(x,y) &= g_N(x,y)\geq T_H & \text{强边缘}\\
+	g_{NL}(x,y) &= g_N(x,y)\geq T_L & \text{弱边缘（可能是边缘也可能不是）+强边缘}\\
+	g_{NL}(x,y) &= g_{NL}(x,y)-g_{NH}(x,y) & \text{弱边缘}
+	\end{aligned}\]
+	用弱边缘补齐强边缘来获得完整边缘
+\begin{enumerate}
+	\item 在$g_{NN}(x,y)$中定位下一个未被访问的边缘像素$p$
+	\item 在$g_{NL}(x,y)$中用8连通方法连接到$p$
+	\item 如果$g_{NN}(x,y)$中所有非零标记都已经访问过，则跳到(d)，否则(a)
+	\item 将$g_{NL}(x,y)$中未被标记为有效边缘的像素的所有像素置零。
+	将$g_{NL}(x,y)$中非零像素附加到$g_{NN}(x,y)$
+\end{enumerate}
+\end{enumerate}
+
+\subsection{边缘连接}
+\textbf{边界是封闭的边缘。}
+\[\text{边界检测}=\text{边缘检测}+\text{边缘连接}\]
+
+\begin{itemize}
+\item 边缘连接:两个端点只有在边缘强度和走向相近的情况下才能连接。
+如果像素$(s,t)$在像素$(x,y)$的邻域内且满足:
+\[|M(x,y)-M(s,t)|\leq E,\quad |\alpha(x,y)-\alpha(s,t)|\leq A\]
+则可以将$(s,t)$与$(x,y)$连接起来。
+
+\item 边界跟踪：依照角度搜索，用$3\times 3$区域平均值代替单像素点（避免噪声影响），称为虫
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/boundary_tracing.png}
+\end{figure}
+
+\item 区域处理：用多边形拟合算法
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/polygon_boundary.png}
+\end{figure}
+\end{itemize}
+
+\subsection{边界检测}
+用Hough变换进行边界检测：通过边界点找已知形状的目标。 % 考试必考
+
+\subsubsection{直线检测问题}
+已知一组边缘点，找一条直线，使它通过最多边缘点。
+
+直线方程用极坐标表示
+\[\rho=x\cos\theta+y\sin\theta\]
+通过辅助角变换可得
+\[\rho=A_0\sin(\theta+\phi_0)\]
+故可映射到$\rho O\theta$空间，其中每一个点是$xOy$平面上的通过同一个点的一条线。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/hough.png}
+\end{figure}
+
+如果有一组位于由参数$\rho_0$和$\theta_0$决定的直线上的边缘点，则每个边缘点对应了$\rho,\theta$空间的一条正弦曲线。
+所有这些曲线必然会交于点$(\rho_0,\theta_0)$，因为这是它们共享的一条直线的参数。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/hough2.png}
+\end{figure}
+
+故对于边缘点的直线拟合问题，即找一个使边缘点确定的正弦曲线相交最多的点$(\rho,\theta)$。
+
+可以建立$\rho,\theta$空间的二维直方图来确定对于边缘点的最佳拟合直线参数$(\rho_0,\theta_0)$。
+具体算法如下：
+\begin{enumerate}
+	\item 对于每个边缘点$(x,y)$。建立直线方程：
+	\[\rho=x\cos(\theta)+y\sin(\theta)\]
+	\item 假定$\rho,\theta$的变化范围为$\rho\in[\rho_{\min},\rho_{\max}],\theta\in[\theta_{\min},\theta_{\max}]$，建立$A(\rho,\theta)$累加器
+	\item 给定$\theta$，由原始方程确定$\rho$，则$A(\rho,\theta)+=1$
+	\item 对于所有的边缘点，执行上述步骤，找出最大的$A(\rho,\theta)$，即为所求
+\end{enumerate}
+
+\subsubsection{其他检测问题}
+换成圆/椭圆也一样
+\[(x-x_0)^2+(y-y_0)^2=r^2\]
+在参数空间建立3D累加数组$A$，让$(x_0,y_0)$变化，计算$r$。
