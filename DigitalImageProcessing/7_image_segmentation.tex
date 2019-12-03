@@ -184,3 +184,99 @@
 换成圆/椭圆也一样
 \[(x-x_0)^2+(y-y_0)^2=r^2\]
 在参数空间建立3D累加数组$A$，让$(x_0,y_0)$变化，计算$r$。
+
+
+\subsection{阈值处理}
+阈值处理模型
+\[T=T[x,y,p(x,y),f(x,y)\]
+如果
+\[g(x,y)=\begin{cases}
+1 & f(x,y)>T\\
+0 & f(x,y)\leq T
+\end{cases}\]
+当$T$为适用于整个图像的常数时，则该公式给出的处理为全局阈值处理，$f(x,y)>T$的任何点为一个对象点，否则该点为背景点。
+如果取决于邻域$p(x,y)$，则为局部阈值处理。
+如果取决于$(x,y)$本身，则为动态阈值处理/自适应阈值处理。
+
+背景光照不均匀时阈值处理方法：
+\begin{enumerate}
+	\item 直接矫正方法：用恒定灰度的平坦表面成像获得光照模式，用相反的模式与图像相乘来矫正
+	\item 采用顶帽变换来获得全局阴影模式
+	\item 使用可变阈值近似处理非均匀性
+\end{enumerate}
+
+\subsubsection{基本全局阈值处理}
+试探法：
+\begin{enumerate}
+	\item 为全局阈值$T$选择一个初始估计值
+	\item 用$T$分割图像，生成两组像素：$G_1$由所有灰度值大于$T$的像素组成，而$G_2$   由所有灰度值小于或等于$T$的像素组成。
+	\item 对区域$G_1$和$G_2$中的所有像素计算平均灰度值$m_1$和$m_2$
+	\item 计算新的门限值：$T=1/2(m_1+m_2)$
+	\item 重复步骤2到4，直到逐次迭代所得的$T$值之差小于实现定义的参数$\Delta T$
+\end{enumerate}
+
+\subsubsection{Otsu最佳全局阈值处理}
+将其看为一个分类问题，用贝叶斯决策。
+
+\begin{enumerate}
+\item 归一化直方图$p_i=n_i/(NM)$
+\item 给定阈值$T(k)$，将其分为左右两个部分$C_1$和$C_2$
+\item 求出两块的条件概率密度$p_i/P_1(k)$和$p_i/P_2(k)$
+\item 定义归一化度量指标$\eta=\frac{\sigma_B^2}{\sigma_G^2}$\\
+其中$\sigma_G^2$为全局方差
+\[\sigma_G^2=\sum_{i=0}^{L-1}(i-m_G)^2p_i\]
+$\sigma_B^2$为类间方差
+\[\begin{aligned}
+\sigma_B^2 &= P_1(m_1-m_G)^2+P_2(m_2-m_G)^2\\
+&=P_1P_2(m_1-m_2)^2\\
+&=\frac{(m_G P_1-m)^2}{P_1(1-P_1)}
+\end{aligned}\]
+\item 基本结论是$m_1$和$m_2$相隔越大，则$\sigma_B^2$越大；$\eta$是分割的可分性度量，$\sigma_B^2$越大，则$\eta$越大。
+进而有最佳阈值
+\[\sigma_B^2(k^*)=\max_{0\leq k\leq L-1}\sigma_B^2(k)\]
+\end{enumerate}
+
+\subsubsection{预处理}
+用图像平滑来改善全局阈值处理：但难以处理单峰
+
+用边缘来改进全局阈值处理：梯度算法能能够区分边缘区域与平坦区域；拉普拉斯算子可以确定给定的像素在边缘的亮一边还是暗一边。
+局部阈值法：
+\[s(x,y)=\begin{cases}
+0 & \nabla f<T\\
++ & \nabla f\geq T, \nabla^2 f\geq 0\\
+- & \nabla f\geq T, \nabla^2 f< 0
+\end{cases}\]
+\begin{enumerate}
+	\item 计算$f(x,y)$的梯度图或者拉普拉斯绝对值图
+	\item 给定一个阈值
+	\item 用步骤2)的阈值对步骤1)的结果做阈值处理（通常取第$n$个百分比），产生二值图像$g_T(x,y)$（可以是梯度二值图和拉普拉斯绝对值图二值图取“或”的组合）
+	\item 计算$h(x,y)=f(x,y).*g_T(x,y)$，计算$h(x,y)$的直方图
+	\item 在4)直方图的基础上，用Otsu方法做图像分割
+\end{enumerate}
+
+\subsubsection{多阈值处理}
+在$K$个类的情况下，同样可以定义类间方差，来计算最大的归一化度量指标
+
+\subsubsection{可变阈值处理}
+通过图像分块的阈值处理，因为块内的光照近似均匀
+
+
+\subsection{基于区域的分割}
+$f(x,y)$为图像，$S(x,y)$为种子阵列，种子处为1，其他为0。
+$Q$为位置$(x,y)$的属性，基于8连通的区域生长算法为：
+\begin{enumerate}
+	\item 在$S(x,y)$中找连通分量，并将连通分量腐蚀为一个像素；
+	将找到的所有这种像素标记为$1$，$S$的其他像素标记为$0$
+	\item 计算
+	\[f_Q(x,y)=\begin{cases}
+	1 & \text{$(x,y)$处属性$Q$为真}\\
+	0 & \text{其他}
+	\end{cases}\]
+	\item 分割后图像$g$为：把$f_Q$中与种子点8连通的所有1值点添加到$S$中的每个种子点
+	\item 使用不同的区域标记出$g$中的每个连通分量
+\end{enumerate}
+
+\begin{itemize}
+	\item 区域生长法
+	\item 区域分离合并法
+\end{itemize}
