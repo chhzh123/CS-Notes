@@ -1,0 +1,17 @@
+% !TEX root = main.tex
+
+\section{多层神经网络}
+三层神经网络：输入层、隐含层、输出层，也称多层感知器(multilayer perceptron, MLP)
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/forward_propagation.png}
+\end{figure}
+
+前馈运算如下，判别函数$y_k(\vx,\vw)$为每个输出单元产生的信号
+\[y_{k}(\mathbf{x}, \mathbf{w})=\sigma\left(\sum_{j=1}^{M} w_{k j}^{(2)} h\left(\sum_{i=1}^{D} w_{j i}^{(1)} x_{i}+w_{j 0}^{(1)}\right)+w_{k 0}^{(2)}\right)\]
+
+任何从输入到输出的连续映射函数都可以用一个三层非线性网络实现，只要有足够的隐单元$M$、适当的非线性函数和权值。
+
+最小化误差函数
+\[E(\mathbf{w})=\frac{1}{2} \sum_{n=1}^{N}\left\|\mathbf{y}\left(\mathbf{x}_{n}, \mathbf{w}\right)-\mathbf{t}_{n}\right\|^{2}\]
+

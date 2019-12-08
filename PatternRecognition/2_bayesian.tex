@@ -1,0 +1,63 @@
+% !TEX root = main.tex
+
+\section{贝叶斯决策论}
+\subsection{离散变量}
+处于类别$\omega_i$并具有特征值$x$，有后验概率\footnote{通常用$p(\cdot)$代表概率密度函数（连续变量），用$\pr{\cdot}$代表概率质量函数（离散变量）}
+\[\prc{\omega_i}{x}=\frac{p(x\mid\omega_i)\pr{\omega_i}}{p(x)}\]
+即
+\[posterior=\frac{likelihood\times prior}{evidence}\]
+
+无论什么情况，当我们观察到特定的$x$，对于二分类问题有错误率
+\[\prc{error}{x}=
+\begin{cases}
+\prc{\omega_1}{x} & \text{决策}\omega_2\\
+\prc{\omega_2}{x} & \text{决策}\omega_1
+\end{cases}
+=\min[\prc{\omega_1}{x},\prc{\omega_2}{x}]\]
+
+平均错误概率可表示为
+\[\prc{error}{x}=\intab{-\infty}{\infty}{\pr{error,x}}=\intab{-\infty}{\infty}{\prc{error}{x}p(x)}\]
+注意$p(x)$是证据，可以看为是固定分布（常量）。
+
+\begin{theorem}[贝叶斯决策/最小错误率准则]
+若$P(\omega_1\mid x)>P(\omega_2\mid x)$，则判定类别为$\omega_1$；否则判为$\omega_2$。
+依照这种准则可以获得最小错误率，即$P(error\mid x)=\min [P(\omega_1\mid x),P(\omega_2\mid x)]$
+\end{theorem}
+
+
+\subsection{连续变量}
+考虑特征向量$\vx\in\rr^d$（$\rr^d$称为特征空间），令$\{\omega_1,\ldots,\omega_c\}$表示有限的$c$个类别集，$\{\alpha_1,\ldots,\alpha_a\}$表示有限的$a$种可能采取的行为集，损失函数(loss)$\lambda(\alpha_t\mid\omega_j)$描述类别状态为$\omega_j$时采取行动$\alpha_i$的风险。
+$p(\vx\mid\omega_j)$表示在真实类别为$\omega_j$的条件下$\vx$的概率密度函数，$P(\omega_j)$表示类别处于状态$\omega_j$时的先验概率，后验概率$P(\omega_j\mid \vx)$则通过贝叶斯公式
+\[P(\omega_j\mid\vx)=\frac{p(\vx\mid\omega_j)P(\omega_j)}{p(\vx)}\]
+计算得到，证据变为
+\[p(\vx)=\sum_{j=1}^cp(\vx\mid\omega_j)P(\omega_j)\]
+
+与行动$\alpha_i$相关联的风险(risk)为
+\[R(\alpha_i\mid\vx)=\sum_{j=1}^c\lambda(\alpha_i\mid\omega_j)\prc{\omega_j}{\vx}\]
+
+进而得到总损失
+\[R=\intabu{}{}{R(\alpha(\vx)\mid\vx)p(\vx)}{\vx}\]
+
+因此得到连续情形下的贝叶斯决策论：
+\begin{theorem}
+为最小化$R$，计算条件概率
+\[R(\alpha_i\mid\vx)=\sum_{j=1}^c\lambda(\alpha_i\mid\omega_j)\prc{\omega_j}{\vx},\;\forall i=1,\ldots,a\]
+选择$\alpha_i$使得$R(\alpha_i\mid\vx)$最小，进而最小化总的风险即称为贝叶斯风险，记为$R^*$
+\end{theorem}
+
+\subsection{二类分类}
+对称损失/0-1损失
+\[\lambda(\alpha_i\mid\omega_j)=
+\begin{cases}
+0 & i=j\\
+1 & i\ne j
+\end{cases}
+\qquad i,j=1,2,\ldots,c\]
+有条件风险
+\[\begin{aligned}
+R(\alpha_1\mid\vx)&=\lambda_{11}P(\omega_1\mid\vx)+\lambda_{12}P(\omega_2\mid\vx)\\
+R(\alpha_2\mid\vx)&=\lambda_{21}P(\omega_1\mid\vx)+\lambda_{22}P(\omega_2\mid\vx)
+\end{aligned}\]
+
+可得贝叶斯决策
+\[\frac{p(\vx\mid\omega_1)}{p(\vx\mid\omega_2)}>\frac{\lambda_{12}-\lambda_{22}}{\lambda_{21}-\lambda_{11}}\frac{P(\omega_2)}{P(\omega_1)}\]
