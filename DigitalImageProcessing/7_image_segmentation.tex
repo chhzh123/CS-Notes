@@ -187,7 +187,7 @@
 
 
 \subsection{阈值处理}
-阈值处理模型
+阈值/门限处理模型
 \[T=T[x,y,p(x,y),f(x,y)\]
 如果
 \[g(x,y)=\begin{cases}
@@ -198,12 +198,15 @@
 如果取决于邻域$p(x,y)$，则为局部阈值处理。
 如果取决于$(x,y)$本身，则为动态阈值处理/自适应阈值处理。
 
-背景光照不均匀时阈值处理方法：
+\begin{itemize}
+\item 噪声太大时会将直方图中的多个峰融合：先做平滑
+\item 背景光照不均匀时阈值处理方法：
 \begin{enumerate}
 	\item 直接矫正方法：用恒定灰度的平坦表面成像获得光照模式，用相反的模式与图像相乘来矫正
 	\item 采用顶帽变换来获得全局阴影模式
 	\item 使用可变阈值近似处理非均匀性
 \end{enumerate}
+\end{itemize}
 
 \subsubsection{基本全局阈值处理}
 试探法：
@@ -216,8 +219,7 @@
 \end{enumerate}
 
 \subsubsection{Otsu最佳全局阈值处理}
-将其看为一个分类问题，用贝叶斯决策。
-
+将其看为一个分类问题，用贝叶斯决策，这是\textbf{最佳}的方法。
 \begin{enumerate}
 \item 归一化直方图$p_i=n_i/(NM)$
 \item 给定阈值$T(k)$，将其分为左右两个部分$C_1$和$C_2$
@@ -280,3 +282,103 @@ $Q$为位置$(x,y)$的属性，基于8连通的区域生长算法为：
 	\item 区域生长法
 	\item 区域分离合并法
 \end{itemize}
+
+
+\subsection{基于形态学分水岭的分割}
+基本思想：
+\begin{enumerate}
+	\item 将梯度值图像看成一幅地形图，梯度值对应海拔高度，图像中不同梯度值的区域就对应于山峰和山谷间盆地。
+	\item 设想在各个局部极小值点的位置打一个洞，让水以均匀上升速率从洞中涌出，从低到高淹没整个地形。
+	\item 水位逐渐升高漫过盆地，当相邻两个盆地的水即将合并时，这时在两个盆地间建坝拦截。
+	\item 此过程将图像划分为许多个山谷盆地，分水岭就是分隔这些盆地的堤坝。
+\end{enumerate}
+
+水坝构造：以二值图像为基础，使用形态膨胀的方法分离二元点集构造水坝。
+\begin{itemize}
+	\item $M_1,M_2$表示在两个区域极小值中包含的点的坐标集合
+	\item 溢出的第$n-1$阶段与$M_1,M_2$联系的处于汇水盆地中的点集
+	\item $C[n-1]$表示$C_{n-1}(M_1)$和$C_{n-1}(M_1)$并集
+	\item $q$为第$n$步聚合后的连通分量
+	\item $q\cap C[n-1]$可从中提取第$n-1$步的两个连通分量
+\end{itemize}
+
+变量声明：
+\begin{itemize}
+	\item $M_1,M_2,\ldots,M_R$表示局部最小值点的坐标的集合
+	\item $C(M_i)$表示与局部最小值$M_i$相联系的汇水盆地内的点的集合
+	\item $T[n]=\{(s,t)\mid g(s,t)<n\}$表示位于平面$g(x,y)=n$下方的点的集合
+	\item $C_n(M_i)_R=C(M_i)\cap T[n]$表示第$n$阶段汇水盆地$i$中被淹没的点的集合
+	\item $C[n]$表示第$n$阶段汇水盆地被水淹没的点的集合
+	\item $C[max+1]=\bigcup_{i=1}^R C(M_i)$表示所有汇水盆地的集合
+	\item $C[n-1]\subset C[n]\subset T[n]$即$C[n-1]$中每个连通分量都恰好是$T[n]$的一个连通分量
+\end{itemize}
+
+分水岭分割算法：
+\begin{itemize}
+\item 初始化：$C[min+1]=T[min+1]$
+\item 递归：根据$C[n-1]$求得$C[n]$的过程如下：
+\begin{itemize}
+	\item [(1)] 遇到新的最小值，符合条件(a)，将$q$并入$C[n-1]$构成$C[n]$
+	\item [(2)] $q$位于某些局部最小值构成的汇水盆地中，符合条件(b)
+    \item [(3)] 遇到全部或部分分离汇水盆地的山脊线，符合条件(c)，在$q$内构造水坝，即得到分水线
+\end{itemize}
+\end{itemize}
+其中$Q$代表$T[n]$中连通分量的集合，对每个连通分量$q\in Q[n]$，有3种可能：
+\begin{itemize}
+	\item [(a)] $q\cap C[n-1]$为空
+	\item [(b)] $q\cap C[n-1]$包含$C[n-1]$中的一个连通分量
+	\item [(c)] $q\cap C[n-1]$包含$C[n-1]$多于一个的连通分量
+\end{itemize}
+
+分水岭分割算法的缺点：
+\begin{itemize}
+	\item 对图像中的噪声极为敏感。由于输入图像往往是图像梯度，原始图像中的噪声能直接恶化图像的梯度，造成分割的轮廓偏移。 
+	\item 易于产生过度分割。由于受噪声和平坦区域内部细密纹理的影响，导致局部极值过多，在后续分割中出现大量的细小区域。
+\end{itemize}
+
+解决方案：
+\begin{itemize}
+\item 分割前预处理
+\item 分割时添加约束
+\item 分割后对图像进行再处理
+\end{itemize}
+
+
+\subsection{分割中运动的作用}
+\begin{itemize}
+\item 运动是人类和动物使用的用于将重要对象从不相关的背景细节中提取出的强有力的线索。
+\item 用于成像应用领域，如机器人应用，自主导航和动态视觉分析。
+\end{itemize}
+
+基本方法：
+\begin{itemize}
+\item 差值图像
+\item 分别检测两帧图像$f(x,y,t_1)$和$f(x,y,t_2)$在时间$t_1$和$t_2$时的变化的最简单的方法是将两幅图像逐个像素的进行对比。
+\item 这个过程将得到一幅差值图像
+\[d_{ij}(x,y)=\begin{cases}
+1 & |f(x,y,t_i)-f(x,y,t_j)|>T\\
+0 & \text{其他}
+\end{cases}\]
+\end{itemize}
+
+其中$T$是一个特定的门限。
+从定义可以看到：如果两幅图像中对应的坐标上的灰度差有相当的不同，则$d_{ij}(x,y)$具有值$1$，差异程度取决于事先确定的门限$T$
+\begin{itemize}
+\item 假设所有的图像具有相同的尺寸大小，则差值图像也具有相同的尺寸
+\item 在动态处理过程中$d_{ij}(x,y)$所有值为$1$的像素被认为是对象运动的结果
+\item 但是实际上，这些$1$值常常是由于噪声造成的，对于这种情况，我们可以使用一些简单的方法来除去他们
+\end{itemize}
+
+考虑三种差异累计图(ADI)：绝对ADI，正ADI，负ADI
+\[A_{k}(x, y)=\begin{cases}
+{A_{k-1}(x, y)+1} & {|f(x, y, 1)-f(x, y, k)|>T} \\
+{A_{k-1}(x, y)} & \text{其他}
+\end{cases}\]
+\[P_{k}(x, y)=\begin{cases}
+{P_{k-1}(x, y)+1} & {|f(x, y, 1)-f(x, y, k)|>T} \\
+{P_{k-1}(x, y)} & \text{其他}
+\end{cases}\]
+\[N_{k}(x, y)=\begin{cases}
+{N_{k-1}(x, y)+1} & {|f(x, y, 1)-f(x, y, k)|<-T} \\
+{N_{k-1}(x, y)} & \text{其他}
+\end{cases}\]
