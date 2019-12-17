@@ -1,4 +1,112 @@
 % !TEX root = main.tex
 
 \section{表示与描述}
-对象差异三个方面：颜色、形状、纹理
+图像表示与描述有两种方法：
+\begin{itemize}
+	\item 外部描述：形状
+	\item 内部描述：颜色与纹理
+\end{itemize}
+
+\subsection{表示方法}
+\subsubsection{链码}
+链码用于表示由顺次连接的具有指定长度和方向的直线段组成的边界线
+
+链码种类：4向链码和8向链码
+
+常见的问题：
+\begin{enumerate}
+\item 得到的链码太长;
+\item 噪声或边界缺陷的影响;
+\end{enumerate}
+
+解决方案：选择更大间隔的网格对边界进行重新采样。
+\begin{itemize}
+\item 边界链码依赖于起始点
+\item 用差分码可以将链码旋转归一化
+\end{itemize}
+
+\subsubsection{多边形近似表达方法}
+\begin{itemize}
+	\item 基于收缩的最小周长多边形法：将原边界看作有弹性的线，在像素的约束下将线拉紧
+	\item 基于聚合的最小均方误差线段逼近法：每个顶点到边的垂线距离小于$\delta$
+	\item 基于分裂的最小均方误差线段逼近法
+\end{itemize}
+
+基于收缩的最小周长多边形法（MPP算法）：
+围成一条数字边界的单元集合称为单元组合体。
+令W、B分别表示凸顶点和镜像凹顶点的集合。
+\begin{itemize}
+	\item 由简单连接的单元组合体为边界的MPP是非自相交的。
+	\item MPP的每个凸顶点都是一个W顶点，但并非边界的每个W顶点都是MPP的一个顶点。
+	\item MPP的每个镜像凹顶点都是一个B顶点，但并非边界的每个B顶点都是MPP的一个顶点。
+	\item 所有B顶点，要么在MPP上，要么在MPP外；
+	所有W顶点，要么在MPP上，要么在MPP内
+	\item 单元组合体包含的顶点序列的最左上角的顶点，总是MPP的一个W顶点。
+\end{itemize}
+
+\subsubsection{标记图方法}
+标记图是一种一维函数的边界表达方法
+\begin{itemize}
+\item 不受目标平移影响，但受目标尺度变换和旋转的影响
+\item 尺度变换影响可以通过将最大幅值归一化来解决
+\item 旋转的影响解决方法
+\begin{itemize}
+	\item 选择离重心最远的点为标记起点
+	\item 求出边界的主轴，以主轴上离重心最远的点作为标记起点
+\end{itemize}
+\end{itemize}
+
+\subsubsection{边界线段}
+将边界分段可以减小边界的复杂度。
+
+\subsubsection{骨架}
+表达平面区域结构形状的一种方法；
+此方法可以用细化算法实现。
+
+\subsection{边界描绘子}
+\subsubsection{简单的描述符}
+\begin{enumerate}
+\item 边界的长度；
+\item 边界的直径：边界上相隔最远两点的距离。（$D$可以是任意距离度量）
+\[Diam(B)=\max_{i,j}D(p_i,p_j),\;p_i\in B,p_j\in B\]
+\item 曲率：斜率的变化率 。通常采用相邻边界线段的斜率差。
+当沿顺时针方向沿着边界运动，当顶点$p$斜率变化量为非负的时候，称这一点属于凹线段；否则，称$p$属于凸线段。
+\end{enumerate}
+
+\subsubsection{形状数}
+形状数是基于链码的一种边界形状描述符。
+
+一个边界形状描述是其链码的差分码中值最小的一个序列。
+
+形状数长度称为阶数。
+
+\subsubsection{傅里叶描绘子}
+将2D问题转化为1D问题，将边界点的坐标对表示成一个复数
+\[s(k)=x(k)+jy(k),k=0,1,\ldots,k-1\]
+对$s(k)$的傅氏变换为
+\[a(u)=\frac{1}{K}\sum_{k=0}^{K-1}s(k)\ee^{-j2\pi uk/K},u=0,1,\ldots,K-1\]
+复系数$a(u)$称为边界的描绘子。
+
+傅氏反变换确定边界的重建：
+\[s(k)=\sum_{u=0}^{K-1}a(u)\ee^{j2\pi uk/K},k=0,1,\ldots,K-1\]
+通过有限重建构造近似边界
+\[\hat{s}(k)=\sum_{u=0}^{p-1}a(u)\ee^{j2\pi uk/K},k=0,1,\ldots,K-1,K>P\]
+
+\subsubsection{统计矩}
+统计矩用于刻画边界线段的特征波形。
+
+\begin{enumerate}
+	\item 将上述曲线看作一维函数$g(r)$
+	\item 将$g$的振幅看作离散随机变量$v$，并形成直方图$p(v_i)$，其中$i=0,1,\ldots,A-1$
+	\item 定义$n$阶中心矩
+	\[\mu_n(v)=\sum_{i=0}^{A-1}(v_i-m)^np(v_i)\]
+	其中$m=\sum_{i=0}^{A-1}v_ip(v_i)$，$m$是$v$的均值
+\end{enumerate}
+
+另一种统计矩：
+\begin{enumerate}
+	\item 将$g(r)$归一化为单位面积的函数，并作成直方图，即将$g(r_i)$作为产生值$r_i$的概率
+	\item 定义$n$阶中心矩为
+	\[\mu_n(r)=\sum_{i=0}^{K-1}(r_i-m)^ng(r_i)\]
+	其中$m=\sum_{i=0}^{K-1}r_ig(r_i)$，$m$是$r$的均值
+\end{enumerate}
