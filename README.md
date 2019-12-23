@@ -17,9 +17,9 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 | Python Programming    | 2019 Spring |                    |
 | Parallel Computing    | 2019 Spring |  [:page_facing_up:](https://chhzh123.github.io/summary/parallel-computing/) |
 | Database Systems      | 2019 Autumn | :white_check_mark: |
-| Distributed Systems   | 2019 Autumn |                    |
+| Distributed Systems   | 2019 Autumn |  [:page_facing_up:](https://chhzh123.github.io/summary/distributed-systems/) |
 | Artificial Intelligence | 2019 Autumn | :white_check_mark: |
-| Computer Graphics     | 2019 Autumn | :white_check_mark: |
+| Computer Graphics     | 2019 Autumn |  |
 | Natural Language Processing | 2019 Autumn | :white_check_mark: |
 | Pattern Recognition   | 2019 Autumn | :white_check_mark: |
 | Digital Image Processing | 2019 Autumn | :white_check_mark: |
