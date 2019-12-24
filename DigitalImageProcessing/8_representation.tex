@@ -110,3 +110,80 @@
 	\[\mu_n(r)=\sum_{i=0}^{K-1}(r_i-m)^ng(r_i)\]
 	其中$m=\sum_{i=0}^{K-1}r_ig(r_i)$，$m$是$r$的均值
 \end{enumerate}
+
+
+\subsection{区域描绘子}
+\subsubsection{简单的描述符}
+\begin{enumerate}
+\item 区域的面积：图象中对象区域的面积可以看作区域像素的总和。
+通常关心一些不变量，如区域致密性:
+\[(\text{周长})^2/\text{面积}\]
+
+\item 区域的重心
+\[\begin{cases}
+\bar{x}=\frac{1}{A}\sum_{(x,y)\in\mathcal{R}}xf(x,y)\\
+\bar{y}=\frac{1}{A}\sum_{(x,y)\in\mathcal{R}}yf(x,y)
+\end{cases}\]
+其中，$\mathcal{R}$代表一个区域，$A$代表区域面积。
+
+\item 区域灰度/密度：
+常用的区域灰度特征有目标灰度（或颜色分量）的最大值、最小值、中值、平均值、方差以及高阶矩等统计量。
+\end{enumerate}
+
+\subsubsection{拓扑描述符}
+欧拉数
+\[E=C-H\]
+其中$C$为区域内连通组元数，$H$为区域内孔数。
+
+将区域的网络进行目标区域的分类，可以分为顶点数$V$，边数$Q$，面数$F$，其欧拉公式为：
+\[V-Q+F=C-H=E\]
+
+
+\subsection{纹理}
+\begin{itemize}
+	\item 纹理就是由纹理基元按某种确定的规律或某种统计规律排列而成
+	\item 纹理分为确定性纹理和随机性纹理
+\end{itemize}
+
+区域的纹理主要度量区域的平滑度、粗糙度和规律性。
+描述纹理的方法主要有三种：统计方法、结构方法和频谱方法。
+
+\subsubsection{统计方法}
+区域灰度直方图的统计矩（$n$阶中心矩）：
+\[\mu_n(z)=\sum_{i=0}^{L-1}(z_i-m)^np(z_i)\]
+其中$p(z_i)$为归一化直方图
+
+光滑度描述子
+\[R=1-\frac{1}{1+\sigma^2(z)}\]
+若$R=0$则表示平滑（区域平坦），$R=1$代表不平滑
+
+其他度量
+\begin{itemize}
+	\item 一致性
+	\[U=\sum_{i=0}^{L-1}p^2(z_i)\]
+	\item 熵
+	\[p=-\sum_{i=0}^{L-1}p(z_i)\log_2p(z_i)\]
+\end{itemize}
+
+共生矩阵：设$S$为目标区域$R$中具有特定空间联系的像素对的集合，则共生矩阵$G$可定义为:
+\[G(g_1,g_2)=\#\{[(x_1,y_1),(x_2,y_2)]\in S\mid f(x_1,y_1)=g_1 \& f(x_2,y_2)=g_2\}\]
+
+基于共生矩阵的描绘子
+\[m_{x}=\sum_{i}^{K} i \sum_{j}^{K} p_{ij}, \quad m_{y}=\sum_{j}^{K} j \sum_{i}^{K} p_{ij}\]
+\[\sigma_{x}^{2}=\sum_{i}^{K}\left(i-m_{x}\right)^{2} \sum_{j}^{K} p_{ij}, \quad \sigma_{y}^{2}=\sum_{j}^{K}\left(j-m_{y}\right)^{2} \sum_{i}^{K} p_{ij}\]
+\[P(i)=\sum_{i}^{K} p_{ij}, \quad P(j)=\sum_{i}^{K} p_{ij}\]
+\[m_{x}=\sum_{i}^{K} iP(i), \quad m_{y}=\sum_{i}^{R} jP(j)\]
+\[\sigma_{x}^{2}=\sum_{i}^{K}\left(i-m_{x}\right)^{2} P(i), \quad \sigma_{y}^{2}=\sum_{j}^{R}\left(j-m_{y}\right)^{2} P(j)\]
+\begin{itemize}
+	\item 最大概率$\max_{i,j}(p_{ij})$
+	\item 对比度（元素差异的$k$阶矩）
+	\[\sum_i^K\sum_j^K(i-j)^kp_{ij}\]
+	\item 同质性：$G$对角分布的紧密性
+	\[\sum_i^K\sum_j^K \frac{p_{ij}}{1+|i-j|}\]
+	\item 一致性：
+	\[\sum_i^K\sum_j^K p_{ij}^2\]
+	\item 熵：
+	\[-\sum_i^K\sum_j^K p_{ij}\log_2 p_{ij}\]
+	\item 相关性：
+	\[\sum_i^K\sum_j^K\frac{(i-m_x)(j-m_y)p_{ij}}{\sigma_x\sigma_y}\]
+\end{itemize}
