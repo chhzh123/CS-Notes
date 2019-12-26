@@ -1,0 +1,88 @@
+% !TEX root = main.tex
+
+\section{进阶SQL} % Chap 4
+\subsection{内外连接}
+\verb'on'条件可以提供比自然连接更为丰富的连接条件
+\begin{lstlisting}
+select *
+from students join takes on student.ID = takes.ID; -- condition
+\end{lstlisting}
+
+直接使用\verb'natural join'可能导致元组丢失，比如有一些学生没有选修任何课程，则其在student关系中不会与takes关系中任何元组配对。
+因此有\textbf{外连接}：
+\begin{itemize}
+	\item 左外连接(left outer join)：只保留出现在左外连接运算之前（左边）关系中的元组，若右侧关系中没有对应属性则用null代替
+	\item 右外连接(right outer join)
+	\item 全外连接(full outer join)：左外连接和右外连接的组合
+\end{itemize}
+
+从而可以很容易查询出“所有课程一门也没有选修的学生”：
+\begin{lstlisting}
+select ID
+from student natural left outer join takes
+where course_id is null;
+\end{lstlisting}
+
+为了将常规连接和外连接区分开，SQL中将常规连接称为内连接(inner join)，默认的都是内连接。
+
+\subsection{视图}
+让用户看到整个逻辑模型显然是不合适的，出于安全考虑，可能需要向用户隐藏特定的数据。
+本来通过select可以把需要的数据计算并存储下来，但一旦底层数据发生变化，查询的结果就不再匹配。
+因此，为了解决这样的问题，SQL提供一种虚关系，称为视图(view)，只有在使用的时候才会被计算。
+\begin{lstlisting}
+create view faculty as
+select ID, name, dept_name
+from instructor;
+\end{lstlisting}
+之后便可以直接使用\verb'from'语句访问视图。
+
+\begin{definition}[物化视图(materialized view)]
+如果用于定义视图的实际关系改变，视图也会跟着修改。
+\end{definition}
+
+由于视图并不是数据库底层的关系，故一般数据库不允许对视图关系进行修改。
+
+\subsection{事务}
+SQL标准规定当一条SQL语句被执行，就隐式开始了一个事务。
+下列SQL语句之一会结束一个事务：
+\begin{itemize}
+	\item Commit work：将事务所做的更新在数据库中持久保存。
+	在事务被提交后，一个新的事务自动开始。
+	\item Rollback work：撤销该事务中所有SQL语句对数据库的更新，数据库将恢复到执行该事务的第一条语句之前的状态。
+	如果遇断电，回滚会在下一次重启时自动执行。
+\end{itemize}
+
+\subsection{完整性约束}
+单个关系上的约束
+\begin{itemize}
+	\item \verb'not null'：跟在属性定义后面
+	\item \verb'unique (A1,A2,...,Am)'：声明$A_1,\ldots,A_m$构成一个候选码
+	\item \verb'check(<predicate>)'：关系中每个元组都必须满足该谓词，如\verb'check(budget>0)'
+\end{itemize}
+
+参照完整性/子集依赖：外码
+\begin{lstlisting}
+foreign key (dept_name) references department
+	on delete cascade
+	on update cascade
+\end{lstlisting}
+会级联删除或更新。
+
+\subsection{授权}
+\verb'grant'授权，\verb'revoke'回收
+\begin{itemize}
+	\item \verb'select'：允许用户修改关系中任意数组
+	\item \verb'insert'
+	\item \verb'delete'
+\end{itemize}
+用户名\verb'public'包括了当前所有用户和未来用户的权限。
+
+\begin{lstlisting}
+grant <authorization list>
+on <relation name/view name>
+to <user/user list>
+
+grant update (budget) on department to Amit, Satoshi;
+\end{lstlisting}
+
+可以先创建角色(role)然后给用户授予角色。

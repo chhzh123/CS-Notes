@@ -1,9 +1,9 @@
 % !TEX root = main.tex
 
-\section{SQL简介}
+\section{SQL简介} % Chap 3
 SQL即结构化查询语言(Structured Query Language, SQL)
 
-\subsection{数据定义语言}
+\subsection{数据定义语言(DDL)}
 数据类型
 \begin{itemize}
 	\item \verb'char(n)'：固定长度字符串
@@ -17,9 +17,9 @@ SQL即结构化查询语言(Structured Query Language, SQL)
 \begin{lstlisting}[language=sql]
 create table instructor (
 	ID char(5),
-	name varchar(20),
+	name varchar(20) not null,
 	dept_name varchar(20),
-	salary numeric(8,2),
+	salary numeric(8,2) default 0,
 	primary key (ID), -- integrity constraints
 	foreign key (dept_name) references department);
 \end{lstlisting}
@@ -34,9 +34,14 @@ where P
 其中$A_i$为属性(attribute)、$R_i$为一个关系(relation)/一个表、$P$是谓词(preicate)，返回满足关系的数组。
 
 \begin{itemize}
-	\item 自然连接(natural join)：将两个关系的各个元组进行连接，并且只考虑那些在两个关系模式中都出现的属性上取值相同的元组对（相当于取\textbf{交}）
-	\item 连接(join)：只考虑$A$这个属性进行连接，\verb'join ... using (A)'
+	\item 自然连接(natural join)：将两个关系的各个元组进行连接，并且只考虑那些在两个关系模式中\textbf{都出现}的属性上取值相同的元组对（相当于取\textbf{交}）
+	\item 连接(join)：只考虑$A$这个属性进行连接
 \end{itemize}
+\begin{lstlisting}[language=sql]
+select name, title
+from (instructor natural join teachers) join course using (course_id);
+-- only join two relations with the same course_id
+\end{lstlisting}
 
 字符串运算：模式匹配
 \begin{itemize}
@@ -79,7 +84,7 @@ where name like '%dar%' matches any string containing "dar" as a substring
 
 select distinct name
 from instructor
-order by name
+order by name -- sorted
 
 select *
 from instructor
@@ -93,6 +98,7 @@ select name
 from instructor
 where salary is null
 
+-- aggregrate functions
 -- arg, min, max, sum, count
 select dept_name, avg (salary) as avg_salary
 from instructor
@@ -104,10 +110,11 @@ from teaches
 where semester = 'Spring' and year = 2018;
 
 -- group constraints
+-- find the average salary in each dept
 select dept_name, avg(salary) as avg_salary
 from instructor
-group by dept_name
-having avg(salary) > 42000;
+group by dept_name -- can only be contained by select clause
+having avg(salary) > 42000; -- effected after grouping
 \end{lstlisting}
 
 三值逻辑，添加了Unknown
@@ -128,7 +135,14 @@ $\lnot U = U$\\\hline
 \end{tabular}
 \end{center}
 
-集合成员资格通过\verb'in'来判断，同时有\verb'some'和\verb'all'的关系测试
+SQL在谓词中使用\verb'null'测试空值，因而为找出\verb'instructor'关系中\verb'salary'为空值的所有教师，可写
+\begin{lstlisting}
+select name
+from instructor
+where salary is null
+\end{lstlisting}
+
+集合成员资格通过\verb'in'来判断，同时有\verb'some'和\verb'all'的关系测试，下面给出了一些嵌套子查询的例子。
 \begin{lstlisting}
 select name
 from instructor
@@ -151,7 +165,7 @@ from course as T
 where 1 >= (select count(R.course_id)
 			from section as R
 			where T.course_id = R.course_id and R.year = 2009);
--- not unique
+-- there is no unique in MySQL
 
 with max_budget(value) as
 	(select max(budget)

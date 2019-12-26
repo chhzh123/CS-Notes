@@ -1,0 +1,57 @@
+% !TEX root = main.tex
+
+\section{形式化关系查询语言} % Chap 6
+\subsection{关系代数}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+选择 & $\sigma$ &
+\begin{tabular}{l}
+挑选出符合一定性质的元组\\
+$\sigma_{\text{Sub="Phy"}\land\text{age}>30}(\text{teachers})$
+\end{tabular}\\\hline
+投影 & $\Pi$ & 
+\begin{tabular}{l}
+只选出对应属性\\
+$\Pi_{\text{ID,name,salary}}(\text{teachers})$
+\end{tabular}\\\hline
+笛卡尔积 & $\times$ & 将两个关系整合（简单并置，需要进一步筛选）\\\hline
+自然连接 & $r\Join s=\prod_{R\cup S}(\sigma_{r.A_1=s.A_1\land\cdots\land r.A_n=s.A_n})(r\times s)$ & \\\hline
+$\theta$连接 & $r\Join_\theta s=\sigma_\theta(r\times s)$ & \\\hline
+外连接 & $\leftouterjoin, \rightouterjoin, \fullouterjoin$ & \\\hline
+并集 & $\cup$ & 数目应相同，属性可兼容\\\hline
+交集 & $\cap$ & \\\hline
+差集 & $-$ & \\\hline
+赋值 & $\gets$ & \\\hline
+重命名 & $\rho_x(E)$ & 给$E$的返回值赋名为$x$\\\hline
+\end{tabular}
+\end{center}
+
+扩展的关系代数运算：
+\begin{itemize}
+	\item 广义投影：$\prod_{F_1,F_2,\ldots,F_n}(E)$，其中$F_i$中每一个都是涉及常量及$E$的模式中属性的算术表达式
+	\item 聚类：$\mathcal{G}$，如count, min, max，考虑group by可以写成下列形式
+	\[{}_{dept\_name}\mathcal{G}_{\textbf{average}(salary)}(instructor)\]
+\end{itemize}
+
+\begin{definition}[聚集运算]
+聚集运算$\mathcal{G}$的通常形式如下：
+\[{}_{G_1,G_2,\ldots,G_n}\mathcal{G}_{F_1(A_1),\ldots,F_n(A_n)}(E)\]
+其中$E$是任意关系代数表达式，$G_1,\ldots,G_n$是用于分组的一系列属性；
+每个$F_i$是一个聚集函数，每个$A_i$是一个属性名。
+$E$结果中的元组将会以如下方式分为若干组：
+\begin{itemize}
+	\item 同组中所有元组在$G_1,\ldots,G_n$上的取值相同
+	\item 不同组中的元组在$G_1.\ldots,G_n$上的取值不同
+\end{itemize}
+\end{definition}
+
+\subsection{其他关系演算}
+\subsubsection{元组关系演算}
+元组关系演算是非过程化的查询语言（有点像声明式语言），它只描述所需信息，而不给出获得该信息的具体过程。
+\[t\in\text{instructor}\land\exists s\in\text{department}(t[\text{dept\_name}]=s[\text{dept\_name}]\]
+前者$t$为自由变量，后者$s$为受限变量。
+
+\subsubsection{域关系演算}
+\[\{<x_1,x_2,\ldots,x_n>\mid P(x_1,x_2,\ldots,x_n)\}\]
+其中$<x_1,\ldots,x_n>\in r$，每一个$x_i$为域变量，$r$为$n$个属性上的关系。

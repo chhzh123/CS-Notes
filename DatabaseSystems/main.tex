@@ -3,7 +3,14 @@
 \usepackage{footnote}
 \makesavenoteenv{tabular}
 
+\def\ojoin{\setbox0=\hbox{$\bowtie$}%
+  \rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\leftouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+\def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
+\def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
+
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\lstset{language=sql}
 
 \title{数据库系统原理笔记}
 \author{陈鸿峥}
@@ -22,8 +29,11 @@
 
 \input{1_introduction}
 \input{2_sql_intro}
-\input{3_relational_algebra}
+\input{3_high-level_sql}
+\input{4_relational_algebra}
 \input{8_relational_database_design}
 \input{14_transaction}
 
 \end{document}
+
+% 1,2,3,4,6,7,8,10,11,14,15,16
