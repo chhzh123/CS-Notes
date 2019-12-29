@@ -1,0 +1,59 @@
+% !TEX root = main.tex
+
+\section{并发控制} % Chap 15
+\subsection{基于锁的协议}
+\begin{itemize}
+	\item 共享锁(shared)：如果事务$T_i$获得了数据项$Q$上的共享型锁（记为$S$），则$T_i$可读但不能写$Q$
+	\item 排他锁(exclusive)：如果事务$T_i$获得了数据项$Q$上的排他型锁（记为$X$），则$T_i$既可读又可写$Q$
+\end{itemize}
+
+\begin{table}
+\centering
+\caption{锁相容性矩阵comp}
+\begin{tabular}{|c|c|c|}\hline
+ & $S$ & $X$\\\hline
+$S$ & true & false\\\hline
+$X$ & false & false\\\hline
+\end{tabular}
+\end{table}
+
+令$\{T_0,\ldots,T_n\}$是参与调度$S$的一个事务集，若存在数据项$Q$，使得$T_i$在$Q$上持有$A$型锁，之后$T_j$在$Q$上持有$B$型锁，且$comp(A,B)=false$，则称在$S$中$T_i$先于$T_j$，记为$T_i\to T_j$，即在任何等价的串行调度中，$T_i$必须出现在$T_j$之前。
+
+两阶段封锁协议：可保证冲突可串行化，但不能保证不发生死锁
+\begin{enumerate}
+	\item 增长(growing)阶段：事务可以获得锁，但不能释放锁
+	\item 缩减(shrinking)阶段：事务可以释放锁，但不能获得新锁
+\end{enumerate}
+
+自动为事务产生适当的加锁、解锁指令：
+\begin{itemize}
+	\item 事务$T_i$进行$read(Q)$操作时，系统产生一条$lock-S(Q)$指令，该$read(Q)$指令紧跟其后
+	\item 事务$T_i$进行$write(Q)$操作时，系统检查$T_i$是否已在$Q$上持有共享锁。
+	若有，则系统发出$upgrade(Q)$指令，后接$write(Q)$指令。
+	否则系统发出$lock-X(Q)$指令，后接$write(Q)$指令。
+	\item 当一个事务提交或中止后，该事务持有的所有锁都被释放。
+\end{itemize}
+
+\subsection{基于图的协议}
+要求所有数据项集合$D=\{d_1,d_2,\ldots,d_n\}$满足偏序$\to$：如果$d_i\to d_j$，则任何既访问$d_i$又访问$d_j$的事务必须首先访问$d_i$，然后访问$d_j$。
+偏序意味着集合$D$可以视为有向无环图，称为数据库图。
+
+在树形协议中，可用的加锁指令只有lock-X。
+每个事务$T_i$对一数据项最多能加一次锁，并且遵从以下规则：
+\begin{enumerate}
+	\item $T_i$首次加锁可以对任何数据项进行
+	\item 此后，$T_i$对数据项$Q$加锁的前提是$T_i$当前持有$Q$的父项上的锁
+	\item 对数据项解锁可以随时进行
+	\item 数据项被$T_i$加锁并解锁后，$T_i$不能再对该数据项加锁
+\end{enumerate}
+所有满足树形协议的调度都是冲突可串行化的，且保证不会发生死锁。
+
+\subsection{基于时间戳的协议}
+若事务$T_i$已赋予时间戳$TS(T_i)$，此时有一新事务$T_j$进入系统，则$TS(T_i)<TS(T_j)$，可利用\textbf{系统时钟}或者\textbf{逻辑计数器}实现。
+事务的时间戳决定了串行化顺序，因此若$TS(T_i)<TS(T_j)$，则系统必须保证所产生的串行调度等价于事务$T_i$出现在事务$T_j$之前的某个串行调度。
+
+\begin{itemize}
+	\item 若$TS(T_i)\geq$W-timestamp(Q)，则执行读操作
+	\item 若$TS(T_i)\geq$R/W-timestamp(Q)，则执行写操作
+	\item 其他情况都会导致回滚
+\end{itemize}

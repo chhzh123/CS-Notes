@@ -1,0 +1,26 @@
+% !TEX root = main.tex
+
+\section{恢复系统} % Chap 16
+\subsection{故障分类}
+\begin{itemize}
+	\item 事务故障(failure)
+	\begin{itemize}
+		\item 逻辑错误：事务由于某些内部条件而无法继续正常执行，如非法输入。
+		\item 系统错误：系统进入一种不良状态（如死锁），事务无法正常运行，但是之后某个时间点能够重新执行。
+	\end{itemize}
+	\item 系统崩溃(crash)：硬件故障，或数据库软件/操作系统的漏洞，导致易失性存储器内容丢失，事务停止。
+	\item 磁盘故障(failure)：数据传送过程中由于磁头损坏或故障造成的磁盘块上内容丢失。
+\end{itemize}
+
+\subsection{恢复与原子性}
+使用日志来重做(redo)和撤销(undo)事务。
+
+事务回滚操作：
+\begin{enumerate}
+	\item 从后往前扫描日志，对于所发现的$T_i$的每个形如$<T_i,X_j,V_1,V_2>$的日志记录：
+	\begin{enumerate}
+		\item 值$V_1$被写到数据项$X_j$中，且
+		\item 往日志中写一个特殊的只读日志记录$<T_i,X_j,V_1>$，其中$V_1$是在本次回滚中数据项$X_j$恢复成的值。这种日志称作补偿日志记录(compensation log record)。
+	\end{enumerate}
+	\item 一旦发现$<T_i,start>$的日志记录，就停止从后往前扫描，并往日志中写一个$<T_i,abort>$的日志记录
+\end{enumerate}
