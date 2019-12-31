@@ -139,7 +139,7 @@
 \[V-Q+F=C-H=E\]
 
 
-\subsection{纹理}
+\subsubsection{纹理}
 \begin{itemize}
 	\item 纹理就是由纹理基元按某种确定的规律或某种统计规律排列而成
 	\item 纹理分为确定性纹理和随机性纹理
@@ -147,8 +147,8 @@
 
 区域的纹理主要度量区域的平滑度、粗糙度和规律性。
 描述纹理的方法主要有三种：统计方法、结构方法和频谱方法。
+下文着重考虑统计方法。
 
-\subsubsection{统计方法}
 区域灰度直方图的统计矩（$n$阶中心矩）：
 \[\mu_n(z)=\sum_{i=0}^{L-1}(z_i-m)^np(z_i)\]
 其中$p(z_i)$为归一化直方图
@@ -191,3 +191,45 @@
 二阶函数的矩：
 对于二维连续函数$f(x,y)$，$(p+q)$-阶矩定义为
 \[m_{pq}=\intabu{-\infty}{+\infty}{\intabu{-\infty}{+\infty}{x^py^qf(x,y)}{x}}{y}\]
+
+
+\subsection{主分量描绘}
+主分量分析(PCA)、Hotelling变化、特征变量变换、K-L变换
+
+协方差矩阵
+\[C_x=\E{(x-\bar{x})(x-\bar{x})^\T}\approx\frac{1}{L}\sum_{l=1}^Lx_lx_l^\T-\bar{x}\bar{x}^\T\]
+其中$C_x$是半正定的实对称矩阵。
+
+将图像堆积成\textbf{列}向量
+\[\vx=\bmat{f(0,0), f(0,1), \ldots, f(0,N-1), f(1,0), f(1,1), \ldots, f(1,N-1), f(N-1,0), f(N-1,1), \ldots, f(N-1,N-1)}^\T\]
+
+对$C_x$进行特征分析，得到一组实非负特征值$\lambda_1,\lambda_2,\ldots,\lambda_r$及对应的特征向量$V_1,V_2,\ldots,V_r$。
+
+令$T=\bmat{V_1 & V_2 & \cdots & V_r}$，则$C_xT^\T=\bmat{\lambda_i}T^\T$，做变换$y=T(x-\bar{x})$，则
+\[\begin{aligned}
+C_y&=\E{yy^\T}=\E{T(x-\bar{x})(x-\bar{x})^\T T^\T}\\
+&=T\E{(x-\bar{x})(x-\bar{x})^\T}T^\T\\
+&=TC_xT^\T=T\bmat{\lambda_i}T^\T\\
+&=\bmat{\lambda_i}=\bmat{\lambda_1 & \cdots & 0\\\cdots & \cdots & \cdots\\0 & \cdots & \lambda_N}
+\end{aligned}\]
+即$y$各元素互不相关，$T$为去相关变换，$\lambda_k$为变换后第$k$个分量$y_k$的方差。
+任何向量$x$都可以通过$y$重构
+\[x=T^\T y+\bar{x}\]
+
+将特征根从大到小排列，记为$\lambda_1\geq\lambda_2\geq\cdots\geq\lambda_r$，同时将特征向量做相应排序，记为$V_1,V_2,\ldots,V_r$。
+取$1<M<r$，使得$\sum_{i=1}^M\lambda_i\Big/\sum_{i=1}^r\lambda_i>\alpha$（如$\alpha=95\%$）
+
+又令$T_M=\bmat{V_1 & V_2 & \cdots & V_M}^\T$，$\hat{y}=T_M(x-\bar{x})$，而$x$依然可以通过
+\[\bar{x}=T^\T_M\hat{y}+\bar{x}\]
+来近似重构，其均方误差为
+\[\begin{aligned}
+MSE &= \E{(x-\hat{x})^\T(x-\hat{x})}\\
+&=\E{\lrp{\sum_{i=M+1}^r y_iV_i}^\T\lrp{\sum_{i=M+1}^ry_iV_i}}\\
+&=\sum_{i=M+1}^r\E{y_i^2}\\
+&=\sum_{i=M+1}^r\lambda_i
+\end{aligned}\]
+
+基于矩阵的奇异值分解(SVD)，$\sqrt{\lambda_i}$为$A$的奇异值，有推论$u=Av\Lambda^{-1/2}$，即可取$AA^\T$与$A^\T A$中维数较小的矩阵计算特征向量。
+
+可以将奇异值分解和PCA应用于多光谱图像的压缩。
+% 关键看y=T(x-\bar{x}) 飞机图像
