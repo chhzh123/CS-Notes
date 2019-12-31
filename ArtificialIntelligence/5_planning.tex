@@ -1,33 +1,41 @@
 % !TEX root = main.tex
 
-\section{规划}
+\section{确定性规划}
 智能体应该能够对世界做出动作(action)，而不仅仅是通过搜索解决问题或推理及知识表示。
 核心是对动作的效果进行推理，并且计算什么动作能够达成特定的效果。
 
+本节中主要关注确定性规划，即有完全的初始状态描述及确定性的动作效果。
+
+\subsection{情景演算}
 情景演算(Situation Calculation, SitCalc)三个基本部分
 \begin{itemize}
-	\item 动作(action)
+	\item 动作(action)：一组谓词
 	\item 情景(situations)：动作序列，$do(a,s)$为动作、情景到新情景的函数映射，$S_0$为初始情景
 	\[do(put(a,b),do(put(b,c),S_0))\]
 	要区别情景与状态(state)，如将硬币转两次，情景/动作历史不同，但状态都是一样的
-	\item 流(fluent)：从情景到情景的谓词或函数（动态变化过程）
+	\item 流(fluent)：从情景到情景的谓词或函数（动态变化过程），用谓词或函数符号描述，其中最后一个参数为情景，如$Holding(r,x,s)$代表机器人$r$在状态$s$下拿着物体$x$，有
+	\[\lnot Holding(r,x,s)\land Holding(r,x,do(pickup(r,x),s))\]
 	\item 条件(precondition)：动作执行的前提条件
 	\item 影响(effect)：执行动作后改变的流。 % the fluents that change as the result of performing the action
 	如下在情景$s$下执行修复动作后，$x$就不是破碎的
 	\[\lnot Broken(x,do(repair(r,x)),s)\]
 \end{itemize}
 
-只陈述了执行动作的影响，而没有阐述没影响的部分
+情景演算的形式化仅陈述了执行动作的影响，而没有阐述没影响的部分。
+但是给定一个流只有很少的动作会被影响，而大多数都保持不变。
 
-框架(frame)问题：找到一种高效的方法来确定动作的非效果(non-effects)而不是显式地将它们全部写下来，用一阶逻辑
+而框架(frame)问题则是找到一种高效的方法来确定动作的非效果(non-effects)。而不是显式地将它们全部写下来，可以考虑用一阶逻辑。
 
-利用归结进行情景演算
+形式化后的情景即可以利用归结进行规划，但是开销会非常大。
 
-传统的规划没有完全或确定的信息，假设对于初始状态有完整的信息。
-\begin{definition}[封闭世界假设(Closed-World Assumption, CWA)]
-用于表示世界状态的知识库是一系列正的真实原子事实（与数据库类似）。
-如$emp(A,C)$不在数据库中，则$\lnot emp(A,C)$为真
-\end{definition}
+\subsection{STRIPS}
+传统的规划没有不完全或不确定的信息，因此可以做以下假设。
+\begin{itemize}
+	\item 封闭世界假设(Closed-World Assumption, CWA)：初始状态的信息是完备的，用于表示世界状态的知识库是一系列真实的原子事实（与数据库类似）。
+	如$emp(A,C)$不在数据库中，则$\lnot emp(A,C)$为真。
+	\item 动作的前提只能是原子命题的合取
+	\item 动作的影响只会使原子命题变真或变假，不会出现条件影响或析取影响
+\end{itemize}
 
 STRIPS(Stanford Research Institute Problem Solver)：
 \begin{itemize}
@@ -35,7 +43,14 @@ STRIPS(Stanford Research Institute Problem Solver)：
 	\item 一个动作生成新的KB，用以描述新的世界
 \end{itemize}
 
-在SitCalc中我们可能有不完全的信息（用一阶逻辑公式表示），而在STRIPS中，我们有完整的信息（用CW-KB）表示
+在SitCalc中我们可能有不完全的信息（用一阶逻辑公式表示），而在STRIPS中，我们有完整的信息（用CW-KB）表示。
+
+STRIPS中需要用3个列表来表示一个动作
+\begin{itemize}
+	\item 动作的前提\verb'pre'
+	\item 动作增加的影响\verb'add'
+	\item 动作减少的影响\verb'delete'
+\end{itemize}
 
 例子如下：
 $pickup(X)$:
@@ -44,3 +59,66 @@ $pickup(X)$:
 \item $Adds: {holding(X)}$
 \item $Dels: {handempty, clear(X), ontable(X)}$
 \end{itemize}
+
+\myhline
+注意STRIPS的表达力还是有限制的，如它没有条件(conditional)影响。
+因此需要有表达力更强的语言Action Description Language(ADL)，允许在前提中有任意公式，而且可以有条件和全称影响。
+
+可以将规划看成是一个搜索问题，每个动作都是由一个CW-KB到CW-KB的映射，但搜索空间会非常巨大。
+
+\subsection{松弛问题}
+放松(relaxed)问题即考虑\textbf{忽略删除动作}的列表，这样可能得到有用的启发式函数估计。
+
+\begin{theorem}
+放松问题的一个最优规划的长度是原始问题最优规划长度的下界
+\end{theorem}
+\begin{proof}
+由于我们将所有影响都添加了，并且不删除负面影响，因此很直觉地会很快得到目标。
+令$P$为原始问题，$P'$为放松问题，我们希望得到$Sols(P)\subset Sols(P')$，则有$Minlen(Sols(P'))\leq Minlen(Sols(P))$。
+\begin{itemize}
+\item 令$a_0,\ldots,a_{n-1}$为$P$的解，证明它也是$P'$的一个解。
+令$s_0$为初始状态，令$s_{i+1}=s_i\cup add(a_i)-del(a_i),\forall i<n$，且$Goal\subset s_n$，$pre(a_i)\subset s_i,\forall i < n$。
+\item 又令$s_0'=s_0$，且$s_{i+1}'=s_i'\cup add(a_i)$，通过数学归纳法证明$s_i\subset s_i',\forall i \leq n$。
+\begin{itemize}
+	\item 归纳奠基：$i=0$时$s_0\subset s_0'=s_0$
+	\item 归纳假设：假设$s_i\subset s_i',\forall i<n$，证明$s_{i+1}\subset s_{i+1}'$
+	\item 推理：因为$a_i$在$s_i$中是可采纳的，即$pre(a_i)\subset s_i$，因此$pre(a_i)\subset s_i\subset s_i'$，即$a_i$在$s_i'$中是可采纳的。所以得到
+	\[s_{i+1}=s_i\cup add(a_i)-del(a_i)\subset s_i'\cup add(a_i)=s_{i+1}'\]
+\end{itemize}
+\end{itemize}
+进而$Goal\subset s_n\subset s_n'$，且$pre(a_i)\subset s_i\subset s_i',\forall i<n$，因此$a_0,\ldots,a_{n-1}$也是$P'$的一个解。
+\end{proof}
+
+因此最优放松问题的规划可以作为$A^\star$算法的可采纳启发式函数。
+然而在放松问题中计算一个最优的问题是NP难的，可以从$S$开始建立层次(layered)结构使其到达目标。
+
+可达性分析：$s_0,a_1,s_1,\ldots,a_n,s_n$，直到$s_n\subset Goal$，或者状态层$s_n$不再改变（到达不动点）。
+\begin{proposition}
+令$a_0,\ldots,a_{n-1}$为$S_0$中可采纳的动作序列，令$s_0=S_0$，且$s_{i+1}=s_i\cup add(a_i)-del(a_i)$。
+那么$\forall i<n,\exists j,k\leq i$使得$a_i\in A_k$且$s_i\subset S_j$
+\end{proposition}
+\begin{analysis}
+用数学归纳法
+\begin{itemize}
+	\item 归纳奠基：$i=0$显然成立
+	\item 归纳假设：假设$\forall i <n \exists j\leq i:\;s_i\subset S_j$
+	\item 因为$pre(a_i)\subset s_i,pre(a_i)\subset S_j$，令$k$为最小的$u\leq j$使得$pre(a_i)\subset S_u$，那么$a_i\in A_k$，故$add(a_i)\subset S_{k+1}\subset S_{j+1}$
+	因此
+	\[s_{i+1}\subset s_i\cup add(a_i)\subset S_j\cup S_{j+1}=S_{j+1}\]
+\end{itemize}
+\end{analysis}
+
+\begin{theorem}
+假设$Goal\subset S_k$，对于$i<k$，令$A_{i-1}'$为调用CountActions($G_i,S_i$)的结果，则$A_0',\ldots,A_{k-1}'$为松弛问题的一个解。
+\end{theorem}
+\begin{proof}
+用数学归纳法
+\end{proof}
+
+\begin{theorem}
+假设状态层不再改变且目标不被满足，则原始规划问题是不可解的。
+\end{theorem}
+\begin{proof}
+用反证法，假设$a_0,\ldots,a_{n-1}$为原始问题的一个解，则$Goal\subset s_n$。
+由前面的命题，存在$m\leq n$使得$Goal\subset s_n\subset S_m$，导致矛盾。
+\end{proof}
