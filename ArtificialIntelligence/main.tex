@@ -4,6 +4,7 @@
 \makesavenoteenv{tabular}
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\newenvironment{bayesian}{\begin{center}\begin{tikzcd}[cells={nodes={draw=black, circle}}]}{\end{tikzcd}\end{center}}
 
 \title{人工智能笔记}
 \author{陈鸿峥}
@@ -25,5 +26,7 @@
 \input{3_CSP}
 \input{4_knowledge_representation}
 \input{5_planning}
+\input{6_uncertainty}
+\input{7_machine_learning}
 
 \end{document}
