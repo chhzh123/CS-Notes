@@ -1,0 +1,83 @@
+% !TEX root = main.tex
+
+\section{机器学习}
+\subsection{决策树}
+假定样本集合$D$中第$k$类样本所占比例为$p_k(k=1,2,\ldots,|\mathcal{Y}|)$，则$D$的信息熵定义为
+\[\Ent(D)=-\sum_{k=1}^{|\mathcal{Y}|}p_k\log_2 p_k\]
+
+又假定离散属性$a$有$V$个可能取值$\{a^1,a^2,\ldots,a^V\}$，第$v$个分支结点包含了$D$中所在属性$a$上取值为$a^v$的样本，记为$D^v$，进而可定义信息增益
+\[\mathrm{Gain}(D,a)=\Ent(D)-\sum_{v=1}^V\frac{|D^v|}{|D|}\Ent(D^v)\]
+每次选择最大增益的属性进行划分，即
+\[a_*=\argmax_{a\in A}\mathrm{Gain}(D,a)\]
+
+以信息增益为准则来选择划分属性的算法即为ID3决策树。
+
+\subsection{贝叶斯学习}
+先验$\pr{H}$、似然$\pr{d\mid H}$、证据$d=\lrang{d_1,d_2,\ldots,d_n}$，有贝叶斯公式（先验推后验）
+\[\pr{H\mid d}=\alpha\pr{d\mid H}\pr{H}\]
+
+假设独立同分布$\pr{d\mid h}=\prod_j\pr{d_j\mid h}$
+\begin{itemize}
+	\item 贝叶斯学习：$\pr{X\mid d}=\sum_i\pr{X\mid d,h_i}\pr{h_i\mid d}=\sum_i\pr{X\mid h_i}\pr{h_i\mid d}$
+	\item 极大后验(MAP)学习：$\pr{X\mid d}\approx\pr{X\mid h_{MAP}}$
+	\[h_{MAP}=\argmax_{h_i}\pr{h_i\mid d}=\argmax_{h_i}\pr{h_i}\pr{d\mid h_i}\]
+	\item 最大似然(ML)学习：$\pr{X\mid d}\approx\pr{X\mid h_{ML}}$
+	\[h_{ML}=\argmax_{h_i}\pr{d\mid h_i}\]
+\end{itemize}
+
+基于属性条件独立性假设
+\[\pr{c\mid\vx}=\frac{\pr{c}\pr{\vx\mid c}}{\pr{x}}=\frac{\pr{c}}{\pr{\vx}}\prod_{i=1}^d\pr{x_i\mid c}\]
+其中$d$为属性数目，$x_i$为$\vx$在第$i$个属性上的取值。
+因对所有类别来说$\pr{\vx}$相同，因此贝叶斯判定准则为
+\[h_{NB}(\vx)=\argmax_{c\in\mathcal{Y}}\pr{c}\prod_{i=1}^d\pr{x_i\mid c}\]
+令$D_c$表示训练集$D$中第$c$类样本组成的集合，有
+\[\pr{c}=\frac{D_c}{D}\qquad\pr{x_i\mid c}=\frac{|D_{c,x_i}|}{|D_c|}\]
+
+\subsection{聚类算法}
+\begin{itemize}
+	\item 硬聚类：每个样本都决定放在哪一个类别中
+	\item 软聚类：每个样本都被指派每个类别的概率分布
+\end{itemize}
+
+K-means算法
+\begin{itemize}
+	\item E步：对于每一个类别$i$和特征$X_j$，有
+	\[pval(i,X_j)\gets\frac{\sum_{e:class(e)=i}val(e,X_j)}{|\{e:class(e)=i\}|}\]
+	\item M步：对于每一个样本$e$，指派$e$给类别$i$使得
+	\[\min_i\sum_{j=1}^n(pval(i,X_j)-val(e,X_j))^2\]
+\end{itemize}
+
+\subsection{神经网络}
+\begin{theorem}[一致近似理论(Universal Approximator Theorem)]
+具有至少一个隐层的深度神经网络可以无限逼近任意连续函数
+\end{theorem}
+
+前向后向传播过程：
+\begin{itemize}
+	\item 前向过程：
+	\[in_j=\sum_i w_{ij}a_i\qquad a_j=g(in_j)\]
+	\item 后向过程：
+	\[\begin{aligned}
+	\text{output:} & \Delta_j=g'(in_j)(y_j-a_j)\\
+	\text{hidden:} & \Delta_i=g'(in_i)\sum_j w_{ij}\Delta_j
+	\end{aligned}\]
+\end{itemize}
+
+注意以下两条求导公式
+\[\begin{array}{rlrl}
+\sigma(x)&=\dfrac{1}{1+\ee^{-x}} & \pd{\sigma(x)}{x}&=(1-\sigma(x))\sigma(x)\\
+\tanh(x)&=\dfrac{\ee^x-\ee^{-x}}{\ee^x+\ee^{-x}} & \pd{\tanh(x)}{x}&=1-\tanh^2(x)
+\end{array}\]
+
+\subsection{强化学习}
+目标：
+\[\max_{\pi_\theta}\lrs{\sum_{t=1}^\infty\gamma^tr_t}\]
+
+给定策略$\pi$：
+\[\begin{aligned}
+Q^\pi(s,a) &= \sum_{s'}\pr{s'\mid a,s}(R(s,a,s')+\gamma V^\pi(s'))\\
+V^\pi(s) &= Q(s,\pi(s))
+\end{aligned}\]
+
+Q学习：随机选择动作$a$，观察回报$r$和下一状态$s'$
+\[Q[s,a]\gets Q[s,a]+\alpha(r+\gamma\max_{a'}Q[s',a']-Q[s,a])\]
