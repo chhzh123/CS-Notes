@@ -12,6 +12,10 @@
 链码用于表示由顺次连接的具有指定长度和方向的直线段组成的边界线
 
 链码种类：4向链码和8向链码
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{fig/chain_code.png}
+\end{figure}
 
 常见的问题：
 \begin{enumerate}
@@ -21,15 +25,23 @@
 
 解决方案：选择更大间隔的网格对边界进行重新采样。
 \begin{itemize}
-\item 边界链码依赖于起始点
-\item 用差分码可以将链码旋转归一化
+\item 边界链码依赖于起始点（通过归一化可一致，即使链码最小）
+\item 用差分码（逆时针旋转的方向数）可以将链码旋转归一化
 \end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/chain_code_difference.png}
+\end{figure}
 
 \subsubsection{多边形近似表达方法}
 \begin{itemize}
 	\item 基于收缩的最小周长多边形法：将原边界看作有弹性的线，在像素的约束下将线拉紧
 	\item 基于聚合的最小均方误差线段逼近法：每个顶点到边的垂线距离小于$\delta$
 	\item 基于分裂的最小均方误差线段逼近法
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/line_approx.png}
+\end{figure}
 \end{itemize}
 
 基于收缩的最小周长多边形法（MPP算法）：
@@ -43,9 +55,17 @@
 	所有W顶点，要么在MPP上，要么在MPP内
 	\item 单元组合体包含的顶点序列的最左上角的顶点，总是MPP的一个W顶点。
 \end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/MPP.png}
+\end{figure}
 
 \subsubsection{标记图方法}
 标记图是一种一维函数的边界表达方法
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/signature.png}
+\end{figure}
 \begin{itemize}
 \item 不受目标平移影响，但受目标尺度变换和旋转的影响
 \item 尺度变换影响可以通过将最大幅值归一化来解决
@@ -58,10 +78,25 @@
 
 \subsubsection{边界线段}
 将边界分段可以减小边界的复杂度。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/region_segmentation.png}
+\end{figure}
 
 \subsubsection{骨架}
 表达平面区域结构形状的一种方法；
 此方法可以用细化算法实现。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/skeletons.png}
+\end{figure}
+
+集合$A$的骨架$S(A)$定义为
+\[S(A)=\{z\mid A\text{内最大圆盘}(D)_z\text{的圆心}\}\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/skeletons2.png}
+\end{figure}
 
 \subsection{边界描绘子}
 \subsubsection{简单的描述符}
@@ -75,10 +110,12 @@
 
 \subsubsection{形状数}
 形状数是基于链码的一种边界形状描述符。
-
 一个边界形状描述是其链码的差分码中值最小的一个序列。
-
 形状数长度称为阶数。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/shape_number.png}
+\end{figure}
 
 \subsubsection{傅里叶描绘子}
 将2D问题转化为1D问题，将边界点的坐标对表示成一个复数
@@ -86,6 +123,10 @@
 对$s(k)$的傅氏变换为
 \[a(u)=\frac{1}{K}\sum_{k=0}^{K-1}s(k)\ee^{-j2\pi uk/K},u=0,1,\ldots,K-1\]
 复系数$a(u)$称为边界的描绘子。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.3\linewidth]{fig/fourier_descriptor.png}
+\end{figure}
 
 傅氏反变换确定边界的重建：
 \[s(k)=\sum_{u=0}^{K-1}a(u)\ee^{j2\pi uk/K},k=0,1,\ldots,K-1\]
@@ -93,8 +134,11 @@
 \[\hat{s}(k)=\sum_{u=0}^{p-1}a(u)\ee^{j2\pi uk/K},k=0,1,\ldots,K-1,K>P\]
 
 \subsubsection{统计矩}
-统计矩用于刻画边界线段的特征波形。
-
+统计矩(statistical moment)用于刻画边界线段的特征波形。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/statistical_moment.png}
+\end{figure}
 \begin{enumerate}
 	\item 将上述曲线看作一维函数$g(r)$
 	\item 将$g$的振幅看作离散随机变量$v$，并形成直方图$p(v_i)$，其中$i=0,1,\ldots,A-1$

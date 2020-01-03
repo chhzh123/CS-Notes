@@ -188,7 +188,7 @@
 
 \subsection{阈值处理}
 阈值/门限处理模型
-\[T=T[x,y,p(x,y),f(x,y)\]
+\[T=T[x,y,p(x,y),f(x,y)]\]
 如果
 \[g(x,y)=\begin{cases}
 1 & f(x,y)>T\\
@@ -375,10 +375,10 @@ $Q$为位置$(x,y)$的属性，基于8连通的区域生长算法为：
 {A_{k-1}(x, y)} & \text{其他}
 \end{cases}\]
 \[P_{k}(x, y)=\begin{cases}
-{P_{k-1}(x, y)+1} & {|f(x, y, 1)-f(x, y, k)|>T} \\
+{P_{k-1}(x, y)+1} & {f(x, y, 1)-f(x, y, k)>T} \\
 {P_{k-1}(x, y)} & \text{其他}
 \end{cases}\]
 \[N_{k}(x, y)=\begin{cases}
-{N_{k-1}(x, y)+1} & {|f(x, y, 1)-f(x, y, k)|<-T} \\
+{N_{k-1}(x, y)+1} & {f(x, y, 1)-f(x, y, k)<-T} \\
 {N_{k-1}(x, y)} & \text{其他}
 \end{cases}\]
