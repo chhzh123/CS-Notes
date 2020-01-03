@@ -27,6 +27,10 @@ CSP不关心到目标状态的移动步骤，而只关心是否存在这样一�
 \centering
 \includegraphics[width=0.6\linewidth]{fig/backtracking.png}
 \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/backtracking_eg.png}
+\end{figure}
 
 回溯的问题在于不能提前探测到某一变量已经没有可以赋值了，导致依然要进入一层进行搜索。
 因此考虑前瞻式算法，即限制传播(propagation)。
@@ -34,6 +38,7 @@ CSP不关心到目标状态的移动步骤，而只关心是否存在这样一�
 	\item 甚至可以在还未进行搜索之前就采用
 	\item 传播本身需要耗费资源，因此这里存在一个权衡
 \end{itemize}
+进而有下列两种传播算法：前向传播和GAC算法。
 
 \subsection{向前检测}
 \begin{enumerate}
@@ -47,14 +52,20 @@ CSP不关心到目标状态的移动步骤，而只关心是否存在这样一�
 \end{enumerate}
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.6\linewidth]{fig/forward_checking.png}
+\end{figure}
+\begin{figure}[H]
+\centering
 \includegraphics[width=0.6\linewidth]{fig/forward_checking_eg.png}
 \end{figure}
 
-\subsection{一般性边一致性(GAC)}
+其实这是人工解数独一种很常见的方法，即当前格填了某一个值后会不会导致其他格填不了。
+
+\subsection{泛化边一致性(GAC)}
 \begin{definition}[一致]
-限制$C(X,Y)$是一致的，当且仅当对于所有$X$的值都存在某些$Y$满足$C$，即$\forall X\exists Y:\;C(X,Y)$。
+限制$C(X,Y)$是一致的，当且仅当对于所有$X$的值都存在某些$Y$满足$C$，即$\forall X\exists Y:C(X,Y)$。
 \end{definition}
-\begin{definition}[一般性边一致性(Generalized Arc Consistency, GAC)]
+\begin{definition}[泛化边一致性(Generalized Arc Consistency, GAC)]
 限制$C(V_1,V_2,\ldots,V_n)$是关于$V_i$边一致的，当且仅当$\forall V_i,\exists V_1,\ldots,V_{i-1},V_{i+1},\ldots,V_n$满足$C$。
 限制$C$是GAC的当且仅当对于每一变量都是GAC的。
 一个CSP是GAC的当且仅当它的限制都是GAC的。
@@ -65,11 +76,24 @@ CSP不关心到目标状态的移动步骤，而只关心是否存在这样一�
 \item 在$V_i=d$下，没有其他变量赋值能够满足该限制，则$d$是边不一致的，进而可以被剪枝剪掉。
 \item 注意当从论域中移除一个值时可能导致新的不一致，故需要采用队列的方式，不断将需要检测边一致性限制添加，直到队列为空，即限制条件变为GAC。
 \item 近似可理解为将后续搜索步骤都前移到剪枝部分。
+\item 注意在未进入循环之前就可以先进行检测了。（同样类比数独，先将每一个格不能填的数字都划掉）
 \end{itemize}
+\begin{figure}[H]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.5\linewidth]{fig/gac.png}&
+\includegraphics[width=0.5\linewidth]{fig/gac_enforce.png}
+\end{tabular}
+\end{figure}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\linewidth]{fig/gac_eg.png}
 \end{figure}
+
+\begin{definition}[支撑]
+在限制$C$下变量赋值$V=d$的支撑是对$C$中其他变量的赋值$A$，使得$A\cup\{V=d\}$满足$C$。
+即\textemph{其他变量的指派构成了当前变量的支撑}。
+\end{definition}
 
 向前检测和边一致性检测的区别如下
 \begin{figure}[H]
