@@ -15,6 +15,7 @@
 	要区别情景与状态(state)，如将硬币转两次，情景/动作历史不同，但状态都是一样的
 	\item 流(fluent)：从情景到情景的谓词或函数（动态变化过程），用谓词或函数符号描述，其中最后一个参数为情景，如$Holding(r,x,s)$代表机器人$r$在状态$s$下拿着物体$x$，有
 	\[\lnot Holding(r,x,s)\land Holding(r,x,do(pickup(r,x),s))\]
+	经过后面的流操作会得到一个新情景下的谓词
 	\item 条件(precondition)：动作执行的前提条件
 	\item 影响(effect)：执行动作后改变的流。 % the fluents that change as the result of performing the action
 	如下在情景$s$下执行修复动作后，$x$就不是破碎的
@@ -24,9 +25,8 @@
 情景演算的形式化仅陈述了执行动作的影响，而没有阐述没影响的部分。
 但是给定一个流只有很少的动作会被影响，而大多数都保持不变。
 
-而框架(frame)问题则是找到一种高效的方法来确定动作的非效果(non-effects)。而不是显式地将它们全部写下来，可以考虑用一阶逻辑。
-
 形式化后的情景即可以利用归结进行规划，但是开销会非常大。
+而框架(frame)问题则是找到一种高效的方法来确定动作的非效果(non-effects)。而不是显式地将它们全部写下来，可以考虑用一阶逻辑。
 
 \subsection{STRIPS}
 传统的规划没有不完全或不确定的信息，因此可以做以下假设。
@@ -43,7 +43,7 @@ STRIPS(Stanford Research Institute Problem Solver)：
 	\item 一个动作生成新的KB，用以描述新的世界
 \end{itemize}
 
-在SitCalc中我们可能有不完全的信息（用一阶逻辑公式表示），而在STRIPS中，我们有完整的信息（用CW-KB）表示。
+在SitCalc中我们可能有不完全的信息（用一阶逻辑公式表示），而在STRIPS中，我们有完整的信息（用CW-KB表示）。
 
 STRIPS中需要用3个列表来表示一个动作
 \begin{itemize}
@@ -51,14 +51,14 @@ STRIPS中需要用3个列表来表示一个动作
 	\item 动作增加的影响\verb'add'
 	\item 动作减少的影响\verb'delete'
 \end{itemize}
-
-例子如下：
+\begin{example}
 $pickup(X)$:
 \begin{itemize}
 \item $Pre: {handempty, clear(X), ontable(X)}$
 \item $Adds: {holding(X)}$
 \item $Dels: {handempty, clear(X), ontable(X)}$
 \end{itemize}
+\end{example}
 
 \myhline
 注意STRIPS的表达力还是有限制的，如它没有条件(conditional)影响。
@@ -67,6 +67,13 @@ $pickup(X)$:
 可以将规划看成是一个搜索问题，每个动作都是由一个CW-KB到CW-KB的映射，但搜索空间会非常巨大。
 
 \subsection{松弛问题}
+传统的规划给出
+\begin{itemize}
+	\item 一个封闭世界知识库表示原始状态
+	\item 一组STRIPS动作（从状态到新状态的映射）
+	\item 一个目标状态
+\end{itemize}
+
 放松(relaxed)问题即考虑\textbf{忽略删除动作}的列表，这样可能得到有用的启发式函数估计。
 
 \begin{theorem}
@@ -109,16 +116,24 @@ $pickup(X)$:
 \end{analysis}
 
 \begin{theorem}
-假设$Goal\subset S_k$，对于$i<k$，令$A_{i-1}'$为调用CountActions($G_i,S_i$)的结果，则$A_0',\ldots,A_{k-1}'$为松弛问题的一个解。
-\end{theorem}
-\begin{proof}
-用数学归纳法
-\end{proof}
-
-\begin{theorem}
 假设状态层不再改变且目标不被满足，则原始规划问题是不可解的。
 \end{theorem}
 \begin{proof}
 用反证法，假设$a_0,\ldots,a_{n-1}$为原始问题的一个解，则$Goal\subset s_n$。
 由前面的命题，存在$m\leq n$使得$Goal\subset s_n\subset S_m$，导致矛盾。
+\end{proof}
+
+假设目标$G$包含在状态层中，现在想要计算一个好的放松规划，想法即对每个$i$选择最小的$A_i$子集。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/count_actions.png}
+\end{figure}
+进而变成一个集合覆盖问题：从集合的集合$S$中选择$m$个集合使得其并集可以覆盖全集。
+
+\begin{theorem}
+假设$Goal\subset S_k$，对于$i<k$，令$A_{i-1}'$为调用CountActions($G_i,S_i$)的结果，则$A_0',\ldots,A_{k-1}'$为松弛问题的一个解。
+\end{theorem}
+\begin{proof}
+用数学归纳法
+% TODO
 \end{proof}
