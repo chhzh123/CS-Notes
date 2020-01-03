@@ -1,13 +1,17 @@
 % !TEX root = main.tex
 
 \section{关系数据库设计} % Chap 8
+大的模式会存在大量冗余，小的模式会导致信息丢失（有损分解）。
+
 \subsection{范式理论}
-设计需要满足一定的范式(normal form)
+定义属性集$\alpha$，关系模式为$r(R)$。
+
+设计需要满足一定的范式(normal form)，核心目的是\textcolor{red}{减少冗余}：
 % https://www.geeksforgeeks.org/normal-forms-in-dbms/
 \begin{itemize}
-	\item 第一范式(1NF)：全部属性都是单值属性
+	\item 第一范式(1NF)：全部属性都是\textemph{单值属性}（原子性）
 
-	\item 第二范式(2NF)：关系模式$R\in 1NF$，且每一个非主属性\textbf{完全依赖}于$R$的主码，而不是只依赖于其中一部分属性（即其中一部分属性的值即可确定该属性的值，部分依赖）
+	\item 第二范式(2NF)：关系模式$R\in 1NF$，且每一个\textemph{非主属性\textbf{完全依赖}于$R$的主码}，而不是只依赖于其中一部分属性（即其中一部分属性的值即可确定该属性的值，部分依赖）
 	\begin{example}
 	一个学生-课程关系模式如下：
 	\begin{center}
@@ -30,28 +34,35 @@
 		\item $\alpha$是$R$的一个超码
 		\item $\beta-\alpha$中的每个属性$A$都含于$R$的一个候选码中
 	\end{itemize}
-	（即不存在传递依赖）
+	（非主属性依赖于主码但不能通过另一非主属性进行依赖，即\textemph{不存在传递依赖}）
 	\begin{example}
 	一个学生-国家关系模式如下：
+	\begin{center}
 	\begin{tabular}{ccccc}\hline
 	Stud No & Stud Name & Stud State & Stud Country & Stud Age\\\hline
 	1 & Alice & s1 & c & 18\\
 	2 & Alice & s2 & c & 19\\
 	3 & Bob & s2 & c & 21\\\hline
 	\end{tabular}
+	\end{center}
 	有传递依赖Stud No$\to$Stud State$\to$Stud Country，因此不满足3NF。
 	\end{example}
 
-	\item BC范式(Boyce-Codd NF, 3.5NF)：关系模式$R\in 3NF$，且对于每一个非平凡的函数依赖左侧都是一个超码
+	\item 巴斯-科德/BC范式(Boyce-Codd NF, 3.5NF)：关系模式$R\in 3NF$，对于$F^+$中所有形如$\alpha\to\beta$的函数依赖，至少有以下一项成立：
+	\begin{itemize}
+		\item $\alpha\to\beta$是平凡的函数依赖（即$\beta\subset\alpha$）
+		\item $\alpha$是模式$R$的一个超码
+	\end{itemize}
 \end{itemize}
 
 \subsection{函数依赖}
 \begin{definition}[函数依赖(functional dependency)]
 设$R$为关系模式，$\alpha\subset R,\beta\subset R$，函数依赖$\alpha\to\beta$在$R$上满足，当且仅当对于任意合法的关系$r(R)$，任何两个关于$r$的数对$t_1$和$t_2$，如果满足属性$\alpha$，那么它们也满足属性$\beta$，即
 \[t_1[\alpha]=t_2[\alpha]\implies t_1[\beta]=t_2[\beta]\]
-实际上就是函数单射的概念，属性$\alpha$可以唯一确定属性$\beta$的值。
-若$\beta\subset\alpha$，则称函数依赖是平凡的。
+实际上就是\textemph{函数单射}的概念，属性$\alpha$可以\textemph{唯一确定}属性$\beta$的值，
+若函数依赖$K\to R$在$r(R)$上成立，则$K$是$r(R)$的一个\textemph{超码}。
 \end{definition}
+\begin{example}
 考虑下例$r(A,B)$的关系
 \begin{center}
 \begin{tabular}{|c|c|}\hline
@@ -62,6 +73,19 @@ A & B\\\hline
 \end{tabular}
 \end{center}
 关系$A\to B$不成立，但关系$B\to A$成立。
+\end{example}
+
+\begin{definition}[平凡]
+在所有关系中都满足的函数依赖则是平凡的函数依赖，比如$A\to A$。
+一般地，若$\beta\subset\alpha$，则$\alpha\to\beta$的函数依赖是平凡的。
+\end{definition}
+
+\subsubsection{闭包}
+\begin{definition}[逻辑蕴含与闭包]
+若关系模式$r(R)$的每一个满足$F$的实例也满足$f$，则$R$上的函数依赖$f$被$r$上的函数依赖集$F$逻辑蕴含。
+$F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
+设$\alpha$为属性集，将函数依赖集$F$下被$\alpha$函数确定的所有属性的集合称为$F$下$\alpha$的闭包。
+\end{definition}
 
 \begin{theorem}[逻辑蕴含公理]
 下面的前三条为最基本的公理(Armstrong)，可以找出给定$F$的所有$F^+$
@@ -74,9 +98,10 @@ A & B\\\hline
 	\item 伪传递律(pseudotransitivity)：若$\alpha\to\beta$和$\gamma\beta\to\delta$成立，则$\alpha\gamma\to\delta$成立
 \end{itemize}
 \end{theorem}
+计算$F^+$的算法即不断应用自反律、增补律和传递律。
 
 \begin{algorithm}
-\caption*{计算$F$下$\alpha$的闭包$\alpha^+$}
+\caption{计算$F$下$\alpha$的闭包$\alpha^+$}
 \begin{algorithmic}[1]
 \State result$:=\alpha$
 \Repeat
@@ -87,8 +112,83 @@ A & B\\\hline
 \end{algorithmic}
 \end{algorithm}
 
+\subsubsection{正则覆盖}
+\begin{definition}[无关(extraneous)]
+如果去除函数依赖中的一个属性不改变该函数依赖集的闭包，则称该属性是无关的，即\textemph{去掉该属性依然可以推得其函数依赖成立}。
+\end{definition}
+
+检验属性$A$是否无关的方法如下：
+\begin{itemize}
+	\item 若$A\in\beta$，为检验$A$是否无关，考虑集合
+	\[F'=(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}\]
+	检验$\alpha\to A$是否能由$F'$推出，计算$F'$下的$\alpha^+$，若$\alpha^+$包含$A$，则$A$在$\beta$中无关。
+	\item 若$A\in\alpha$，为检验$A$是否无关，令$\gamma=\alpha-\{A\}$，检验$\gamma\to\beta$是否可以由$F$推出，
+	计算$F$下的$\gamma^+$，若$\gamma^+$包含$\beta$中所有属性，则$A$在$\alpha$中无关。
+\end{itemize}
+
+\begin{definition}[正则覆盖(canonical cover)]
+$F$的正则覆盖$F_c$是一个依赖集，使得$F_c$和$F$双向逻辑蕴含，且
+\begin{itemize}
+	\item $F_c$中任何函数依赖都不含无关属性
+	\item $F_c$中函数依赖的左半部都是唯一的，即不存在$\alpha_1\to\beta_1$和$\alpha_2\to\beta_2$满足$\alpha_1=\alpha_2$
+\end{itemize}
+\end{definition}
+\begin{algorithm}
+\caption{计算正则覆盖}
+\begin{algorithmic}[1]
+\State $F_c=F$
+\Repeat
+\State 用合并律将$F_c$中$\alpha_1\to\beta_1$和$\alpha_1\to\beta_2$并为$\alpha_1\to\beta_1\beta_2$
+\State 对$F_c$每一个函数依赖移除无关属性
+\Until{$F_c$不变}
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{无损分解与保持依赖的分解}
+\begin{definition}[无损分解]
+用$r(R_1)$和$r(R-2)$代替$r(R)$没有信息损失，则为无损分解。
+\[\Pi_{R_1}(r)\Join\Pi_{R_2}(r)=r\]
+\end{definition}
+
+\begin{definition}[保持依赖的分解]
+$F$是模式$R$上一个函数依赖集，$R_i$为$R$的一个分解，$F$在$R_i$上限定(restriction)是$F^+$中所有只包含$R_i$中属性的函数依赖的集合$F_i$。
+令$F'=\bigcup_i F_i$，具有$F'^+=F^+$的分解为保持依赖的分解。
+\end{definition}
+% TODO: 保持依赖性验证
+
+\subsection{分解算法}
+\subsubsection{BCNF分解}
+\begin{enumerate}
+	\item 初始化result $:=\{R\}$
+	\item 计算$F^+$
+	\item 若result中存在模式$R_i$不属于BCNF，则根据下式进行分解
+	\[\text{result} := (\text{result}-R_i)\cup(R_i-\beta)\cup(\alpha,\beta)\]
+	其中$\alpha\to\beta$为$R_i$上成立的非平凡函数依赖，满足$\alpha\to R_i$不属于$F^+$，且$\alpha\cap\beta=\varnothing$
+\end{enumerate}
+
+\subsubsection{3NF分解}
+\begin{enumerate}
+	\item 令$F_c$为$F$的正则覆盖
+	\item 对于每一个$F_c$中的函数依赖$\alpha\to\beta$，$R_i=\alpha\beta$
+	\item 若$R_j\in R_k$，则删除$R_j$
+	\item 直至不再有可删除的$R_j$
+\end{enumerate}
+
+\subsubsection{总结}
+应用函数以来进行数据库设计的目标是：
+\begin{enumerate}
+	\item BCNF
+	\item 无损
+	\item 保持依赖
+\end{enumerate}
+
+\subsection{多值依赖}
+函数依赖规定了某些元组不能出现在关系中。
+如果$A\to B$，则不能有两个元组在$A$上的值相同，而在$B$上值不同。
+多值依赖不排除某些元组的存在，而要求某种形式的其他元组存在于关系中。
+函数依赖称为相等产生(equality-generating)依赖，多值依赖称为元组产生依赖。
 \begin{definition}[多值依赖(multivalued dependency)]
-设$R$为关系模式，$\alpha\subset R,\beta\subset R$，多值依赖在$R$上满足$\alpha\twoheadrightarrow\beta$，
+设$R$为关系模式，$\alpha\subset R,\beta\subset R$，多值依赖在$R$上满足$\alpha\to\to\beta$，% \twoheadrightarrow
 当且仅当对于所有数对$t_1$和$t_2$，使得$t_1[\alpha]=t_2[\alpha]$，都存在数对$t_3$和$t_4$使得
 \[\begin{aligned}
 \displaystyle t_{1}[\alpha ]&= t_{2}[\alpha ]=t_{3}[\alpha ]=t_{4}[\alpha ]\\
@@ -97,11 +197,27 @@ A & B\\\hline
 \displaystyle t_{4}[\beta ]&= t_{2}[\beta ]\\
 \displaystyle t_{4}[R-\beta ]&= t_{1}[R-\beta ]
 \end{aligned}\]
-简而言之，设${\displaystyle (x,y,z)}$有对应着属性${\displaystyle \alpha ,}{\displaystyle \beta ,}{\displaystyle R-\alpha -\beta }$，则对于任意$R$中的元素${\displaystyle (a,b,c)}$和${\displaystyle (a,d,e)}$，都有${\displaystyle (a,b,e)}$和${\displaystyle (a,d,c)}$在$R$中。
+简而言之，若${\displaystyle (a,b,c)}$和${\displaystyle (a,d,e)}$在$R$中，则${\displaystyle (a,b,e)}$和${\displaystyle (a,d,c)}$在$R$中。
+即两个属性互相独立，但是都依赖于第三个属性。
+\begin{center}
+\begin{tikzcd}
+ & b\arrow[rdd]\arrow[r] & c\\
+a\arrow[ru]\arrow[rd] & &\\
+ & d\arrow[ruu]\arrow[r] & e
+\end{tikzcd}
+\end{center}
+典型例子是$(\text{课程},\text{课本},\text{老师})$，一门课有两本课本，两个老师，课本和老师之间不存在函数依赖，但都依赖于课程。
 \end{definition}
+
+令$D$表示函数依赖和多值依赖的集合，则$D^+$是由$D$逻辑蕴含的所有函数依赖和多值依赖的集合。
+对于多值依赖有以下规则
+\begin{itemize}
+	\item 每个函数依赖都是一个多值依赖，即若$\alpha\to\beta$，则$\alpha\to\to\beta$
+	\item 若$\alpha\to\to\beta$，则$\alpha\to\to R-\alpha-\beta$
+\end{itemize}
 
 第四范式(4NF)：函数依赖和多值依赖集为$D$的关系模式$r(R)$属于第四范式的条件是对$D^+$中所有形如$\alpha\to\to\beta$的多值依赖$\alpha,\beta\subset R$，至少有以下之一成立：
 \begin{itemize}
 	\item $\alpha\to\to\beta$是一个平凡的多值依赖
-	\item $\alpha$是$R$的一个超码
+	\item $\alpha$是$R$的一个超码（这里已经蕴含了$4NF\in BCNF$）
 \end{itemize}
