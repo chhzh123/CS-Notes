@@ -39,7 +39,15 @@
 	\item 软聚类：每个样本都被指派每个类别的概率分布
 \end{itemize}
 
-K-means算法
+\subsubsection{EM算法}
+最大期望(Expectation-Maximization, EM)算法：用作软聚类
+\begin{itemize}
+	\item E步：计算期望，利用对隐藏变量的现有估计值（实际上就是扩充了当前数据，初始化先随机赋值，然后进入迭代），计算其最大似然估计值
+	\item M步：最大化在E步上求得的最大似然值来计算参数的值。
+\end{itemize}
+M步上找到的参数估计值被用于下一个E步计算中，这个过程不断交替进行。
+
+\subsubsection{K-means算法}
 \begin{itemize}
 	\item E步：对于每一个类别$i$和特征$X_j$，有
 	\[pval(i,X_j)\gets\frac{\sum_{e:class(e)=i}val(e,X_j)}{|\{e:class(e)=i\}|}\]
@@ -80,4 +88,17 @@ V^\pi(s) &= Q(s,\pi(s))
 \end{aligned}\]
 
 Q学习：随机选择动作$a$，观察回报$r$和下一状态$s'$
+\begin{algorithm}
+\caption{Q-Learning}
+\begin{algorithmic}[1]
+\State 随机初始化$Q[S,A]$
+\State 观测当前状态$s$
+\Repeat
+\State 选择动作$a$并执行
+\State 观察回报$r$和状态$s'$
+\State 依据下述公式进行更新
 \[Q[s,a]\gets Q[s,a]+\alpha(r+\gamma\max_{a'}Q[s',a']-Q[s,a])\]
+\State $s\gets s'$
+\Until{收敛}
+\end{algorithmic}
+\end{algorithm}
