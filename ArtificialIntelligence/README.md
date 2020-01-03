@@ -1,3 +1,3 @@
-# Natural Language Processing (NLP)
+# Artificial Intelligence
 
-自然语言处理笔记
+人工智能笔记

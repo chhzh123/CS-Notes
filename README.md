@@ -24,3 +24,7 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 | Pattern Recognition   | 2019 Autumn | :white_check_mark: |
 | Digital Image Processing | 2019 Autumn | :white_check_mark: |
 | Machine Learning      | 2020 Spring | :ballot_box_with_check: |
+
+Notice: There may be lots of typos in my notes, so do NOT fully trust in them. If you find any mistakes, please raise an issue or directly mail to [me](mailto:chenhzh37@mail2.sysu.edu.cn).
+
+I will commonly fix bugs during a few days before final exams, so to keep track with the newest version, please use `git` instead of downloading `pdf` files directly.
