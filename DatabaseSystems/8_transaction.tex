@@ -1,17 +1,18 @@
 % !TEX root = main.tex
 
 \section{事务} % Chap 14
+\subsection{基本概念}
 \begin{definition}[事务(transaction)]
 构成单一逻辑工作单元的操作集合称为事务。
 即使有故障，数据库系统也必须保证数据库的正确执行——要么执行整个事务，要么属于该事务的操作一个也不执行。
 \end{definition}
 
-事务具有以下的基本性质：
+事务具有以下的基本性质(ACID)：
 \begin{itemize}
-	\item 原子性：要么执行完，要么不执行，不能执行到一半。
-	\item 一致性：除了基本的数据完整性约束，还有更多的一致性约束。
-	\item 隔离性：每个事务都察觉不到系统中有其他事务在并发执行，一定是完成一个再进行下一个。
-	\item 持久性：一个事务成功完成对数据库的改变是永久的，即使出现系统故障。
+	\item 原子性(Atomicity)：要么执行完，要么不执行，不能执行到一半。
+	\item 一致性(Consistency)：除了基本的数据完整性约束，还有更多的一致性约束。
+	\item 隔离性(Isolation)：每个事务都察觉不到系统中有其他事务在并发执行，一定是完成一个再进行下一个。
+	\item 持久性(Durability)：一个事务成功完成对数据库的改变是永久的，即使出现系统故障。
 \end{itemize}
 
 事务的基本状态：
@@ -27,30 +28,35 @@
 \includegraphics[width=0.5\linewidth]{fig/transaction_state.png}
 \end{figure}
 
+\subsection{可串行化}
+\begin{definition}[调度]
+按照时间顺序执行的一串指令即为调度。
+如果事务内的指令都不被打乱，如$<T_1,T_2>$或$<T_2,T_1>$，则为串行调度。
+\end{definition}
 \begin{definition}[冲突]
-当$I$和$J$是不同事务在相同数据项上的操作，并且其中至少有一个是\verb'write'指令时，则称$I$与$J$是冲突的。
+当$I$和$J$是不同事务在相同数据项$Q$上的操作，并且其中\textbf{至少有一个}是\verb'write'指令时，则称$I$与$J$是冲突的。
 \end{definition}
 \begin{definition}[冲突等价(conflict equivalent)]
-如果调度$S$可以经过一系列非冲突指令交换转换为$S'$，则称$S$和$S'$是冲突等价的。
+如果调度$S$可以经过一系列\textbf{非冲突}指令交换转换为$S'$，则称$S$和$S'$是冲突等价的。
 若$S'$为串行调度，则$S$为冲突可串行化的(conflict serializable)。
 \end{definition}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/conflict_serializability.png}
+\end{figure}
+可以将左侧调度转为右侧，故是冲突可串行的。
 
 可以通过构造一个优先图(precedence graph)来判断是否冲突可串行化。
-如果无环（用环检测算法），则冲突可串行化，可以通过拓扑排序得到串行化顺序。
+如果无环（用环检测算法），则冲突可串行化，可以通过\textbf{拓扑排序}（所有父亲执行完才到孩子执行）得到串行化顺序。
 
-隔离性级别：
+\begin{definition}[可恢复调度]
+若事务$T_j$读事务$T_i$先前写的数据，则$T_i$的提交必须在$T_j$的提交之前。
+\end{definition}
+
+\subsection{隔离性级别}
 \begin{itemize}
 	\item 可串行化(serializable)
 	\item 可重复读(repeatable read)
 	\item 已提交读(read committed)
 	\item 未提交读(read uncommitted)
-\end{itemize}
-
-隔离性级别的实现：并发控制机制
-\begin{itemize}
-	\item 锁
-	\item 时间戳：读时间戳记录读该数据项的事务的最大/最近时间戳，写时间戳记录写入该数据项当前值的事务的时间戳。
-	时间戳用来确保在访问冲突情况下，事务按照事务时间戳顺序来访问数据项。
-	当不可能访问时，违例事务会中止，并且分配一个新的时间戳重新开始
-	\item 多版本与快照隔离(snapshot isolation)
 \end{itemize}
