@@ -5,6 +5,11 @@
 
 \subsection{范式理论}
 定义属性集$\alpha$，关系模式为$r(R)$。
+关系模式是一个属性集，但不是所有属性集都是模式。
+超码则用$K$来表示。
+\begin{definition}[超码]
+$R$的子集$K$是$r(R)$的超码的条件是：在关系$r(R)$的任意合法实例中，对于$r$实例中的元组对$t_1$和$t_2$总满足，若$t_1\ne t_2$，则$t_1[K]\ne t_2[K]$，即$K$唯一标识一条元组。（而\textemph{函数依赖则是唯一标识某些属性}）
+\end{definition}
 
 设计需要满足一定的范式(normal form)，核心目的是\textcolor{red}{减少冗余}：
 % https://www.geeksforgeeks.org/normal-forms-in-dbms/
@@ -51,7 +56,7 @@
 	\item 巴斯-科德/BC范式(Boyce-Codd NF, 3.5NF)：关系模式$R\in 3NF$，对于$F^+$中所有形如$\alpha\to\beta$的函数依赖，至少有以下一项成立：
 	\begin{itemize}
 		\item $\alpha\to\beta$是平凡的函数依赖（即$\beta\subset\alpha$）
-		\item $\alpha$是模式$R$的一个超码
+		\item $\alpha$是模式$R$的一个\textemph{超码}（即$\alpha$可以整条元组）
 	\end{itemize}
 \end{itemize}
 
@@ -59,8 +64,8 @@
 \begin{definition}[函数依赖(functional dependency)]
 设$R$为关系模式，$\alpha\subset R,\beta\subset R$，函数依赖$\alpha\to\beta$在$R$上满足，当且仅当对于任意合法的关系$r(R)$，任何两个关于$r$的数对$t_1$和$t_2$，如果满足属性$\alpha$，那么它们也满足属性$\beta$，即
 \[t_1[\alpha]=t_2[\alpha]\implies t_1[\beta]=t_2[\beta]\]
-实际上就是\textemph{函数单射}的概念，属性$\alpha$可以\textemph{唯一确定}属性$\beta$的值，
-若函数依赖$K\to R$在$r(R)$上成立，则$K$是$r(R)$的一个\textemph{超码}。
+实际上就是\textemph{函数单射}的概念，属性$\alpha$可以\textemph{唯一确定}属性$\beta$的值。
+若函数依赖$K\to R$在$r(R)$上成立（注意这里$R$相当于全部属性，或者写成$K\to (R-K)$），则$K$是$r(R)$的一个\textemph{超码}。
 \end{definition}
 \begin{example}
 考虑下例$r(A,B)$的关系
@@ -98,10 +103,19 @@ $F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
 	\item 伪传递律(pseudotransitivity)：若$\alpha\to\beta$和$\gamma\beta\to\delta$成立，则$\alpha\gamma\to\delta$成立
 \end{itemize}
 \end{theorem}
-计算$F^+$的算法即不断应用自反律、增补律和传递律。
 
 \begin{algorithm}
-\caption{计算$F$下$\alpha$的闭包$\alpha^+$}
+\caption{计算$F^+$}
+\begin{algorithmic}[1]
+\State $F^+:=F$
+\Repeat
+\State 对$F^+$的函数依赖应用自反律、增补律和传递律，将结果加入$F^+$
+\Until{result 不变}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{计算$F$下属性$\alpha$的闭包$\alpha^+$}
 \begin{algorithmic}[1]
 \State result$:=\alpha$
 \Repeat
@@ -112,19 +126,32 @@ $F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
 \end{algorithmic}
 \end{algorithm}
 
+属性闭包算法有多种用途：
+\begin{itemize}
+	\item 用于\textemph{判断$\alpha$是否为超码}，计算$\alpha^+$，检查$\alpha^+$是否包含$R$中所有属性
+	\item 通过检查是否$\beta\subset\alpha^+$，我们可以检查$\alpha\to\beta$是否成立（即是否属于$F^+$），也就是用属性闭包计算$\alpha^+$，看是否包含$\beta$
+	\item 另一种计算$F^+$的方法：$\forall\gamma\subset R$，找出$\gamma^+$；$\forall S\subset\gamma^+$，输出函数依赖$\gamma\to S$
+\end{itemize}
+
 \subsubsection{正则覆盖}
 \begin{definition}[无关(extraneous)]
-如果去除函数依赖中的一个属性不改变该函数依赖集的闭包，则称该属性是无关的，即\textemph{去掉该属性依然可以推得其函数依赖成立}。
+如果去除函数依赖中的一个属性不改变该函数依赖集的闭包，则称该属性是无关的，即\textemph{去掉该属性依然可以推得其函数依赖成立}，形式化定义即
+\begin{itemize}
+	\item 若$A\in\alpha$且$F$逻辑蕴含$(F-\{\alpha\to\beta\})\cup\{(\alpha-A)\to\beta\}$，则属性$A$在$\alpha$中无关
+	\item 若$A\in\beta$且函数依赖集$(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}$逻辑蕴含$F$，则属性$A$在$\beta$中无关
+\end{itemize}
 \end{definition}
 
 检验属性$A$是否无关的方法如下：
 \begin{itemize}
 	\item 若$A\in\beta$，为检验$A$是否无关，考虑集合
 	\[F'=(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}\]
-	检验$\alpha\to A$是否能由$F'$推出，计算$F'$下的$\alpha^+$，若$\alpha^+$包含$A$，则$A$在$\beta$中无关。
-	\item 若$A\in\alpha$，为检验$A$是否无关，令$\gamma=\alpha-\{A\}$，检验$\gamma\to\beta$是否可以由$F$推出，
+	\textemph{检验$\alpha\to A$是否能由$F'$推出}，
+	计算$F'$下的$\alpha^+$，若$\alpha^+$包含$A$，则$A$在$\beta$中无关。
+	\item 若$A\in\alpha$，为检验$A$是否无关，令$\gamma=\alpha-\{A\}$，\textemph{检验$\gamma\to\beta$是否可以由$F$推出}，
 	计算$F$下的$\gamma^+$，若$\gamma^+$包含$\beta$中所有属性，则$A$在$\alpha$中无关。
 \end{itemize}
+简言之，计算$A\subset\alpha_{F'}^+$和$\beta\subset\gamma_{F}^+$，但这很麻烦，通常直接通过逻辑蕴含判断。
 
 \begin{definition}[正则覆盖(canonical cover)]
 $F$的正则覆盖$F_c$是一个依赖集，使得$F_c$和$F$双向逻辑蕴含，且
@@ -138,7 +165,7 @@ $F$的正则覆盖$F_c$是一个依赖集，使得$F_c$和$F$双向逻辑蕴含�
 \begin{algorithmic}[1]
 \State $F_c=F$
 \Repeat
-\State 用合并律将$F_c$中$\alpha_1\to\beta_1$和$\alpha_1\to\beta_2$并为$\alpha_1\to\beta_1\beta_2$
+\State 用合并律将$F_c$中$\alpha_1\to\beta_1$和$\alpha_1\to\beta_2$替换为$\alpha_1\to\beta_1\beta_2$
 \State 对$F_c$每一个函数依赖移除无关属性
 \Until{$F_c$不变}
 \end{algorithmic}
@@ -158,21 +185,31 @@ $F$是模式$R$上一个函数依赖集，$R_i$为$R$的一个分解，$F$在$R_
 
 \subsection{分解算法}
 \subsubsection{BCNF分解}
-\begin{enumerate}
-	\item 初始化result $:=\{R\}$
-	\item 计算$F^+$
-	\item 若result中存在模式$R_i$不属于BCNF，则根据下式进行分解
-	\[\text{result} := (\text{result}-R_i)\cup(R_i-\beta)\cup(\alpha,\beta)\]
-	其中$\alpha\to\beta$为$R_i$上成立的非平凡函数依赖，满足$\alpha\to R_i$不属于$F^+$，且$\alpha\cap\beta=\varnothing$
-\end{enumerate}
+简化判定方法：
+\begin{itemize}
+	\item 检查非平凡函数依赖$\alpha\to\beta$，计算$\alpha^+$，验证它是否包含$R$中所有属性，即验证它是否为$R$的超码；不需检查$F^+$中所有函数依赖（但分解后就不能这么做了）
+	\item 对$R_i$中属性每个子集$\alpha$，确保$F$下$\alpha^+$要么不含$R_i-\alpha$的任何属性，要么包含$R_i$所有属性。若$R_i$上有某个属性集$\alpha$违反条件，即下述函数依赖会出现在$F^+$中，说明违反BCNF
+	\[\alpha\to(\alpha^+-\alpha)\cap R_i\]
+\end{itemize}
+\begin{algorithm}
+\caption{BCNF分解}
+\begin{algorithmic}[1]
+\State 初始化result $:=\{R\}$
+\State 计算$F^+$
+\State 若result中存在模式$R_i$不属于BCNF，则将其分解为\textemph{$(R_i-\beta)$和$(\alpha,\beta)$}，其中$\alpha\to\beta$为$R_i$上成立的非平凡函数依赖，满足$\alpha\to R_i$不属于$F^+$，且$\alpha\cap\beta=\varnothing$
+\end{algorithmic}
+\end{algorithm}
 
 \subsubsection{3NF分解}
-\begin{enumerate}
-	\item 令$F_c$为$F$的正则覆盖
-	\item 对于每一个$F_c$中的函数依赖$\alpha\to\beta$，$R_i=\alpha\beta$
-	\item 若$R_j\in R_k$，则删除$R_j$
-	\item 直至不再有可删除的$R_j$
-\end{enumerate}
+\begin{algorithm}
+\caption{3NF分解}
+\begin{algorithmic}[1]
+\State 令$F_c$为$F$的\textemph{正则覆盖}
+\State 对于每一个$F_c$中的函数依赖$\alpha\to\beta$，$R_i=\alpha\beta$
+\State 若$R_i$都不包含$R$的候选码，则新增$R_{i+1}$为$R$的候选码
+\State 若$R_j\in R_k$，则删除$R_j$，直至不再有可删除的$R_j$
+\end{algorithmic}
+\end{algorithm}
 
 \subsubsection{总结}
 应用函数以来进行数据库设计的目标是：

@@ -35,7 +35,7 @@ where P
 
 \begin{itemize}
 	\item 自然连接(natural join)：将两个关系的各个元组进行连接，并且只考虑那些在两个关系模式中\textbf{都出现}的属性上取值相同的元组对（相当于取\textbf{交}）
-	\item 连接(join)：只考虑$A$这个属性进行连接
+	\item 连接(join)：用\verb'using'可以只考虑某一特定属性的连接
 \end{itemize}
 \begin{lstlisting}[language=sql]
 select name, title
@@ -117,7 +117,7 @@ group by dept_name -- can only be contained by select clause
 having avg(salary) > 42000; -- effected after grouping
 \end{lstlisting}
 
-三值逻辑，添加了Unknown
+三值逻辑，添加了Unknown（其实就是T/F都恒成立的关系才会输出正常值）
 \begin{center}
 \begin{tabular}{|c|c|c|}\hline
 AND & OR & NOT\\\hline

@@ -25,7 +25,7 @@
 \end{itemize}
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.5\linewidth]{fig/transaction_state.png}
+\includegraphics[width=0.3\linewidth]{fig/transaction_state.png}
 \end{figure}
 
 \subsection{可串行化}
@@ -46,7 +46,14 @@
 \end{figure}
 可以将左侧调度转为右侧，故是冲突可串行的。
 
-可以通过构造一个优先图(precedence graph)来判断是否冲突可串行化。
+可以通过构造一个优先图(precedence graph)来判断是否冲突可串行化，顶点集由所有参与调度的事务构成，边集由满足下列三个条件之一的边$T_i\to T_j$构成：
+\begin{itemize}
+	\item 在$T_j$执行read(Q)前，$T_i$执行write(Q)
+	\item 在$T_j$执行write(Q)前，$T_i$执行read(Q)
+	\item 在$T_j$执行write(Q)前，$T_i$执行write(Q)
+\end{itemize}
+即只有\textemph{两者都读才不冲突}。
+
 如果无环（用环检测算法），则冲突可串行化，可以通过\textbf{拓扑排序}（所有父亲执行完才到孩子执行）得到串行化顺序。
 
 \begin{definition}[可恢复调度]

@@ -26,7 +26,7 @@ $X$ & false & false\\\hline
 
 令$\{T_0,\ldots,T_n\}$是参与调度$S$的一个事务集，若存在数据项$Q$，使得$T_i$在$Q$上持有$A$型锁，之后$T_j$在$Q$上持有$B$型锁，且$comp(A,B)=false$，则称在$S$中$T_i$先于$T_j$，记为$T_i\to T_j$，即在任何等价的串行调度中，$T_i$必须出现在$T_j$之前。
 
-两阶段封锁协议：可保证冲突可串行化，但不能保证不发生死锁
+两阶段封锁协议：可保证冲突可串行化，但不能保证不发生死锁，对于\textbf{每个事务}有以下两个阶段
 \begin{enumerate}
 	\item 增长(growing)阶段：事务可以获得锁，但不能释放锁（也包括锁的升级，共享$\to$排他）
 	\item 缩减(shrinking)阶段：事务可以释放锁，但不能获得新锁（也包括锁的降级，排他$\to$共享）
@@ -85,7 +85,7 @@ $X$ & false & false\\\hline
 等待(wait-for)图顶点由所有\textbf{事务}组成，边$T_i\to T_j$代表事务$T_i$\textbf{等待}$T_j$释放数据项。
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/wait-for_graph.png}
+\includegraphics[width=0.6\linewidth]{fig/wait-for_graph.png}
 \end{figure}
 
 当事务$T_i$申请的数据项当前被$T_j$持有时，$T_i\to T_j$被插入图中。

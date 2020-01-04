@@ -31,7 +31,7 @@ search-key & pointer\\\hline
 通过建造多级稀疏索引，来减少访问时间。
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.5\linewidth]{fig/multilevel-index.png}
+\includegraphics[width=0.4\linewidth]{fig/multilevel-index.png}
 \end{figure}
 
 索引更新操作：
@@ -76,13 +76,15 @@ $n$-阶B树满足以下性质：
 
 % 重复？
 
+% https://blog.csdn.net/sunshine_lyn/article/details/82747596
 \subsubsection{插入}
+对于叶子节点的插入\footnote{B+树的动态演示可见\url{https://www.cs.usfca.edu/~galles/visualization/BPlusTree.html}}：
 \begin{itemize}
 	\item 搜索码值已经存在于叶子结点：直接加记录
 	\item 搜索码值没有出现，添加记录到主文件，插入到叶子节点；如果没有位置，需要进行分裂
 	\begin{itemize}
 		\item 将这$n$个$(\text{搜索码值},\text{指针})$进行排序，取前$\lceil n/2\rceil$个在原来节点，其余在新节点
-		\item 令新节点为$p$，$k$为$p$中的最小值，则插入$(k,p)$到父亲中，$p$为$k$的后续指针
+		\item 令新节点为$p$，$k$为$p$中的最小值，则插入\textemph{$(k,p)$}到父亲中，$p$为$k$的后续指针
 		\item 若父亲满了，则继续分裂并传播
 	\end{itemize}
 \end{itemize}
@@ -91,16 +93,30 @@ $n$-阶B树满足以下性质：
 \includegraphics[width=0.8\linewidth]{fig/bp-tree_insertion.png}
 \end{figure}
 
+对于非叶子节点，当插入$(k,p)$到一个已经满的内部节点时：
+\begin{itemize}
+	\item 将$P_1,K_1,\ldots,K_{\lceil n/2\rceil-1},P_{\lceil n/2\rceil}$放到第一个节点
+	\item 将$P_{\lceil n/2\rceil+1},K_{\lceil n/2\rceil+1},\ldots,K_n,P_{n+1}$放到第二个节点
+	\item 将$(K_{\lceil n/2\rceil},N')$插入到父节点$N$
+\end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/bp-tree_insertion3.png}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/bp-tree_insertion2.png}
+\end{figure}
+
 \subsubsection{删除}
 \begin{itemize}
 	\item 直接移除
-	\item 如果删除导致下溢(underfull)，则需要合并兄弟
+	\item 如果删除导致下溢(underfull)且可合并到一个结点，则合并兄弟
 	\begin{itemize}
 		\item 若\textemph{兄弟节点}未满，则与兄弟节点合并（注意不是同层都是兄弟）
-		\item 删除$(K_{i-1},P_i)$，其中$P_i$是指向删除结点的指针，递归这个过程
+		\item 删除$(K_{i-1},P_i)$，其中$P_i$是指向删除结点的指针，更新索引值，递归这个过程
 	\end{itemize}
-	\item 如果合并没法合到一个节点，则需要\textbf{重分配}(redistribute)指针使得两个节点都含有多于最小键值数目的项。
-	将左侧分配到右侧，并重新分配指针
+	\item 如果合并没法合到一个节点，则需要\textbf{重分配}(redistribute)指针使得两个兄弟节点都含有多于最小键值数目的项，同时更新父亲节点的搜索码
 \end{itemize}
 \begin{figure}[H]
 \centering
@@ -113,6 +129,10 @@ $n$-阶B树满足以下性质：
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/bp-tree_deletion3.png}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{fig/bp-tree_deletion_alg.png}
 \end{figure}
 
 \subsubsection{其他事项}
@@ -149,7 +169,7 @@ $n$-阶B树满足以下性质：
 下例的散列函数为ID各位数字之和对8取模
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{fig/hash_index.png}
+\includegraphics[width=0.8\linewidth]{fig/hash_index.png}
 \end{figure}
 
 静态散列问题：
@@ -161,10 +181,15 @@ $n$-阶B树满足以下性质：
 \subsection{动态散列}
 当数据库增大或缩小时，可扩充散列(extendable hashing)可通过桶的分裂或合并来适应数据库大小变化。
 
-通过哈希函数的前$i$位确定索引
+通常选择一个具有均匀性和随机性特性的散列函数$h$，且产生范围较大，是$b$位二进制整数，通常$b=32$。
+通过哈希函数的前$i$位确定索引，每次桶满了才考虑新增一位，且不到万不得已不分裂（原来前缀相同的全指向同一个桶）。
+但如果散列值相同，则只能采用溢出桶的方法。
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.6\linewidth]{fig/extendable_hash.png}
+\begin{tabular}{cc}
+\includegraphics[width=0.5\linewidth]{fig/extendable_hash.png}&
+\includegraphics[width=0.5\linewidth]{fig/extendable_hash_eg.png}
+\end{tabular}
 \end{figure}
 但缺点在于查找涉及一个附加的间接层，系统在访问桶本身之前必须先访问桶地址表。
 
