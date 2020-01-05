@@ -15,3 +15,10 @@
 最小化误差函数
 \[E(\mathbf{w})=\frac{1}{2} \sum_{n=1}^{N}\left\|\mathbf{y}\left(\mathbf{x}_{n}, \mathbf{w}\right)-\mathbf{t}_{n}\right\|^{2}\]
 
+隐含层到输出层的权重更新公式为
+\[\Delta w_{kj}=\eta\delta_k y_j=\eta(t_k-z_k)f'(net_k)y_j\]
+输入层到隐含层的权重更新公式为
+\[\Delta w_{ji}=\eta x_i\delta_j=\eta\lrs{\sum_{k=1}^c w_{kj}\delta_k}f'(net_j)x_i\]
+
+sigmoid函数
+\[f(\text{net})=a\tanh(b\cdot\text{net})=a\lrs{\frac{1-\ee^{-b\cdot \text{net}}}{1+\ee^{-b\cdot\text{net}}}}=\frac{2a}{1+\ee^{-b\cdot\text{net}}}-a\]
