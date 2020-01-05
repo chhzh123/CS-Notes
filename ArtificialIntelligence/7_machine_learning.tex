@@ -1,6 +1,14 @@
 % !TEX root = main.tex
 
 \section{机器学习}
+% Decision-tree learning
+% Naive Bayes learning
+% K-means and EM
+% Chain rule for computing partial derivatives
+% Linear and logistic regression
+% Backpropagation
+% Q-learning
+
 \subsection{决策树}
 假定样本集合$D$中第$k$类样本所占比例为$p_k(k=1,2,\ldots,|\mathcal{Y}|)$，则$D$的信息熵定义为
 \[\Ent(D)=-\sum_{k=1}^{|\mathcal{Y}|}p_k\log_2 p_k\]
@@ -24,9 +32,10 @@
 	\item 最大似然(ML)学习：$\pr{X\mid d}\approx\pr{X\mid h_{ML}}$
 	\[h_{ML}=\argmax_{h_i}\pr{d\mid h_i}\]
 \end{itemize}
+\textemph{注意贝叶斯在计算时应保证概率和为$1$，即要进行归一化。}
 
 基于属性条件独立性假设
-\[\pr{c\mid\vx}=\frac{\pr{c}\pr{\vx\mid c}}{\pr{x}}=\frac{\pr{c}}{\pr{\vx}}\prod_{i=1}^d\pr{x_i\mid c}\]
+\[\pr{c\mid\vx}=\frac{\pr{c}\pr{\vx\mid c}}{\pr{\vx}}=\frac{\pr{c}}{\pr{\vx}}\prod_{i=1}^d\pr{x_i\mid c}\]
 其中$d$为属性数目，$x_i$为$\vx$在第$i$个属性上的取值。
 因对所有类别来说$\pr{\vx}$相同，因此贝叶斯判定准则为
 \[h_{NB}(\vx)=\argmax_{c\in\mathcal{Y}}\pr{c}\prod_{i=1}^d\pr{x_i\mid c}\]

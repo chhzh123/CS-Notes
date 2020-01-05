@@ -3,11 +3,8 @@
 \section{搜索}
 % Problem solving by search: formalization
 % Uninformed search: Breadth-First, Uniform-Cost, Depth-First, Depth-Limited, and Iterative- Deepening
-% Heuristic search: Greedy best-first, A*
 % Properties of search: completeness, optimality, time and space complexity
 % Path/cycle checking
-% Game tree search: MiniMax, alpha-beta pruning
-% CSP: Formalization, backtracking, forward checking, and GAC algorithms
 
 搜索主要包括无信息(uninformed)搜索和有信息搜索。
 \begin{itemize}
@@ -44,7 +41,7 @@
 \begin{itemize}
 	\item 完备性：若解存在，搜索是否总能找到解
 	\item 最优性：是否总能找到最小代价的解
-	\item 时间复杂性：最大需要被\textbf{生成或展开}\footnote{而不是探索的结点数目}的结点数
+	\item 时间复杂性：最大需要被\textemph{生成或展开}\footnote{而不是探索的结点数目}的结点数
 	\item 空间复杂性：最大需要被存储在内存中的结点数
 \end{itemize}
 
@@ -52,7 +49,7 @@
 无信息搜索并不考虑关于特定搜索问题的领域特定的信息，主要包括宽度优先、一致代价、深度优先、深度受限、迭代加深五种算法。
 
 \subsubsection{宽度优先搜索(BFS)}
-将后继加入边界集的\textbf{后面}，$b$为最大状态后继数目/分支因子(branching factor)，$d$为最短距离解的行动数（注意是\textbf{边数}，而不是层数！）
+将后继加入边界集的\textbf{后面}，$b$为最大状态后继数目/分支因子(branching factor)，$d$为最短距离解的行动数（注意是\textemph{边数}，而不是层数！或者把根节点看作第$0$层也可以）
 \begin{itemize}
 	\item 完备性与最优性：所有短路总在长路前被探索，某一长度只有有限多条路径，最终可以检测所有长度为$d$的路径，从而找到最优解
 	\item 时间复杂度：$1+b+b^2+\cdots+b^d+(b^d-1)b=O(b^{d+1})$，最差情况在最后一层的最后一个节点才探索到最优解，从而前面$b$个节点都要展开第$d+1$层
@@ -82,6 +79,17 @@
 	\item 时间复杂性：$O(b^{\lfloor C^\star/\eps\rfloor+1})$，对应着BFS中$d=C^\star/\eps$，其中$C^\star$为最优解的开销，最坏情况就是每一层开销都很小为$\eps$，那么需要$\lfloor C^\star/\eps\rfloor$层
 	\item 空间复杂性：$O(b^{\lfloor C^\star/\eps\rfloor+1})$
 \end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{fig/UCS.png}
+\end{figure}
+注意算法中几个关键点：从队列Pop出一个结点后
+\begin{enumerate}
+	\item \textemph{先做目标检测}，如果是目标则立即返回（也就是说要扩展完结点进入下一层才会触发解返回）
+	\item 将结点状态标记为\textemph{已探索(explored)}，然后扩展(expand)该结点
+	\item 做环检测，如果孩子\textemph{不在\underline{已探索或边界集}中}，将孩子节点加入边界集
+	\item 如果孩子在边界集中且有更高的路径开销，则将边界集中的结点用孩子结点进行\textemph{替换}
+\end{enumerate}
 
 \subsubsection{深度受限搜索(Depth-limited)}
 只在最大深度执行DFS，因此无穷路径长不会存在问题
@@ -110,15 +118,15 @@ IDS逐渐增加最大深度$L$，对每一个$L$做深度受限搜索
 \end{itemize}
 
 \subsubsection{环路/路径检测}
-所有检测都是在\textbf{扩展时}进行：
+所有检测都是在\textemph{扩展时}进行：
 \begin{itemize}
-	\item 环路(cycle)检测：检测当前状态是否与所有已探索的状态重复(BFS)
+	\item 环路(cycle)检测：检测当前状态是否与所有已探索的(explored)状态重复(BFS)
 	\item 路径(path)检测：只检测当前状态是否与该路径上的状态重复(DFS)
 \end{itemize}
 注意不能将环路检测运用在BFS上，因为这会破坏其空间复杂度的优势。
 
-环路检测运用到UCS上依然\textbf{可以保证最优性}\footnote{注意这在启发式搜索中不一定成立}。
-因为UCS第一次探索到某一状态的时候已经发现最小代价路径，因而再次探索该状态不会发现路径比原有的更小。
+环路检测运用到UCS上依然\textemph{可以保证最优性}\footnote{注意这在启发式搜索中不一定成立}。
+因为UCS第一次\textemph{探索}（注意不是展开）到某一状态的时候已经发现最小代价路径，因而再次探索该状态不会发现路径比原有的更小。
 
 \subsubsection{总结}
 \begin{center}

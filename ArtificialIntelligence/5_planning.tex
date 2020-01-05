@@ -1,6 +1,11 @@
 % !TEX root = main.tex
 
 \section{确定性规划}
+% Closed world assumption
+% STRIPS representation of actions
+% STRIPS planning
+% Relaxed plan heuristics
+
 智能体应该能够对世界做出动作(action)，而不仅仅是通过搜索解决问题或推理及知识表示。
 核心是对动作的效果进行推理，并且计算什么动作能够达成特定的效果。
 
@@ -100,6 +105,7 @@ $pickup(X)$:
 然而在放松问题中计算一个最优的问题是NP难的，可以从$S$开始建立层次(layered)结构使其到达目标。
 
 可达性分析：$s_0,a_1,s_1,\ldots,a_n,s_n$，直到$s_n\subset Goal$，或者状态层$s_n$不再改变（到达不动点）。
+\textemph{注意动作层的计算一定要小心是否漏动作}。
 \begin{proposition}
 令$a_0,\ldots,a_{n-1}$为$S_0$中可采纳的动作序列，令$s_0=S_0$，且$s_{i+1}=s_i\cup add(a_i)-del(a_i)$。
 那么$\forall i<n,\exists j,k\leq i$使得$a_i\in A_k$且$s_i\subset S_j$

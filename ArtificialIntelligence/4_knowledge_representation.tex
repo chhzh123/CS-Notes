@@ -1,6 +1,13 @@
 % !TEX root = main.tex
 
 \section{知识表示与推理}
+% First-order logic: syntax and semantics
+% Soundness and completeness of proof procedures
+% Converting first-order formulas into clausal form
+% Unification and MGU
+% Resolution proof: forward chaining and refutation
+% Answer extraction
+
 \subsection{基本概念}
 一阶逻辑(First-Order Logic,FOL)
 \begin{itemize}
@@ -115,14 +122,52 @@ $S\vdash()\iff S\models()\iff S$是不可满足的
 \subsubsection{子句形式转换}
 \begin{itemize}
 	\item 消除蕴含：$A\to B\iff \lnot A\lor B$
-	\item 将非向内推：德摩根定律
+	\item 否定内移：德摩根定律
 	\item 标准化变量：重命名变量使得每一个量词都是唯一的
 	\item 消除存在量词(skloemize)：引入新的函数符号，如$\forall x P(x)$改为$P(g(y))$
-	\item 将所有量词带到最前面：只有全局量词，且名字均不同
+	\item 改为前缀形式：只有全局量词，且名字均不同
 	\item 析取分配到合取
 	\item 压平嵌套合取和析取
 	\item 转化为子句：将量词全部移除，然后分离成几条子句
 \end{itemize}
+\begin{example} % T02-3
+用归结判断下列句子是否可满足
+\[(\exists x\forall y P(x,y)\lor\exists x\forall y Q(x,y))\to
+\exists x\forall y(P(x,y)\lor Q(x,y))\]
+\end{example}
+\begin{analysis}
+	按照子句形式的转换顺序，有
+    \begin{itemize}
+        \item 改写为归结的等价形式（消除蕴含）
+        \[(\exists x\forall y P(x,y)\lor\exists x\forall y Q(x,y))\land\lnot
+        (\exists x\forall y(P(x,y)\lor Q(x,y)))\]
+        \item 否定内移
+        \[(\exists x\forall y P(x,y)\lor\exists x\forall y Q(x,y))\land
+        (\forall x\exists y (\lnot P(x,y)\land \lnot Q(x,y)))\]
+        \item 标准化变量
+        \[(\exists x\forall y P(x,y)\lor\exists z\forall w Q(z,w))\land
+        (\forall a\exists b (\lnot P(a,b)\land \lnot Q(a,b)))\]
+        \item Skolemize
+        \[(\forall y P(x,y)\lor \forall w Q(z,w))\land
+        (\forall a (\lnot P(a,f(a))\land \lnot Q(a,f(a))))\]
+        \item 改为前缀形式
+        \[\forall y\forall w\forall a ((P(x,y)\lor Q(z,w))\land
+        (\lnot P(a,f(a))\land \lnot Q(a,f(a))))\]
+        \item 变成子句形式
+        \begin{itemize}
+            \item [1.] $P(x,y),Q(z,w)$
+            \item [2.] $\lnot P(a,f(a))$
+            \item [3.] $\lnot Q(a,f(a))$
+        \end{itemize}
+    \end{itemize}
+    归结过程如下
+    \begin{enumerate}
+        \item [4.] $R[1a,2]\{a=x,y=f(a)\}$：$(Q(z,w))$
+        \item [5.] $R[3,4]\{a=z,w=f(a)\}$：$()$
+    \end{enumerate}
+    总结即当$a=x,y=f(a),a=z,w=f(a)$时得到归结结果，题目中的式子成立。
+    \textemph{（注意变量写左边，常量写右边）}
+\end{analysis}
 
 \subsubsection{合一}
 归结过程中可能需要合一(unification)，用来消除两个子句中不同的变量。
@@ -157,7 +202,10 @@ $P(f(x),a)$和$P(y,f(w))$不能被合一，因没有令$a=f(w)$的替换使得�
 \end{figure}
 
 \subsubsection{完整例子}
-\textbf{基于反驳的归结推理}
+
+\paragraph{基于反驳的归结推理}
+\begin{example}
+下面是一个例子
 \begin{figure}[H]
 \centering
 \begin{tabular}{c}
@@ -165,9 +213,9 @@ $P(f(x),a)$和$P(y,f(w))$不能被合一，因没有令$a=f(w)$的替换使得�
 \includegraphics[width=0.8\linewidth]{fig/alpine_club_eg2.png}
 \end{tabular}
 \end{figure}
+\end{example}
 
-\myhline
-\textbf{答案抽取(answer extraction)}
+\paragraph{答案抽取(answer extraction)}
 \begin{itemize}
 \item 将询问$\exists xP(x)$用$\exists x[P(x)\land\lnot\text{answer}(x)]$替换
 （因为取非后变成$\forall x P(x)\implies \text{answer}(x)$）

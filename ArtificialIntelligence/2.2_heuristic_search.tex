@@ -1,6 +1,8 @@
 % !TEX root = main.tex
 
 \subsection{有信息搜索}
+% Heuristic search: Greedy best-first, A*
+
 在无信息搜索中，我们从不估计边界集中最有期望(promising)获得最优解的结点，而是无区别地选择当前边界集中第一个结点。
 然而事实上，针对不同问题我们是有对结点的先验知识(apriori knowledge)的，即从当前结点到目标结点的开销有多大。
 而这就是有信息搜索(informed)，或者称为启发式搜索(heuristics)。
@@ -25,6 +27,7 @@ n_2\arrow[bend right,u] & & \text{Goal}
 定义一个估值函数
 \[f(n)=g(n)+h(n)\]
 其中$g(n)$为路径到节点$n$的代价，$h(n)$为从$n$到目标节点的代价，采用$f(n)$对边界集内的节点进行排序。
+\textemph{当$f(n)$相同时，再用$h(n)$进行升序排序。}
 
 $f(n)$需要满足下列两个性质。
 \begin{definition}[可采纳的(admissibility)]

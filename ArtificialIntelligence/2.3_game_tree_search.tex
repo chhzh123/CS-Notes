@@ -1,6 +1,8 @@
 % !TEX root = main.tex
 
 \subsection{博弈树搜索}
+% Game tree search: MiniMax, alpha-beta pruning
+
 博弈的一些前提
 \begin{itemize}
 	\item 两个博弈玩家
@@ -51,12 +53,13 @@
 用DFS可以遍历整棵树，同时保持线性的空间复杂度，每次回溯时更新结点为min/max即可
 
 \subsubsection{Alpha-Beta剪枝}
-注意$\alpha$-$\beta$剪枝只要有一祖先大于/小于后代节点的值就可以进行剪枝。
+注意$\alpha$-$\beta$剪枝只要有一祖先大于/小于后代节点的值就可以进行剪枝，即要看\textemph{所有祖先做决定}。
 \begin{itemize}
 	\item 只要当前Max结点的值$\geq$祖先某一Min结点的值，就可以在该Max结点上做$\alpha$剪枝
 	\item 只要当前Min结点的值$\leq$祖先某一Max结点的值，就可以在该Min结点上做$\beta$剪枝
 \end{itemize}
-\begin{algorithm}
+即\textemph{当前Min小等祖先Max，当前Max大等祖先Min可剪枝}。
+\begin{algorithm}[H]
 \caption{Alpha-Beta Pruning}
 \begin{algorithmic}[1]
 \Procedure{AlphaBeta}{n,Player,alpha,beta}
@@ -84,6 +87,15 @@
 \EndProcedure\Comment{Initial call: AlphaBeta(START-NODE,Player,$-\infty$,$+\infty$)}
 \end{algorithmic}
 \end{algorithm}
+
+\begin{example}
+如下采用$\alpha-\beta$剪枝进行搜索，方形为Max结点，圆形为Min结点。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{fig/T01-3.png}
+\end{figure}
+\end{example}
+
 可以证明，如果原始情况需要访问$O(b^D)$个结点，则经过$\alpha$-$\beta$剪枝后只需访问$O(b^{D/2})$个结点。
 
 \subsubsection{其他补充}
