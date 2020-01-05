@@ -1,6 +1,18 @@
 % !TEX root = main.tex
 
 \section{线性判别函数} % 5.1-5.8 (5.10-5.12)
+% 广义线性判别函数
+% MSE
+% 梯度下降法、牛顿法、Hessian矩阵
+% 感知器算法
+% MSE与Fisher线性判别
+% SVM
+%% VC Dimension
+%% Kernel Trick
+%% Soft Margin
+%% Model Selection
+% Cross Validation (k-fold)
+
 \subsection{线性判别函数和判定面}
 判别(discriminant)函数是指由$\vx$的各个分量线性组合而成的函数
 \[g(\vx)=\vw^\T\vx+w_0\]
@@ -47,6 +59,39 @@
 即当选择
 \[\eta(k)=\frac{\norm{\nabla J}^2}{\nabla J^T H\nabla J}\]
 时，可使$J(\va(k+1))$最小化。
+
+牛顿法
+\[\va(k+1)=\va(k)-H^{-1}\nabla J\]
+
+\subsection{感知器}
+考虑构造线性不等式$\va^\T\vy_i>0$的准则函数，用错分的样本作为准则函数不好因为分段常数不利于梯度搜索。
+更好的选择是感知器(perceptron)准则函数
+\[J_p(\va)=\sum_{\vy\in\mY}(-\va^\T\vy)\]
+这里$\mY(\va)$是被$\va$错分的样本集。
+由几何上知，$J_p(\va)$是与错分样本到判决边界距离之和成正比的。
+对上式求导有
+\[\nabla J_p=\sum_{\vy\in\mY}(-\vy)\]
+得到梯度下降迭代公式
+\[\va(k+1)=\va(k)+\eta(k)\sum_{\vy\in\mY_k}\vy\]
+
+\subsection{最小平方误差}
+定义误差向量
+\[\ve=Y\va-\vb\]
+使误差向量长度平方最小化，即最小化平方误差和(MSE)准则函数
+\[J_s(\va)=\norm{Y\va-\vb}^2=\sum_{i=1}^n(\va^\T\vy_i-b_i)^2\]
+计算梯度有
+\[\nabla J_s=2Y^\T(Y\va-\vb)\]
+令其为$0$有
+\[Y^\T Y\va=Y^\T\vb\]
+当方阵$Y^\T Y$非奇异时，有唯一解
+\[\va=(Y^\T Y)^{-1} Y^\T\vb=Y^\dag\vb\]
+这里的$\hat{d}\times n$矩阵
+\[Y^\dag (Y^\T Y)^{-1} Y^\T\]
+称为$Y$的伪逆矩阵。
+注意到若$Y$为方阵且非奇异，则这个伪逆矩阵即为$Y$的逆矩阵。
+还应注意到$Y^\dag Y=I$，但通常$YY^\dag\ne I$。
+
+MSE与Fisher线性判别函数的解是一样的。
 
 \subsection{支持向量机}
 支持向量机(support vector machine, SVM)通过一个足够高维的非线性映射$\varphi(\cdot)$，将两类数据用超平面进行分割。

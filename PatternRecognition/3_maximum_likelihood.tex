@@ -1,6 +1,9 @@
 % !TEX root = main.tex
 
 \section{极大似然与贝叶斯参数估计} % 3.1-3.5 3.7-3.8 (3.9)
+% 参数估计方法
+% Fisher线性判别
+
 \subsection{极大似然估计}
 假设样本集$\mD$中有$n$个样本$\vx_1,\ldots,\vx_n$，由于这些样本均独立抽取，故
 \[p(\mD\mid\vtheta)=\prod_{k=1}^np(\vx_k\mid\vtheta)\]
@@ -14,10 +17,7 @@
 \[\nabla_{\vtheta}\ell = 0\]
 而最大后验(maximum a posteriori, MAP)则是使$\ell(\vtheta)p(\vtheta)$取最大值的参数向量$\vtheta$，注意这里最好\textbf{先乘起来再取对数}。
 
-高维($d$维)高斯分布
-\[p(\vx)=\frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}\exp\lrp{-\frac{1}{2}(\vx-\vmu)^\T\Sigma^{-1}(\vx-\vmu)}\]
-
-若均值和协方差矩阵均未知，则最大似然估计结果为
+高斯分布若均值和协方差矩阵均未知，则最大似然估计结果为
 \[\begin{aligned}
 \hat{\vmu} &= \frac{1}{n}\sum_{k=1}^n\vx_k\\
 \hat{\Sigma} &= \frac{1}{n}\sum_{k=1}^n(\vx_k-\hat{\vmu})(\vx_k-\hat{\vmu})^\T\approx\E{(\vx-\hat{\vmu})(\vx-\hat{\vmu})^\T}
