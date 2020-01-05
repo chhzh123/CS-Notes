@@ -1,3 +1,77 @@
 % !TEX root = main.tex
 
-% \section{线性判别函数} % 5.1-5.8 (5.10-5.12)
+\section{线性判别函数} % 5.1-5.8 (5.10-5.12)
+\subsection{线性判别函数和判定面}
+判别(discriminant)函数是指由$\vx$的各个分量线性组合而成的函数
+\[g(\vx)=\vw^\T\vx+w_0\]
+这里$\vw$是权向量，$w_0$称为阈权值(threshold)或偏置。
+
+对于二类线性分类器来说，$g(\vx)>0$则判为$\omega_1$，否则判为$\omega_2$。
+方程$g(\vx)=0$定义了一个判定面，将归类于$\omega_1$和$\omega_2$的点分开来。
+当$g(\vx)$是线性的，这个平面称为超平面。
+
+判别函数是特征空间某点$\vx$到超平面距离的代数度量（注意到垂直平行特性）
+\[\vx=\vx_p+r\frac{\vw}{\norm{\vw}}\]
+其中$\vx_p$是$\vx$在超平面$H$上的投影向量，$r$是相应的算术距离，为正则$\vx$在$H$正侧，否则在$H$负侧。
+由于$g(\vx_p)=0$，有
+\[g(\vx)=\vw^\T\vx+w_0=r\norm{\vw}\]
+或
+\[r=\frac{g(\vx)}{\norm{\vw}}\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{fig/linear_decision_boundary.png}
+\end{figure}
+
+\subsection{广义线性判别函数}
+线性判别函数可写成
+\[g(\vx)=w_0+\sum_{i=1}^d w_i x_i\]
+系数$w_i$是权向量$\vw$的分量，通过加入另外的项（$\vw$的各对分量之间的乘积），得到二次判别函数
+\[g(\vx)=w_0+\sum_{i=1}^d w_ix_i+\sum_{i=1}^d\sum_{j=1}^d w_{ij}x_ix_j\]
+因$x_ix_j=x_jx_i$，不失一般性假设$w_{ij}=w_{ji}$。
+
+继续加入更高次项（如$w_{ijk}x_ix_jx_k$）可得到多项式判别函数，可看作对某一判别函数$g(x)$做级数展开，然后取截尾逼近，意味着某一广义线性判别函数
+\[g(\vx)=\sum_{i=1}^d a_iy_i(\vx)\]
+或
+\[g(\vx)=\va^\T\vy\]
+
+特别地，线性判别函数可写成
+\[g(\vx)=w_0+\sum_{i=1}^d w_i x_i=\sum_{i=0}^dw_ix_i\]
+令$\vy=\bmat{1 & \vx}^\T$为增广特征向量，$\va=\bmat{w_0 & \vw}$为增广权向量。
+
+求解$\va^\T\vy_i>0$的解所采用的方法是：定义一个准则函数$J(\va)$，当$\va$是解向量时，$J(\va)$最小，因此可将其简化为一个标量函数极小化问题，通常用梯度下降法解决。
+\[\va(k+1)=\va(k)-\eta(k)\nabla J(\va(k))\]
+其中$\eta$为正的比例因子，即学习率。
+
+假设准则函数可以通过二阶展开近似
+\[J(\va)\approx J(\va(k))+\nabla J^\T(\va-\va(k))+\frac{1}{2}(\va-\va(k))^\T H(\va-\va(k))\]
+即当选择
+\[\eta(k)=\frac{\norm{\nabla J}^2}{\nabla J^T H\nabla J}\]
+时，可使$J(\va(k+1))$最小化。
+
+\subsection{支持向量机}
+支持向量机(support vector machine, SVM)通过一个足够高维的非线性映射$\varphi(\cdot)$，将两类数据用超平面进行分割。
+假设每个模式$\vx_k$变换到$\vy_k=\varphi(\vx_k)$，则问题在于选择$\varphi(\cdot)$。
+对$n$个模式中的每一个$k=1,\ldots,n$，根据模式属于$\omega_1$或$\omega_2$，分别令$z_k=\pm 1$，增广空间$\vy$上的判别函数是
+\[g(\vy)=\va^\T\vy\]
+这里权向量和变换后的模式向量都是增广的（取$a_0=w_0,y_0=1$），则这样的分割超平面保证
+\[z_kg(\vy_k)\geq 1,\;k=1,\ldots,n\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{fig/SVM.png}
+\end{figure}
+
+训练一个支持向量机的目标是找到一个具有最大间隔(largest margin)的分割平面，若间隔越大则得到的分类器也越好。
+从超平面到变换后的模式$\vy$的距离是$|g(\vy)|/\norm{\va}$（即做投影），若正的间隔$b$存在，则推出
+\[\frac{z_kg(\vy_k)}{\norm{\va}}\geq b,\;k=1,\ldots,n\]
+目标即找一个使得$b$最大化的权向量$\va$。
+由于解向量可以任意伸缩且保持超平面不变，故有限制条件$b\norm{a}=1$，即其确定的是$\norm{\va}$的极小值。
+
+支持向量是使上式等号成立的模式向量，即支持向量是最靠近超平面的，也是最难分类的样本/对求解分类任务最富有信息的模式。
+
+目标为极小化$\norm{\va}$，构造拉格朗日函数
+\[L(\va,\valpha)=\frac{1}{2}\norm{\va}^2\sum_{k=1}^n\alpha_k[z_k\va^\T\vy_k-1]\]
+可用KKT条件改写为
+\[L(\valpha)=\sum_{k=1}^n\alpha_i-\frac{1}{2}\sum_{k,j}^n\alpha_k\alpha_jz_kz_j\vy^\T\vy_k\]
+结合训练数据的约束条件
+\[\sum_{k=1}^nz_k\alpha_k=0,\;\alpha_k\geq 0,\;k=1,\ldots,n\]
+进行求解。
