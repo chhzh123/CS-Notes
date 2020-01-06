@@ -93,7 +93,7 @@ CSP不关心到目标状态的移动步骤，而只关心是否存在这样一�
 \includegraphics[width=0.6\linewidth]{fig/gac_eg.png}
 \end{figure}
 
-其实如果直接手跑实验，则同样类比数独，先将每一个格不能填的数字都划掉，然后尝试赋值，接着再进入下一层。
+其实如果直接手跑实验，则同样类比数独，先将每一个格不能填的数字都划掉（循环添加条件直至收敛），然后尝试赋值进入下一层。
 \begin{example}
 考虑$5$个变量$A,B,C,D,E$，论域都为$\{1,2,3,4\}$，限制条件为$A > D$，$D > E$，$C \ne A$，$C > E$，$C \ne D$，$B \geq A$，$B \ne C$和$C \ne D + 1$。
 \end{example}
@@ -109,7 +109,7 @@ CSP不关心到目标状态的移动步骤，而只关心是否存在这样一�
 即\textemph{其他变量的指派构成了当前变量的支撑}。
 \end{definition}
 
-向前检测和边一致性检测的区别如下
+向前检测和边一致性检测的区别如下，即FC只考虑当前限制下某一变量赋值带来的后果，而GAC则考虑所有限制下变量赋值带来的后果。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/diff_fc_gac.png}

@@ -65,7 +65,6 @@ $pickup(X)$:
 \end{itemize}
 \end{example}
 
-\myhline
 注意STRIPS的表达力还是有限制的，如它没有条件(conditional)影响。
 因此需要有表达力更强的语言Action Description Language(ADL)，允许在前提中有任意公式，而且可以有条件和全称影响。
 
@@ -135,6 +134,14 @@ $pickup(X)$:
 \includegraphics[width=0.8\linewidth]{fig/count_actions.png}
 \end{figure}
 进而变成一个集合覆盖问题：从集合的集合$S$中选择$m$个集合使得其并集可以覆盖全集。
+
+CountActions从最后一层往前迭代，将目标$G$划分为$G_P$和$G_N$。
+\[\begin{aligned}
+G_P&=G\cap S_{K-1}\\
+G_N&=G-G_P\\
+A&=\text{影响成为}G_N\text{的最小覆盖}\\
+NewG&=G_P\cup A\text{的前提}
+\end{aligned}\]
 
 \begin{theorem}
 假设$Goal\subset S_k$，对于$i<k$，令$A_{i-1}'$为调用CountActions($G_i,S_i$)的结果，则$A_0',\ldots,A_{k-1}'$为松弛问题的一个解。

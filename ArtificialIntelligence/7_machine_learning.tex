@@ -21,26 +21,30 @@
 以信息增益为准则来选择划分属性的算法即为ID3决策树。
 
 \subsection{贝叶斯学习}
-先验$\pr{H}$、似然$\pr{d\mid H}$、证据$d=\lrang{d_1,d_2,\ldots,d_n}$，有贝叶斯公式（先验推后验）
-\[\pr{H\mid d}=\alpha\pr{d\mid H}\pr{H}\]
+假设集$H$内有假设$h_i$，先验$\pr{h_i}$、似然$\pr{d\mid h_i}$、证据$d=\lrang{d_1,d_2,\ldots,d_n}$，有贝叶斯公式（先验推后验）
+\[\pr{h_i\mid d}=\alpha\pr{d\mid h_i}\pr{h_i}\]
 
-假设独立同分布$\pr{d\mid h}=\prod_j\pr{d_j\mid h}$
+假设独立同分布$\pr{d\mid h}=\prod_j\pr{d_j\mid h}$，$X$为要预测的值
 \begin{itemize}
-	\item 贝叶斯学习：$\pr{X\mid d}=\sum_i\pr{X\mid d,h_i}\pr{h_i\mid d}=\sum_i\pr{X\mid h_i}\pr{h_i\mid d}$
+	\item 贝叶斯学习：由全概率公式
+	\[\pr{X\mid d}=\sum_i\pr{X\mid d,h_i}\pr{h_i\mid d}=\sum_i\pr{X\mid h_i}\pr{h_i\mid d}\]
 	\item 极大后验(MAP)学习：$\pr{X\mid d}\approx\pr{X\mid h_{MAP}}$
 	\[h_{MAP}=\argmax_{h_i}\pr{h_i\mid d}=\argmax_{h_i}\pr{h_i}\pr{d\mid h_i}\]
 	\item 最大似然(ML)学习：$\pr{X\mid d}\approx\pr{X\mid h_{ML}}$
 	\[h_{ML}=\argmax_{h_i}\pr{d\mid h_i}\]
 \end{itemize}
 \textemph{注意贝叶斯在计算时应保证概率和为$1$，即要进行归一化。}
+上述三种方法都会在数据增加时收敛。
 
+\subsection{朴素贝叶斯}
 基于属性条件独立性假设
 \[\pr{c\mid\vx}=\frac{\pr{c}\pr{\vx\mid c}}{\pr{\vx}}=\frac{\pr{c}}{\pr{\vx}}\prod_{i=1}^d\pr{x_i\mid c}\]
 其中$d$为属性数目，$x_i$为$\vx$在第$i$个属性上的取值。
 因对所有类别来说$\pr{\vx}$相同，因此贝叶斯判定准则为
-\[h_{NB}(\vx)=\argmax_{c\in\mathcal{Y}}\pr{c}\prod_{i=1}^d\pr{x_i\mid c}\]
+\[h_{NB}(\vx)=\argmax_{c\in\mathcal{Y}}\lrp{\pr{c}\prod_{i=1}^d\pr{x_i\mid c}}\]
+其中$\mY$为所有类别。
 令$D_c$表示训练集$D$中第$c$类样本组成的集合，有
-\[\pr{c}=\frac{D_c}{D}\qquad\pr{x_i\mid c}=\frac{|D_{c,x_i}|}{|D_c|}\]
+\[\pr{c}=\frac{|D_c|}{|D|}\qquad\pr{x_i\mid c}=\frac{|D_{c,x_i}|}{|D_c|}\]
 
 \subsection{聚类算法}
 \begin{itemize}
@@ -49,6 +53,7 @@
 \end{itemize}
 
 \subsubsection{EM算法}
+% https://blog.csdn.net/v_july_v/article/details/81708386
 最大期望(Expectation-Maximization, EM)算法：用作软聚类
 \begin{itemize}
 	\item E步：计算期望，利用对隐藏变量的现有估计值（实际上就是扩充了当前数据，初始化先随机赋值，然后进入迭代），计算其最大似然估计值
@@ -58,7 +63,7 @@ M步上找到的参数估计值被用于下一个E步计算中，这个过程不
 
 \subsubsection{K-means算法}
 \begin{itemize}
-	\item E步：对于每一个类别$i$和特征$X_j$，有
+	\item E步：对于每一个类别$i$和特征$X_j$，计算每个类别的均值向量
 	\[pval(i,X_j)\gets\frac{\sum_{e:class(e)=i}val(e,X_j)}{|\{e:class(e)=i\}|}\]
 	\item M步：对于每一个样本$e$，指派$e$给类别$i$使得
 	\[\min_i\sum_{j=1}^n(pval(i,X_j)-val(e,X_j))^2\]
@@ -96,8 +101,9 @@ Q^\pi(s,a) &= \sum_{s'}\pr{s'\mid a,s}(R(s,a,s')+\gamma V^\pi(s'))\\
 V^\pi(s) &= Q(s,\pi(s))
 \end{aligned}\]
 
-Q学习：随机选择动作$a$，观察回报$r$和下一状态$s'$
-\begin{algorithm}
+Q学习：随机选择动作$a$，观察回报$r$和下一状态$s'$。
+注意Q学习的公式有很多表达形式，如下面算法是考虑了带学习率$\alpha$的更新公式，但不管怎样核心都是\textbf{当前回报$+$折扣下一动作的最大Q值}。
+\begin{algorithm}[H]
 \caption{Q-Learning}
 \begin{algorithmic}[1]
 \State 随机初始化$Q[S,A]$
@@ -106,7 +112,10 @@ Q学习：随机选择动作$a$，观察回报$r$和下一状态$s'$
 \State 选择动作$a$并执行
 \State 观察回报$r$和状态$s'$
 \State 依据下述公式进行更新
-\[Q[s,a]\gets Q[s,a]+\alpha(r+\gamma\max_{a'}Q[s',a']-Q[s,a])\]
+\[\begin{aligned}
+Q[s,a]&\gets Q[s,a]+\alpha(r+\gamma\max_{a'}Q[s',a']-Q[s,a])\\
+&=(1-\alpha)Q[s,a] +\alpha(r+\gamma\max_{a'}Q[s',a'])
+\end{aligned}\]
 \State $s\gets s'$
 \Until{收敛}
 \end{algorithmic}

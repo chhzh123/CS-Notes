@@ -66,12 +66,12 @@ E \arrow[r] & C\arrow[r] & A \arrow[r] & B\arrow[r] & H
 
 \begin{definition}[D分隔(separation)]
 若一组变量$E$阻隔(block)了$X$到$Y$的所有\textcolor{red}{无向路径}$P$，则称$E$ D-分隔了$X$和$Y$，且有给定证据$E$下，$X$和$Y$条件独立。
-$E$阻隔(block)了路径$P$当且仅当在路径上存在某点$Z$使得下面任一成立。
+$E$阻隔了路径$P$当且仅当在路径上存在某点$Z$使得下面任一成立：（一定要小心箭头方向）
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/blocking.png}
 \end{figure}
-注意第3种情况，证据集中没有给交叉结点及其子结点，则父亲节点都独立。
+注意第3种情况，\textemph{交叉结点及其子结点都没有在证据集中给出}，则父亲节点被阻隔。
 \end{definition}
 \begin{example}
 考虑如下贝叶斯网络
@@ -80,9 +80,10 @@ A\arrow[dr] & & B\arrow[dl] \arrow[dr] & \\
  & C\arrow[dl] \arrow[dr] & & D\\
 E & & F &
 \end{bayesian}
-在此例中$\pr{c\mid a,b,\lnot d,\lnot e,\lnot f}\ne\pr{c\mid a,b}$。
+在此例中$\pr{c\mid a,b,\lnot d,\lnot e,\lnot f}\ne\pr{c\mid a,b}$，要求前者还是拿条件概率展开为全变元非条件概率来求解。
 \end{example}
 \begin{example}
+考虑下图的贝叶斯网络
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/d-separation_example.png}
@@ -102,7 +103,7 @@ E & & F &
 
 采用动态规划的思想，存储子项，减少计算量。
 
-记因子为某些变量的函数，如$\pr{C\mid A)}=f(A,C)$
+记因子为某些变量的函数，如$\pr{C\mid A}=f(A,C)$
 \begin{itemize}
 	\item 乘积：$h(X,Y,Z)=f(X,Y)\times g(Y,Z)$
 	\item 求和：$h(Y)=\sum_{x\in\dom[X]}f(x,Y)$
@@ -139,14 +140,13 @@ E & & F &
 \begin{itemize}
 	\item $Q$自身当然是相关的
 	\item 若结点$Z$相关，则它的父母也相关
-	\item 若$e\in E$是一个相关结点的\textcolor{red}{后代}，则$E$也是相关的
+	\item 若\textcolor{red}{$e\in E$}是一个相关结点的\textcolor{red}{后代}，则$E$也是相关的
 \end{itemize}
 \end{definition}
 \begin{example}
+若询问$P(F\mid H)$，则$D,E,G$是不相关的，这种算法会过度估计相关的变量。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/relevance_example.png}
 \end{figure}
-但询问$P(F\mid H)$，则$D,E,G$是不相关的。
-而且这种算法会过度估计相关的变量。
 \end{example}

@@ -70,7 +70,7 @@
 \If{Player == MAX}
 \For{c in ChildList}
 \State alpha = max(alpha, AlphaBeta(c,MIN,alpha,beta))
-\If{beta <= alpha}
+\If{beta $<=$ alpha}
 \State break
 \EndIf
 \EndFor
@@ -78,7 +78,7 @@
 \Else\Comment{Player == MIN}
 \For{c in ChildList}
 \State beta = min(beta, AlphaBeta(c,MAX,alpha,beta))
-\If{beta <= alpha}
+\If{alpha $>=$ beta}
 \State break
 \EndIf
 \EndFor

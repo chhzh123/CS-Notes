@@ -9,55 +9,80 @@
 % Answer extraction
 
 \subsection{基本概念}
-一阶逻辑(First-Order Logic,FOL)
+一阶逻辑(First-Order Logic, FOL)的主要语义元素为表示物体、关系和函数的符号(symbol)，分别对应着常量、谓词和函数。
+前者为抽象概念，后者为具体概念。
 \begin{itemize}
-	\item 个体/常量(0-arity)
+	\item 个体/常量(0-arity)：$C$
 	\item 一元(unary)谓词：$A(x),B(x)$
-	\item 关系/二元谓词：$L(x,y)$
+	\item 关系/二元谓词(predicate)：$L(x,y)$
 \end{itemize}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{fig/FOL.png}
+\end{figure}
+
+FOL与命题逻辑的区别在于本体论的承诺(ontological commitment)，即是否确保实体(reality)的存在。
+而FOL确保这种承诺的方式是用关于这些句子事实的形式化的模型(model)来表达，其告诉了我们所有可能的世界(possible world)。
+比如，命题逻辑假设世界上存在要么为真要么为假的事实，而FOL则假设更多，即世界上存在某些存在特定联系(relation)的物体(object)使他们成立或不成立，实际上就是添加了\textbf{全称和特称}的概念。
 
 \begin{definition}[项(term)]
 每一个变量都是一个项。
-若$t_1,\ldots,t_n$都为项，且$f$为$n$参数的的函数符号，则$f(t_1,\ldots,t_n)$是一个项。
+若$t_1,\ldots,t_n$都为项，且$f$为$n$元的函数符号，则$f(t_1,\ldots,t_n)$是一个项。
 \end{definition}
 \begin{definition}[公式(formular)]
 公式包括以下几种情况：
 \begin{itemize}
-\item 若$t_1,\ldots,t_n$都是项，且$P$是$n$元的谓词符号，则$P(t_1,\ldots,t_n)$是一个公式
+\item 若$t_1,\ldots,t_n$都是项，且$P$是$n$元谓词符号，则$P(t_1,\ldots,t_n)$是一个公式
 \item 若$t_1,t_2$都是项，那么$(t_1=t_2)$是一个原子公式
 \item 若$\alpha,\beta$都是公式，$v$是一个变量，则$\lnot\alpha,(\alpha\land\beta),(\alpha\lnot\beta),\exists v.\alpha,\forall v.\alpha$都是公式
 \end{itemize}
-注意公式中的变量是自由的(free)还是约束的(bound)，通过全称特称符号可进行约束。
+通过全称特称符号进行约束的为约束(bound)变量，否则为自由(free)变量。
 没有自由变量的公式称为句子(sentence)。
 \end{definition}
+注意区别项和公式，项的结果仍然是某一实体，而公式的结果是真值。
+
 \begin{definition}[替换]
 $\alpha[v/t]$表示$\alpha$中所有自由出现的$v$都用项$t$替代
 \end{definition}
+
+除了基本的物体、关系和函数，每一个模型还需提供一个假设说明到底什么物体、关系和函数是被常量、谓词和函数所指代的\footnote{关于以下几个概念的解释可见\url{https://max.book118.com/html/2017/1012/136804871.shtm}}。
 \begin{definition}[解释(interpretation)]
 一个解释是一个对(pair)$\mI=\lrang{D,I}$，其中
 \begin{itemize}
 	\item $D$是论域，可以是任何非空集
-	\item $I$是从谓词到函数符号的映射
+	\item $I$是从谓词、函数符号到具体实体的映射
+	\item 常量符号映射为具体物体（全域$U$中的元素）
 	\item 若$P$是一个$n$元谓词符号，则$I(P)$是一个在$D$上的$n$元关系，即$I(P)\subset D^n$。
 	如$p$是一个常量/命题符号，则$I(p)\in\{True,False\}$。
 	\item 若$f$是一个$n$元函数符号，则$I(f)$是一个在$D$上的$n$元函数，即$I(f):D^n\to D$。
 	如$c$是一个零元常量符号，则$I(c)\in D$。
 \end{itemize}
 \end{definition}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/interpretation.png}
+\end{figure}
+考虑一个项$f(t_1,\ldots,t_n)$，函数符号$f$指向模型中的某一函数$F$，参数项指向论域中的物体$d_1,\ldots,d_n$，则完整的项指代函数$F$作用在$d_1,\ldots,d_n$上的值。
+比如Love是一个函数符号，Bob是一个常量符号，则Love(Bob)指明Bob Loves，也即解释确定了每一个项的引用(reference)。
+
+注意若公式中含有自由变元，则其解释并不对变元进行指派，也得不到具体的真值。
+
 \begin{definition}[赋值(denotation)]
 变量指派(assignment)$\mu$是一个从变量集合到论域$D$的映射
 \[\begin{aligned}
 \norm{v}_{\mI,\mu}&=\mu(v)\\
 \norm{f(t_1,\ldots,t_n)}_{\mI,\mu}&=I(f)(\norm{t_1}_{\mI,\mu},\ldots,\norm{t_n}_{\mI,\mu})
 \end{aligned}\]
+解释只是从抽象到具体
 \end{definition}
 \begin{definition}[满足]
 $\mI,\mu\models\alpha$读作$\mI,\mu$满足$\alpha$
 \begin{itemize}
-	\item $\mI,\mu\models P(t_1,\ldots,t_n)\iff\lrang{\norm{t_1}_{\mI,\mu},\ldots,\norm{t_n}_{\mI,\mu}}\in I(P)$
+	\item $\mI,\mu\models P(t_1,\ldots,t_n)\iff\lrang{\norm{t_1}_{\mI,\mu},\ldots,\norm{t_n}_{\mI,\mu}}\in I(P)$\\
+	即对于解释$\mI$下的$\mu$赋值，$t_i$对应的具体实体都在$P$对应的实体关系的论域中
 	\item $\mI,\mu\models(t_1=t_2)\iff\norm{t_1}_{\mI,\mu}=\norm{t_2}_{\mI,\mu}$
 \end{itemize}
-同样也有命题逻辑的一些性质
+同样有一些逻辑基本性质
 \begin{itemize}
 	\item $\mI,\mu\models\lnot\alpha\iff\mI,\mu\not\models\alpha$
 	\item $\mI,\mu\models(\alpha\land\beta)\iff(\mI,\mu\models\alpha\land\mI,\mu\models\beta)$
@@ -66,13 +91,13 @@ $\mI,\mu\models\alpha$读作$\mI,\mu$满足$\alpha$
 	\item $\mI,\mu\models\forall v.\alpha\iff(\forall d\in D:\mI,\mu\{d;v\}\models\alpha)$
 \end{itemize}
 
-令$S$为句子的集合，若对于所有$\alpha\in\mI,\mI\models\alpha$，则称$\mI$满足$S$，记作$\mI\models S$，$\mI$又被称为$S$的一个模型。
+令$S$为句子的集合，若对于所有$\alpha\in S,\mI\models\alpha$，则称$\mI$满足$S$，记作$\mI\models S$，$\mI$又被称为$S$的一个模型。
 若$S$是可满足的，则存在$\mI$使得$\mI\models S$。
 \end{definition}
 \begin{example}
 通常的问题是下列句子集合是否是可满足的
 \[\{\forall x(P(x)\to Q(x)),P(a),\lnot Q(a)\}\]
-即是否存在这样的解释/变量赋值使全部句子都成立。
+即是否存在这样的解释使全部句子都成立。
 \end{example}
 
 \begin{definition}[蕴含(entail)]
@@ -95,19 +120,21 @@ $S\models\alpha$是指对于任意满足$\mI\models S$的$\mI$有$\mI\models\alp
 \begin{definition}[归结(resolution)]
 从两条子句$\{p\}\cup c_1$和$\{\lnot p\}\cup c_2$中推出子句$c_1\cup c_2$的过程称为归结。
 \end{definition}
-\begin{definition}[获取(derivation)]
-句子序列$c_1,\ldots,c_n=c$，对于每一个$c_i$，或者$c_i\in S$，或者$c_i$是先前\textemph{两个子句}的归结，这个过程称为获取，记为$S\vdash c$。
+\begin{definition}[推出(derivation)]
+句子序列$c_1,\ldots,c_n=c$，对于每一个$c_i$，或者$c_i\in S$，或者$c_i$是先前\textemph{两个子句}的归结，这个过程称为推出，记为$S\vdash c$。
 \end{definition}
+注意区别推出/逻辑后承$\vdash$与蕴含算子/实质蕴涵$\to$，见知乎讨论\footnote{逻辑学中，前提为假而命题为真的推论如何解释？ - 罗心澄的回答 - 知乎 \url{https://www.zhihu.com/question/21020308/answer/16917222}}。
+
 \begin{theorem}
 若$S\vdash c$，则$S\models c$
 \end{theorem}
-但注意其逆命题并不成立，考虑$(p)\models(p,q)$，但是$(p)\nvDash(p,q)$。
+但注意其逆命题并不成立，考虑$(p)\models(p,q)$，但是$(p)\not\vdash(p,q)$。
 
 \begin{theorem}
 $S\vdash()\iff S\models()\iff S$是不可满足的
 \end{theorem}
 
-进而得到基于归结的推理过程：反驳(refutation)，即$KB\models\alpha\iff KB\land\alpha$是不可满足的
+进而得到基于归结的推理过程：反驳(refutation)，即$KB\models\alpha\iff KB\land\textcolor{blue}{\lnot\alpha}$是不可满足的
 \begin{itemize}
 	\item 将$KB$和$\lnot\alpha$改写为子句形式构成$S$
 	\item 检测是否$S\vdash()$
@@ -124,7 +151,7 @@ $S\vdash()\iff S\models()\iff S$是不可满足的
 	\item 消除蕴含：$A\to B\iff \lnot A\lor B$
 	\item 否定内移：德摩根定律
 	\item 标准化变量：重命名变量使得每一个量词都是唯一的
-	\item 消除存在量词(skloemize)：引入新的函数符号，如$\forall x P(x)$改为$P(g(y))$
+	\item 消除存在量词(skloemize)\footnote{数学上的例子是$\forall x:\diff (x^y)/\diff y=x^y$，则我们可以给其一个名字比如说$\ee$；但是却不能给一个已经存在的物体，比如说$\pi$，再命名。}：引入新的常量符号和函数符号，如$\forall x P(x)$改为$P(g(y))$
 	\item 改为前缀形式：只有全局量词，且名字均不同
 	\item 析取分配到合取
 	\item 压平嵌套合取和析取
@@ -136,9 +163,10 @@ $S\vdash()\iff S\models()\iff S$是不可满足的
 \exists x\forall y(P(x,y)\lor Q(x,y))\]
 \end{example}
 \begin{analysis}
+	这里其实可以把$KB$看成空，进而$S$为上述句子的取反。
 	按照子句形式的转换顺序，有
     \begin{itemize}
-        \item 改写为归结的等价形式（消除蕴含）
+        \item 消除蕴含
         \[(\exists x\forall y P(x,y)\lor\exists x\forall y Q(x,y))\land\lnot
         (\exists x\forall y(P(x,y)\lor Q(x,y)))\]
         \item 否定内移
@@ -195,11 +223,13 @@ $P(f(x),a)$和$P(y,f(w))$不能被合一，因没有令$a=f(w)$的替换使得�
 \end{itemize}
 \end{example}
 
-计算MGU的算法：不断代入新的元，使其一致
+\begin{myalgorithm}[MGU]
+不断代入新的元，使其一致
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/MGU.png}
 \end{figure}
+\end{myalgorithm}
 
 \subsubsection{完整例子}
 
@@ -218,7 +248,7 @@ $P(f(x),a)$和$P(y,f(w))$不能被合一，因没有令$a=f(w)$的替换使得�
 \paragraph{答案抽取(answer extraction)}
 \begin{itemize}
 \item 将询问$\exists xP(x)$用$\exists x[P(x)\land\lnot\text{answer}(x)]$替换
-（因为取非后变成$\forall x P(x)\implies \text{answer}(x)$）
+（因为取非后变成$\forall x P(x)\to\text{answer}(x)$）
 \item 直到获得任意子句只包含答案的谓词
 \end{itemize}
 \begin{example}
@@ -239,9 +269,9 @@ $\forall x (D(x)\to \lnot L(x))$ & 2 & $(\lnot D(v),\lnot L(v))$\\
 $D(Flip)\land I(Flip)$ & 3 & $D(Flip)$\\
  & 4 & $I(Flip)$\\
 Q:$\exists x (I(x)\land\lnot R(x))$ & 5 & $(\lnot I(y),R(y),answer(y))$\\\hline 
-$R[4,5]/y=Flip$ & 6 & $(R(Flip),answer(Flip))$\\
-$R[1,6]/u=Flip$ & 7 & $(L(Flip),answer(Flip))$\\
-$R[2,7]/v=Flip$ & 8 & $(\lnot D(Flip),answer(Flip))$\\
+$R[4,5]/\{y=Flip\}$ & 6 & $(R(Flip),answer(Flip))$\\
+$R[1,6]/\{u=Flip\}$ & 7 & $(L(Flip),answer(Flip))$\\
+$R[2,7]/\{v=Flip\}$ & 8 & $(\lnot D(Flip),answer(Flip))$\\
 $R[3,8]$ & 9 & $(answer(Flip))$
 \end{tabular}
 \end{center}

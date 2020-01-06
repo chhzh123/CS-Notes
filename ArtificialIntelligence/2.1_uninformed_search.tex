@@ -133,8 +133,8 @@ IDS逐渐增加最大深度$L$，对每一个$L$做深度受限搜索
 \begin{tabular}{ccccccc}\hline
 & BFS & UCS & DFS & Depth-limited & IDS & Bidirectional\\\hline
 完备性 & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark\\
-时间复杂度 & $O(b^d)$ & $O(b^{\lfloor C^\star/\eps\rfloor+1})$ & $O(b^m)$ & $O(b^l)$ & $O(b^d)$ & $O(b^{d/2})$\\
-空间复杂度 & $O(b^d)$ & $O(b^{\lfloor C^\star/\eps\rfloor+1})$ & $O(bm)$ & $O(bl)$ & $O(bd)$ & $O(b^{d/2})$\\ 
+时间复杂度 & $O(b^{d+1})$ & $O(b^{\lfloor C^\star/\eps\rfloor+1})$ & $O(b^m)$ & $O(b^l)$ & $O(b^d)$ & $O(b^{d/2})$\\
+空间复杂度 & $O(b^{d+1})$ & $O(b^{\lfloor C^\star/\eps\rfloor+1})$ & $O(bm)$ & $O(bl)$ & $O(bd)$ & $O(b^{d/2})$\\ 
 最优性 & \cmark & \cmark & \xmark & \xmark & \cmark & \cmark\\\hline
 \end{tabular}
 \end{center}
