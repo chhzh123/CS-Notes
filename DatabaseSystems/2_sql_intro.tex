@@ -117,6 +117,24 @@ group by dept_name -- can only be contained by select clause
 having avg(salary) > 42000; -- effected after grouping
 \end{lstlisting}
 
+注意对于简单问题，通常没有必要用嵌套子查询，直接开几个关系即可
+\begin{example}
+对于下列两个关系表
+\begin{itemize}
+	\item Book(BID,title,AID,subject)
+	\item Author(AID,first\_name,last\_name)
+\end{itemize}
+找出所有写了至少两种subject的作者的名字
+\end{example}
+\begin{analysis}
+直接创建两个Book关系
+\begin{lstlisting}
+select a.last_name, a.first_name
+from author a, book b1, book b2
+where b1.aid = a.aid and b2.aid = a.aid and b1.subject != b2.subject
+\end{lstlisting}
+\end{analysis}
+
 三值逻辑，添加了Unknown（其实就是T/F都恒成立的关系才会输出正常值）
 \begin{center}
 \begin{tabular}{|c|c|c|}\hline

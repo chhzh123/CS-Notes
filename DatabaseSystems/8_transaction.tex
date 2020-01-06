@@ -9,10 +9,10 @@
 
 事务具有以下的基本性质(ACID)：
 \begin{itemize}
-	\item 原子性(Atomicity)：要么执行完，要么不执行，不能执行到一半。
+	\item 原子性(Atomicity)：要么执行完，要么不执行，不能执行到一半 $\to$ 日志、恢复系统
 	\item 一致性(Consistency)：除了基本的数据完整性约束，还有更多的一致性约束。
-	\item 隔离性(Isolation)：每个事务都察觉不到系统中有其他事务在并发执行，一定是完成一个再进行下一个。
-	\item 持久性(Durability)：一个事务成功完成对数据库的改变是永久的，即使出现系统故障。
+	\item 隔离性(Isolation)：每个事务都察觉不到系统中有其他事务在并发执行，一定是完成一个再进行下一个 $\to$ 并发控制系统
+	\item 持久性(Durability)：一个事务成功完成对数据库的改变是永久的，即使出现系统故障 $\to$ 结束前已写入磁盘，更新信息已写入磁盘
 \end{itemize}
 
 事务的基本状态：
@@ -57,13 +57,17 @@
 如果无环（用环检测算法），则冲突可串行化，可以通过\textbf{拓扑排序}（所有父亲执行完才到孩子执行）得到串行化顺序。
 
 \begin{definition}[可恢复调度]
-若事务$T_j$读事务$T_i$先前写的数据，则$T_i$的提交必须在$T_j$的提交之前。
+若事务$T_j$读事务$T_i$先前写的数据（\textemph{先写后读}），则$T_i$的提交必须在$T_j$的提交之前。
+\end{definition}
+\begin{definition}[无级联(cascadeless)调度]
+若事务$T_j$读事务$T_i$先前写的数据（\textemph{先写后读}），则$T_i$的提交必须在$T_j$这一读操作之前。
 \end{definition}
 
 \subsection{隔离性级别}
+事务隔离性的好处：提高吞吐量和资源利用率、减少等待时间
 \begin{itemize}
 	\item 可串行化(serializable)
-	\item 可重复读(repeatable read)
-	\item 已提交读(read committed)
-	\item 未提交读(read uncommitted)
+	\item 可重复读(repeatable read)：只允许读已提交数据，一个事务两次读一个数据期间，其他事务不得更新该数据
+	\item 已提交读(read committed)：只允许读已提交数据，但不要求可重复读
+	\item 未提交读(read uncommitted)：允许读未提交数据，最低一致性要求
 \end{itemize}

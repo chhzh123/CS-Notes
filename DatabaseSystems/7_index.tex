@@ -55,7 +55,7 @@ $n$-阶B树满足以下性质：
 		\item 根节点不是叶子，则至少有$2$个孩子
 		\item 根节点是叶子，则可以有$[0,n-1]$个值
 	\end{itemize}
-	\item 每个结点有$n$个指针，$n-1$个键值/搜索码\textbf{升序排序}（通常是严格不等式）
+	\item 每个结点有\textemph{$n$个指针}，$n-1$个键值/搜索码\textbf{升序排序}（通常是严格不等式）
 	\begin{center}
 	\begin{tabular}{|c|c|c|c|c|c|c|}\hline
 	$P_1$ & $K_1$ & $P_2$ & $\cdots$ & $P_{n-1}$ & $K_{n-1}$ & $P_n$\\\hline
@@ -142,6 +142,7 @@ $n$-阶B树满足以下性质：
 \end{itemize}
 
 \subsubsection{B+树文件组织}
+叶节点存储的是记录而不是指向记录的指针。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/bp-tree_file_organization.png}
@@ -153,12 +154,17 @@ $n$-阶B树满足以下性质：
 \includegraphics[width=0.8\linewidth]{fig/b-tree.png}
 \end{figure}
 
+覆盖索引(covering)存储一些属性（但不是搜索码属性）的值以及指向记录的指针。
+
 \subsection{静态散列}
 散列(hash)函数应该满足：
 \begin{itemize}
 	\item 分布均匀：为每个桶分配同样数量的搜索码值
 	\item 分布随机：不应与搜索码的任何外部可见排序相关
 \end{itemize}
+\begin{definition}[桶(bucket)]
+桶是能存储一条或多条记录的存储单位，通常一个桶就是一个磁盘块，但也可能小于或大于一个磁盘块
+\end{definition}
 
 两种散列结构：
 \begin{itemize}
@@ -179,7 +185,7 @@ $n$-阶B树满足以下性质：
 \end{itemize}
 
 \subsection{动态散列}
-当数据库增大或缩小时，可扩充散列(extendable hashing)可通过桶的分裂或合并来适应数据库大小变化。
+当数据库增大或缩小时，可扩充散列(extendable hashing)可通过桶的分裂或合并来适应数据库大小变化，性能不会随着文件的增长而降低。
 
 通常选择一个具有均匀性和随机性特性的散列函数$h$，且产生范围较大，是$b$位二进制整数，通常$b=32$。
 通过哈希函数的前$i$位确定索引，每次桶满了才考虑新增一位，且不到万不得已不分裂（原来前缀相同的全指向同一个桶）。
@@ -192,6 +198,8 @@ $n$-阶B树满足以下性质：
 \end{tabular}
 \end{figure}
 但缺点在于查找涉及一个附加的间接层，系统在访问桶本身之前必须先访问桶地址表。
+
+顺序索引对于范围查找($\leq\geq$)较为使用，而散列对于查等式($=$)较为适用。
 
 \subsection{位图索引}
 一共是元组个数$n$位，若第$i$个元组的该属性为某特定值，则设为1，否则置0。

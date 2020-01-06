@@ -1,7 +1,7 @@
 % !TEX root = main.tex
 
 \section{关系数据库设计} % Chap 8
-大的模式会存在大量冗余，小的模式会导致信息丢失（有损分解）。
+好的关系设计的特点：\textbf{避免不必要冗余、无损分解、保持依赖}。
 
 \subsection{范式理论}
 定义属性集$\alpha$，关系模式为$r(R)$。
@@ -14,9 +14,9 @@ $R$的子集$K$是$r(R)$的超码的条件是：在关系$r(R)$的任意合法�
 设计需要满足一定的范式(normal form)，核心目的是\textcolor{red}{减少冗余}：
 % https://www.geeksforgeeks.org/normal-forms-in-dbms/
 \begin{itemize}
-	\item 第一范式(1NF)：全部属性都是\textemph{单值属性}（原子性）
+	\item \textbf{第一范式(1NF)}：全部属性都是\textemph{单值属性}（原子性）
 
-	\item 第二范式(2NF)：关系模式$R\in 1NF$，且每一个\textemph{非主属性\textbf{完全依赖}于$R$的主码}，而不是只依赖于其中一部分属性（即其中一部分属性的值即可确定该属性的值，部分依赖）
+	\item \textbf{第二范式(2NF)}：关系模式$R\in 1NF$，且每一个\textemph{非主属性\textbf{完全依赖}于$R$的主码}，而不是只依赖于其中一部分属性（即其中一部分属性的值即可确定该属性的值，部分依赖）
 	\begin{example}
 	一个学生-课程关系模式如下：
 	\begin{center}
@@ -33,11 +33,11 @@ $R$的子集$K$是$r(R)$的超码的条件是：在关系$r(R)$的任意合法�
 	如此例中Stud\_No和Course\_No是主码，但是实际上只由Course\_No就已经可以决定Course\_Fee了，因此这个例子不满足2NF。
 	\end{example}
 
-	\item 第三范式(3NF)：关系模式$R\in 2NF$，且对于$F^+$中所有形如$\alpha\to\beta$的函数依赖，至少下列一项成立
+	\item \textbf{第三范式(3NF)}：关系模式$R\in 2NF$，且对于$F^+$中所有形如$\alpha\to\beta$的函数依赖，至少下列一项成立
 	\begin{itemize}
 		\item $\alpha\to\beta$是一个平凡的函数依赖
 		\item $\alpha$是$R$的一个超码
-		\item $\beta-\alpha$中的每个属性$A$都含于$R$的一个候选码中
+		\item $\beta-\alpha$中的每个属性$A$都含于$R$的一个候选码中\footnote{并不要求单个候选码必须包含$\beta-\alpha$所有属性，$\beta-\alpha$每个属性可能含于不同候选码中。}
 	\end{itemize}
 	（非主属性依赖于主码但不能通过另一非主属性进行依赖，即\textemph{不存在传递依赖}）
 	\begin{example}
@@ -53,10 +53,10 @@ $R$的子集$K$是$r(R)$的超码的条件是：在关系$r(R)$的任意合法�
 	有传递依赖Stud No$\to$Stud State$\to$Stud Country，因此不满足3NF。
 	\end{example}
 
-	\item 巴斯-科德/BC范式(Boyce-Codd NF, 3.5NF)：关系模式$R\in 3NF$，对于$F^+$中所有形如$\alpha\to\beta$的函数依赖，至少有以下一项成立：
+	\item \textbf{巴斯-科德/BC范式(Boyce-Codd NF, 3.5NF)}：关系模式$R\in 3NF$，对于$F^+$中所有形如$\alpha\to\beta$的函数依赖，至少有以下一项成立：
 	\begin{itemize}
 		\item $\alpha\to\beta$是平凡的函数依赖（即$\beta\subset\alpha$）
-		\item $\alpha$是模式$R$的一个\textemph{超码}（即$\alpha$可以整条元组）
+		\item $\alpha$是模式$R$的一个\textemph{超码}
 	\end{itemize}
 \end{itemize}
 
@@ -113,6 +113,7 @@ $F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
 \Until{result 不变}
 \end{algorithmic}
 \end{algorithm}
+由于包含$n$个元素的集合有$2^n$个子集，因此总共有$2^{2n}$个可能的函数依赖在$F^+$中。
 
 \begin{algorithm}[H]
 \caption{计算$F$下属性$\alpha$的闭包$\alpha^+$}
@@ -133,25 +134,29 @@ $F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
 	\item 另一种计算$F^+$的方法：$\forall\gamma\subset R$，找出$\gamma^+$；$\forall S\subset\gamma^+$，输出函数依赖$\gamma\to S$
 \end{itemize}
 
+\begin{example}
+为求解候选码，要将属性集的所有子集尝试一遍，每个都求属性闭包，看是否覆盖所有属性，如果是则为超码，进一步选择最小的集合作为候选码。
+比如ABC，则尝试
+\[A,B,C,AB,AC,BC,ABC\]
+算这些属性集的属性闭包看是否全覆盖。
+\end{example}
+
 \subsubsection{正则覆盖}
 \begin{definition}[无关(extraneous)]
 如果去除函数依赖中的一个属性不改变该函数依赖集的闭包，则称该属性是无关的，即\textemph{去掉该属性依然可以推得其函数依赖成立}，形式化定义即
 \begin{itemize}
-	\item 若$A\in\alpha$且$F$逻辑蕴含$(F-\{\alpha\to\beta\})\cup\{(\alpha-A)\to\beta\}$，则属性$A$在$\alpha$中无关
-	\item 若$A\in\beta$且函数依赖集$(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}$逻辑蕴含$F$，则属性$A$在$\beta$中无关
+	\item 若$A\in\alpha$且$F$逻辑蕴含$(F-\{\alpha\to\beta\})\cup\{\textcolor{blue}{(\alpha-A)\to\beta}\}$，则属性$A$在$\alpha$中无关
+	\item 若$A\in\beta$且$(F-\{\alpha\to\beta\})\cup\{\textcolor{blue}{\alpha\to(\beta-A)}\}$逻辑蕴含$F$，则属性$A$在$\beta$中无关
 \end{itemize}
 \end{definition}
 
 检验属性$A$是否无关的方法如下：
 \begin{itemize}
-	\item 若$A\in\beta$，为检验$A$是否无关，考虑集合
-	\[F'=(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}\]
-	\textemph{检验$\alpha\to A$是否能由$F'$推出}，
-	计算$F'$下的$\alpha^+$，若$\alpha^+$包含$A$，则$A$在$\beta$中无关。
-	\item 若$A\in\alpha$，为检验$A$是否无关，令$\gamma=\alpha-\{A\}$，\textemph{检验$\gamma\to\beta$是否可以由$F$推出}，
+	\item 若$A\in\alpha$，为检验$A$是否无关，令$\gamma=\alpha-\{A\}$，检验$\gamma\to\beta$是否可以由$F$推出\\
 	计算$F$下的$\gamma^+$，若$\gamma^+$包含$\beta$中所有属性，则$A$在$\alpha$中无关。
+	\item 若$A\in\beta$，为检验$A$是否无关，令$F'=(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}$，检验$\alpha\to A$是否能由$F'$推出\\
+	计算$F'$下的$\alpha^+$，若$\alpha^+$包含$A$，则$A$在$\beta$中无关。
 \end{itemize}
-简言之，计算$A\subset\alpha_{F'}^+$和$\beta\subset\gamma_{F}^+$，但这很麻烦，通常直接通过逻辑蕴含判断。
 
 \begin{definition}[正则覆盖(canonical cover)]
 $F$的正则覆盖$F_c$是一个依赖集，使得$F_c$和$F$双向逻辑蕴含，且
@@ -165,23 +170,57 @@ $F$的正则覆盖$F_c$是一个依赖集，使得$F_c$和$F$双向逻辑蕴含�
 \begin{algorithmic}[1]
 \State $F_c=F$
 \Repeat
-\State 用合并律将$F_c$中$\alpha_1\to\beta_1$和$\alpha_1\to\beta_2$替换为$\alpha_1\to\beta_1\beta_2$
-\State 对$F_c$每一个函数依赖移除无关属性
+\State 用\textemph{合并律}将$F_c$中$\alpha_1\to\beta_1$和$\alpha_1\to\beta_2$替换为$\alpha_1\to\beta_1\beta_2$
+\State 对$F_c$每一个函数依赖\textemph{移除无关属性}
 \Until{$F_c$不变}
 \end{algorithmic}
 \end{algorithm}
 
 \subsubsection{无损分解与保持依赖的分解}
 \begin{definition}[无损分解]
-用$r(R_1)$和$r(R-2)$代替$r(R)$没有信息损失，则为无损分解。
+令$R_1$和$R_2$为$R$的分解，用$r_1(R_1)$和$r_2(R_2)$代替$r(R)$没有信息损失，则为无损(lossless)分解。
 \[\Pi_{R_1}(r)\Join\Pi_{R_2}(r)=r\]
+否则为有损分解。
 \end{definition}
+考虑employee模式的分解
+\[\begin{array}{l}
+employee1 (ID,name)\\
+employee2 (name,street,city,salary)
+\end{array}\]
+当两个员工有相同名字时，丢失员工标识与地址工资相关联信息，故分解是有损的。
+
+\begin{theorem}
+若$R_1$和$R_2$是$R$的无损分解，则下列函数依赖至少有一个属于$F^+$
+\begin{itemize}
+	\item $R_1\cap R_2\to R_1$
+	\item $R_1\cap R_2\to R_2$
+\end{itemize}
+即\textemph{$R_1\cap R_2$是$R_1$或$R_2$的超码}。
+\end{theorem}
 
 \begin{definition}[保持依赖的分解]
-$F$是模式$R$上一个函数依赖集，$R_i$为$R$的一个分解，$F$在$R_i$上限定(restriction)是$F^+$中所有只包含$R_i$中属性的函数依赖的集合$F_i$。
+$F$是模式$R$上一个函数依赖集，$R_i$为$R$的一个分解，$F$在$R_i$上限定(restriction)是$F^+$中所有\textbf{只包含}$R_i$中属性的函数依赖的集合$F_i$。
 令$F'=\bigcup_i F_i$，具有$F'^+=F^+$的分解为保持依赖的分解。
 \end{definition}
-% TODO: 保持依赖性验证
+
+两种避免计算$F^+$验证保持依赖的方法：
+\begin{itemize}
+	\item 若$F$中每一个函数依赖都可以在分解得到的某一个关系上验证，那么这个分解就是保持依赖的。（注意这只是必要不充分条件。）
+	\item 对$F$中每一个$\alpha\to\beta$应用
+\begin{center}
+\begin{algorithmic}[1]
+\State $result:=a$
+\Repeat
+\For{each $R_i$}
+\State $t=(result\cap R_i)^+\cap R_i$
+\State $result :=result\cup t$
+\EndFor
+\Until{$result$没有变化}
+\end{algorithmic}
+\end{center}
+这里的属性闭包是$F$下的，若$result$包含$\beta$所有属性，则$\alpha\to\beta$保持。
+分解是保持依赖的当且仅当上述过程中$F$所有依赖都保持。
+\end{itemize}
 
 \subsection{分解算法}
 \subsubsection{BCNF分解}
@@ -196,17 +235,19 @@ $F$是模式$R$上一个函数依赖集，$R_i$为$R$的一个分解，$F$在$R_
 \begin{algorithmic}[1]
 \State 初始化result $:=\{R\}$
 \State 计算$F^+$
-\State 若result中存在模式$R_i$不属于BCNF，则将其分解为\textemph{$(R_i-\beta)$和$(\alpha,\beta)$}，其中$\alpha\to\beta$为$R_i$上成立的非平凡函数依赖，满足$\alpha\to R_i$不属于$F^+$，且$\alpha\cap\beta=\varnothing$
+\State 若result中存在模式$R_i$不属于BCNF，$\alpha\to\beta$为$R_i$上成立的非平凡函数依赖，满足$\alpha\to R_i$不属于$F^+$，且$\alpha\cap\beta=\varnothing$，则将其分解为$(R_i-\beta)$和$(\alpha,\beta)$
 \end{algorithmic}
 \end{algorithm}
+
+不依据伪码进行分解则直接将不满足BCNF的替换为\textemph{$R-(\beta-\alpha)$和$\alpha\cup\beta$}即可。
 
 \subsubsection{3NF分解}
 \begin{algorithm}
 \caption{3NF分解}
 \begin{algorithmic}[1]
 \State 令$F_c$为$F$的\textemph{正则覆盖}
-\State 对于每一个$F_c$中的函数依赖$\alpha\to\beta$，$R_i=\alpha\beta$
-\State 若$R_i$都不包含$R$的候选码，则新增$R_{i+1}$为$R$的候选码
+\State 对于每一个$F_c$中的函数依赖$\alpha\to\beta$，\textemph{$R_i=\alpha\beta$}
+\State 若$R_i$都不包含$R$的候选码，则新增$R_{i+1}$为$R$的\textemph{候选码}
 \State 若$R_j\in R_k$，则删除$R_j$，直至不再有可删除的$R_j$
 \end{algorithmic}
 \end{algorithm}

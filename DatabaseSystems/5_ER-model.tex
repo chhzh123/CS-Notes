@@ -23,7 +23,7 @@
 联系(relationship)是指多个实体间的相互关联。
 联系集是相同类型联系的集合。
 \[\{(e_1,e_2,\ldots,e_n)\}\mid e_1\in E_1, e_2\in E_2, \ldots, e_n\in E_n\]
-联系也可以具有描述性属性（如下右图）。
+联系也可以具有\underline{描述性属性}（如下右图）。
 \begin{figure}[H]
 \centering
 \begin{tabular}{cc}
@@ -56,16 +56,23 @@ one代表至多一个，many代表零个或多个。
 也可以采用更为复杂的映射基数$l..h$的形式表示，其中$l$表示最小映射基数，$h$为最大映射基数。
 最小值为$1$代表这个实体集在该联系集中全部参与，最大值为$1$表示这个实体至多参与一个联系，最大值为$*$则没有限制。
 
+\begin{definition}[角色]
+联系集产生自环，如course有前置课程prereq\_id
+\end{definition}
 \begin{definition}[强弱实体集]
 没有足够属性形成主码的实体集称为弱实体集，有主码的实体集则称为强实体集。
-弱实体集必须与另一个称作标识(identifying)或属主(owner)实体集的实体集关联才有意义。
-弱实体集的分辨符(discriminator)/部分码是使得能够区分弱实体集中实体的方法，用虚下划线标明。
+弱实体集必须与另一个称作标识(identifying)或\textbf{属主(owner)实体集}的实体集关联才有意义。
+弱实体集的\textbf{分辨符}(discriminator)/部分码是使得能够区分弱实体集中实体的方法，用虚下划线标明。
 \end{definition}
 
-E-R图，菱形代表联系，双横线代表全部参与。
+比如section实体由课程编号、学期、学年及开课编号唯一标识。
+假定在实体集section和course之间创建了联系集sec\_course，由于section中已有属性course\_id，故在联系集中存在冗余，要将course\_id删除，但这会导致section没有主码。
+因而将联系sec\_course视为特殊的联系，它给唯一标识section实体提供额外信息，即course\_id。
+
+E-R图，菱形代表联系，双横线代表全部参与，双框代表弱实体集。
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/university_E-R.png}
+\includegraphics[width=0.6\linewidth]{fig/university_E-R.png}
 \end{figure}
 \begin{figure}[H]
 \centering
@@ -73,6 +80,36 @@ E-R图，菱形代表联系，双横线代表全部参与。
 \end{figure}
 
 一个常见的错误是将一个实体集的主码作为另一个实体集的属性（关系被隐藏了），而不是使用联系。
+
+\subsection{转化为关系模式}
+\begin{itemize}
+	\item 简单属性强实体集直接转关系模式，如
+	\[student(\underline{ID},name,tot\_cred)\]
+	\item 复杂属性强实体集展平后转关系模式，如名字含first\_name和last\_name，那就一起放入关系模式
+	\item 弱实体集由\textemph{其依赖的强实体集主码与自身}组成，主码为强实体集主码与弱实体集分辨符，且要在关系$A$上建立外码约束
+	\item 联系集：\textemph{所有参与该联系的实体集的主码的并集}构成属性集合（弱实体集则要带上其依赖的强实体集主码），依据下列规则选择主码：
+	\begin{center}
+	\begin{tabular}{|c|c|c|}\hline
+		A & B & 主码\\\hline
+		多 & 多 & A+B\\\hline
+		多 & 一 & A\\\hline
+		一 & 多 & B\\\hline
+		一 & 一 & A/B\\\hline
+	\end{tabular}
+	\end{center}
+	对于每个与联系集$R$相关的实体集$E_i$，建立关系模式$R$上的外码约束，$R$中来自$E_i$主码属性的那些属性参照表示关系模式$E_i$的主码。
+	如大学关系模式中，advisor为多对一联系，则建立关系模式
+	\[advisor(\underline{s\_ID},i\_ID)\]
+\end{itemize}
+
+通常，连接弱实体集与其依赖的强实体集的联系集的模式是冗余的，在基于E-R图的关系数据库设计中不必给出。
+
+当出现以下两种情况时，需要对关系模式进行合并：
+\begin{itemize}
+	\item 实体集$A$到实体集$B$是一个多对一的联系集$AB$，且$A$的参与是全部的，则将$A$和$AB$合并，如inst\_dept可以和instructor合并为
+	\[instructor(ID,name,dept\_name,salary)\]
+	\item 一对一则联系集可以跟参与联系的任一个实体集模式进行合并
+\end{itemize}
 
 \subsection{扩展的E-R属性}
 \begin{definition}[特化和泛化]

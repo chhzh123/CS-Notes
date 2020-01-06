@@ -26,11 +26,22 @@ $X$ & false & false\\\hline
 
 令$\{T_0,\ldots,T_n\}$是参与调度$S$的一个事务集，若存在数据项$Q$，使得$T_i$在$Q$上持有$A$型锁，之后$T_j$在$Q$上持有$B$型锁，且$comp(A,B)=false$，则称在$S$中$T_i$先于$T_j$，记为$T_i\to T_j$，即在任何等价的串行调度中，$T_i$必须出现在$T_j$之前。
 
+避免饿死：当事务$T_i$申请对$Q$加$M$型锁时，授予枷锁的条件
+\begin{itemize}
+	\item 不存在$Q$上持有与$M$型锁相冲突的锁
+	\item 不存在等待对数据项$Q$加锁且先于$T_i$申请加锁的事务
+\end{itemize}
+
 两阶段封锁协议：可保证冲突可串行化，但不能保证不发生死锁，对于\textbf{每个事务}有以下两个阶段
 \begin{enumerate}
 	\item 增长(growing)阶段：事务可以获得锁，但不能释放锁（也包括锁的升级，共享$\to$排他）
 	\item 缩减(shrinking)阶段：事务可以释放锁，但不能获得新锁（也包括锁的降级，排他$\to$共享）
 \end{enumerate}
+封锁点为最后加锁的地方。
+
+严格两阶段封锁：所有排他锁要在事务提交后释放，可避免级联回滚。
+
+强两阶段封锁：提交前不能释放任何锁，保证按其提交顺序串行化。
 
 \begin{figure}[H]
 \centering
@@ -69,14 +80,17 @@ $X$ & false & false\\\hline
 \subsection{死锁处理}
 \subsubsection{死锁预防}
 \begin{itemize}
+\item 同时获得所有锁
+\begin{itemize}
 	\item 每个事务都要在它执行前锁上它所有要用的数据（预声明）
 	\item 强加偏序条件（基于图的协议）
 \end{itemize}
 
-更多方法包括：
+\item 抢占与事务回滚
 \begin{itemize}
 	\item wait-die机制，非抢占(non-preemptive)技术：老的事务（$T_i$时间戳小于$T_j$时间戳，则$T_i$老于$T_j$）会等待年轻的释放数据，年轻的事务不会等待老的事务，直接回滚
 	\item wound-wait机制，抢占技术：老的事务强行令年轻事务回滚而不让其等待，年轻事务只能等待老的事务
+\end{itemize}
 \end{itemize}
 
 另外还有锁超时(lock timeout)技术，即申请锁的事务至多等待一定时间，若此时间内未授予该事务锁，则事务超时回滚重启。
