@@ -1,0 +1,53 @@
+% !TEX root = main.tex
+
+\newpage
+\appendix
+\section{双曲函数}
+主要注意$\sinh$和$\cosh$符号上的差异，其他基本与普通三角函数相同。
+\[\begin{aligned}
+\sinh x&=\frac {\ee^{x}-\ee^{-x}}{2}={\frac {\ee^{2x}-1}{2e^{x}}}={\frac {1-\ee^{-2x}}{2e^{-x}}}\\
+\cosh x&={\frac {\ee^{x}+\ee^{-x}}{2}}={\frac {\ee^{2x}+1}{2e^{x}}}={\frac {1+\ee^{-2x}}{2e^{-x}}}\\
+\tanh x&={\frac {\sinh x}{\cosh x}}=\frac {\ee^{x}-\ee^{-x}}{\ee^{x}+\ee^{-x}}={\frac {\ee^{2x}-1}{\ee^{2x}+1}}
+\end{aligned}\]
+\[\begin{aligned}
+\sinh(-x)&=-\sinh x\\
+\cosh(-x)&=\cosh x
+\end{aligned}\]
+
+恒等公式
+\[{\begin{aligned}
+\cosh x+\sinh x&=\ee^{x}\\
+\cosh x-\sinh x&=\ee^{-x}\\
+\cosh ^{2}x-\sinh ^{2}x&=1\\
+1-\tanh^2 x&=\sech^2 x
+\end{aligned}}\]
+
+和差变换
+\[{\displaystyle {\begin{aligned}
+\sinh(x+y)&=\sinh x\cosh y+\cosh x\sinh y\\
+\cosh(x+y)&=\cosh x\cosh y+\sinh x\sinh y\\
+\tanh(x+y)&={\frac {\tanh x+\tanh y}{1+\tanh x\tanh y}}
+\end{aligned}}}\]
+
+导数
+\[\begin{aligned}
+{\frac {\diff}{\diff x}}\sinh x&=\cosh x\\
+{\frac {\diff}{\diff x}}\cosh x&=\sinh x\\
+{\frac {\diff}{\diff x}}\tanh x&=\sech^2 x\\
+{\frac {\diff^{2}}{\diff x^{2}}}\sinh x&=\sinh x\\
+{\frac {\diff^{2}}{\diff x^{2}}}\cosh x&=\cosh x
+\end{aligned}\]
+
+欧拉公式
+\[\begin{aligned}
+\displaystyle \ee^{x}&=\cosh x+\sinh x\\
+\displaystyle \ee^{-x}&=\cosh x-\sinh x
+\end{aligned}\]
+
+复数
+\[\begin{aligned}
+\cosh(ix) &= \cos(x)\\
+\sinh(ix) &= i\sin(x)\\
+\sinh(x) &= -i\sin(ix)\\
+\cosh(x) &= \cos(ix)
+\end{aligned}\]
