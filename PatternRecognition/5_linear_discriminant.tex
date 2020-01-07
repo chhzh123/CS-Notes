@@ -48,7 +48,17 @@
 
 特别地，线性判别函数可写成
 \[g(\vx)=w_0+\sum_{i=1}^d w_i x_i=\sum_{i=0}^dw_ix_i\]
-令$\vy=\bmat{1 & \vx}^\T$为增广特征向量，$\va=\bmat{w_0 & \vw}$为增广权向量。
+令$\vy=\bmat{1 & \vx}^\T$为\textbf{增广特征向量}，$\va=\bmat{w_0 & \vw}$为增广权向量，注意这里是将偏置放在了第$0$位。
+
+对于一个样本$\vy_i$，若$\va^\T\vy_i>0$就标记为$\omega_1$，若$\va^\T\vy_i<0$就标记为$\omega_2$。
+这样可以通过一种规范化(normalization)方法来简化两类样本训练过程，即对于属于$\omega_2$的样本，用负号表示而不是标记$\omega_2$（将属于$\omega_2$的样本用$\bmat{-1 & -y_i}^\T$表示）。
+这样就可以直接寻找一个对所有样本都有$\va^\T\vy_i>0$的权向量$\va$，这样的向量称为分离(separating)向量或解向量。
+
+求解权向量的过程相当于确定权空间中一点，每个样本都对应解向量的可能位置给出限制。
+$\va\vy_i^\T$确定了一个穿过权空间原点的超平面，$\vy_i$为其法向。
+解向量若存在，则一定在每个超平面的正侧。
+由于是不等式约束，故解不唯一，要加入其他约束条件。
+一种方法是找到一个单位长度的权向量，使得从样本到分类平面最小距离达到最大；另一种方法则在所有$i$中寻找满足$\va^\T\vy_i\geq b$的具有最小长度的权向量，这里的$b$是被称为边沿裕量(margin)/间隔的正常数。
 
 求解$\va^\T\vy_i>0$的解所采用的方法是：定义一个准则函数$J(\va)$，当$\va$是解向量时，$J(\va)$最小，因此可将其简化为一个标量函数极小化问题，通常用梯度下降法解决。
 \[\va(k+1)=\va(k)-\eta(k)\nabla J(\va(k))\]
@@ -75,6 +85,8 @@
 \[\va(k+1)=\va(k)+\eta(k)\sum_{\vy\in\mY_k}\vy\]
 
 \subsection{最小平方误差}
+设$Y$为$n\times\hat{d}$的矩阵，$n$为样本数，$\hat{d}=d+1$为维度，第$i$行是向量$\vy_i^\T$，令$\vb=\bmat{b_1 &\cdots & b_n}^\T$，目标是找到权重$\va$满足
+\[Y\va=\vb\]
 定义误差向量
 \[\ve=Y\va-\vb\]
 使误差向量长度平方最小化，即最小化平方误差和(MSE)准则函数
@@ -114,9 +126,10 @@ MSE与Fisher线性判别函数的解是一样的。
 支持向量是使上式等号成立的模式向量，即支持向量是最靠近超平面的，也是最难分类的样本/对求解分类任务最富有信息的模式。
 
 目标为极小化$\norm{\va}$，构造拉格朗日函数
-\[L(\va,\valpha)=\frac{1}{2}\norm{\va}^2\sum_{k=1}^n\alpha_k[z_k\va^\T\vy_k-1]\]
+\[L(\va,\valpha)=\frac{1}{2}\norm{\va}^2-\sum_{k=1}^n\alpha_k[z_k\va^\T\vy_k-1]\]
 可用KKT条件改写为
-\[L(\valpha)=\sum_{k=1}^n\alpha_i-\frac{1}{2}\sum_{k,j}^n\alpha_k\alpha_jz_kz_j\vy^\T\vy_k\]
-结合训练数据的约束条件
-\[\sum_{k=1}^nz_k\alpha_k=0,\;\alpha_k\geq 0,\;k=1,\ldots,n\]
-进行求解。
+\[\begin{aligned}
+&L(\valpha)=\sum_{k=1}^n\alpha_i-\frac{1}{2}\sum_{k,j}^n\alpha_k\alpha_jz_kz_j\vy^\T\vy_k\\
+&s.t.\sum_{k=1}^nz_k\alpha_k=0,\;\alpha_k\geq 0,\;k=1,\ldots,n
+\end{aligned}\]
+进行求解（先用约束消元，逐一令偏导为$0$求解）。

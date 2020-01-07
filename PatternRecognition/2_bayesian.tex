@@ -7,7 +7,7 @@
 % 连续特征 离散特征 x\in\{0,1\}
 
 \subsection{离散变量}
-处于类别$\omega_i$并具有特征值$x$，有后验概率\footnote{通常用$p(\cdot)$代表概率密度函数（连续变量），用$\pr{\cdot}$代表概率质量函数（离散变量）}
+处于类别$\omega_i$并具有特征值$x$，有后验概率\footnote{通常用$p(\cdot)$代表概率密度函数（连续变量），用$\pr{\cdot}$代表概率质量函数（离散变量）}\textemph{（给特征判类别）}
 \[\prc{\omega_i}{x}=\frac{p(x\mid\omega_i)\pr{\omega_i}}{p(x)}\]
 即
 \[posterior=\frac{likelihood\times prior}{evidence}\]
@@ -19,16 +19,19 @@
 \prc{\omega_2}{x} & \text{决策}\omega_1
 \end{cases}
 =\min[\prc{\omega_1}{x},\prc{\omega_2}{x}]\]
+分段函数的分界点成为\emph{决策边界}。
 
 平均错误概率可表示为
-\[\prc{error}{x}=\intab{-\infty}{\infty}{\pr{error,x}}=\intab{-\infty}{\infty}{\prc{error}{x}p(x)}\]
+\[\pr{error}=\intab{-\infty}{\infty}{\pr{error,x}}=\intab{-\infty}{\infty}{\prc{error}{x}p(x)}\]
 注意$p(x)$是证据，可以看为是固定分布（常量）。
 
 \begin{theorem}[贝叶斯决策/最小错误率准则]
 若$P(\omega_1\mid x)>P(\omega_2\mid x)$，则判定类别为$\omega_1$；否则判为$\omega_2$。
+或有等价判别$P(x\mid \omega_1)p(\omega_1)>P(x\mid\omega_2)p(\omega_2)$。
 依照这种准则可以获得最小错误率，即$P(error\mid x)=\min [P(\omega_1\mid x),P(\omega_2\mid x)]$
 \end{theorem}
 
+Neyman-Pearson准则是限定某一类别$w_i$的误差率不能超过一个常数，但会导致总的误差率提升。
 
 \subsection{连续变量}
 考虑特征向量$\vx\in\rr^d$（$\rr^d$称为特征空间），令$\{\omega_1,\ldots,\omega_c\}$表示有限的$c$个类别集，$\{\alpha_1,\ldots,\alpha_a\}$表示有限的$a$种可能采取的行为集，损失函数(loss)$\lambda(\alpha_t\mid\omega_j)$描述类别状态为$\omega_j$时采取行动$\alpha_i$的风险。
@@ -50,7 +53,7 @@ $p(\vx\mid\omega_j)$表示在真实类别为$\omega_j$的条件下$\vx$的概率
 选择$\alpha_i$使得$R(\alpha_i\mid\vx)$最小，进而最小化总的风险即称为贝叶斯风险，记为$R^*$
 \end{theorem}
 
-\subsection{二类分类}
+\subsubsection{二类分类}
 对称损失/0-1损失
 \[\lambda(\alpha_i\mid\omega_j)=
 \begin{cases}
@@ -68,7 +71,8 @@ R(\alpha_2\mid\vx)&=\lambda_{21}P(\omega_1\mid\vx)+\lambda_{22}P(\omega_2\mid\vx
 \[\frac{p(\vx\mid\omega_1)}{p(\vx\mid\omega_2)}>\frac{\lambda_{12}-\lambda_{22}}{\lambda_{21}-\lambda_{11}}\frac{P(\omega_2)}{P(\omega_1)}\]
 
 \subsection{正态密度}
-连续单变量正态函数
+\begin{itemize}
+	\item 连续单变量正态函数
 \[p(x)=\frac{1}{\sqrt{2\pi}\sigma}\exp\lrs{-\frac{1}{2}\lrp{\frac{x-\mu}{\sigma}}^2}\thicksim N(\mu,\sigma^2)\]
 有期望和方差
 \[\begin{aligned}
@@ -76,7 +80,7 @@ R(\alpha_2\mid\vx)&=\lambda_{21}P(\omega_1\mid\vx)+\lambda_{22}P(\omega_2\mid\vx
 \sigma^2 &=\E{(x-\mu)^2}=\int_{-\infty}^\infty (x-\mu)^2 p(x)\diff x
 \end{aligned}\]
 
-$d$维多元高斯分布
+	\item $d$维多元高斯分布
 \[p(\vx)=\frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}\exp\lrp{-\frac{1}{2}(\vx-\vmu)^\T\Sigma^{-1}(\vx-\vmu)}\thicksim N(\vmu,\Sigma)\]
 其中$\vmu$为$d$维均值向量，$\Sigma$维$d\times d$协方差矩阵，同时
 \[\begin{aligned}
@@ -90,6 +94,7 @@ $d$维多元高斯分布
 \end{aligned}\]
 注意协方差矩阵$\Sigma$通常是对称且半正定的。
 但这里我们严格限定$\Sigma$为正定的，使得$\Sigma$的行列式是一个正数。
+\end{itemize}
 
 服从正态分布的随机变量的线性组合都是一个正态分布。
 特别地，若$p(\vx)\thicksim N(\vmu,\Sigma)$，$A$是$d\times k$的矩阵，且$\vy=A^\T\vx$是一$k$维向量，则
@@ -101,10 +106,10 @@ $d$维多元高斯分布
 \end{figure}
 
 某个分布的协方差矩阵与单位阵$I$成比例，若定义矩阵$\Phi$，其列向量是$\Sigma$的正交本征向量，$\Lambda$为与相应本征值对应的对角矩阵，变换
-\[A_w=\Phi\Lambda^{-t/2}\]
-将使变换后的分布的协方差矩阵成为单位阵，此变换称为白化变换。
+\[A_w=\Phi\Lambda^{-1/2}\]
+将使变换后的分布的协方差矩阵成为\textbf{单位阵}\footnote{这种表示方法是$\Cov{A_w^\T}=I$}，此变换称为白化变换。
 
-从$\vx$到$\vmu$的平方马氏(Mahalanobis)距离定义为
+从$\vx$到$\vmu$的平方马氏(Mahalanobis)距离定义为（即正态分布中的指数部分）
 \[r^2=(\vx-\vmu)^\T\Sigma^{-1}(\vx-\vmu)\]
 可以证明与一Mahalanobis距离$r$对应的超椭球体体积为
 \[V=V_d|\Sigma|^{1/2}r^d\]

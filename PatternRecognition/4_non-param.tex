@@ -23,9 +23,10 @@ $V_n$为区域$\mR_n$的体积，$k_n$为落在区间$\mR_n$中的样本个数�
 	\item $\lim_{n\to\infty}k_n=\infty$
 	\item $\lim_{n\to\infty}k_n/n=0$
 \end{itemize}
-第一个条件保证区域均匀收缩和$p(\cdot)$在点$\vx$除连续的情况下，区间平滑了的$P/V$能够收敛到$p(\vx)$。
-第二个条件保证频率之比能够收敛到概率$P$。
+第一个条件保证区域均匀收缩和$p(\cdot)$在点$\vx$处连续的情况下，区间平滑了的$P/V$能够收敛到$p(\vx)$。
+第二个条件只有在$p(\vx)\ne 0$才有意义，保证频率之比能够收敛到概率$P$。
 最后一个条件说明虽然最后落在小区域$\mR_n$中的样本数目非常大，但是这么多样本在全体样本中所占的比例非常小。
+这里通常考虑均方意义下的收敛\footnote{\url{https://en.wikipedia.org/wiki/Convergence_of_random_variables}}。
 
 \subsection{Parzen窗方法}
 假设区间$\mR_n$是$d$维超立方体，$h_n$为一条边长度，体积为
@@ -37,11 +38,19 @@ $V_n$为区域$\mR_n$的体积，$k_n$为落在区间$\mR_n$中的样本个数�
 \end{cases}\]
 这样$\varphi(\vu)$就表示一个中心在原点的单位超立方体。
 若$\vx_i$落在中心点为$\vx$的立方体$V_n$中，那么
-\[\varphi((\vx-\vx_i)/h_n)=1\]
+\[\varphi\lrp{\frac{\vx-\vx_i}{h_n}}=1\]
 否则为$0$，进而可解析表达超立方体样本个数
 \[k_n=\sum_{i=1}^n\varphi\lrp{\frac{\vx-\vx_i}{h_n}}\]
 代入估计式有
 \[p_n(\vx)=\frac{1}{n}\sum_{i=1}^n\frac{1}{V_n}\varphi\lrp{\frac{\vx-\vx_i}{h_n}}\]
+
+均值的收敛性
+\[\begin{aligned}
+\bar{p}_n(\vx)&=\E{p_n(\vx)}\\
+&=\frac{1}{n}\sum_{i=1}^n\E{\frac{1}{V_n}\varphi\lrp{\frac{\vx-\vx_i}{h_n}}}\\
+&=\int\frac{1}{V_n}\varphi\lrp{\frac{\vx-\vx_i}{h_n}}p(\vv)\diff\vv\\
+&=\int\delta_n(\vx-\vv)p(\vv)\diff\vv
+\end{aligned}\]
 
 \subsection{$k_n$近邻估计}
 最佳的窗函数的选择是个问题，因此一种可行的方案是让体积成为训练样本的函数，而不是硬性规定窗函数为样本个数的某个函数。
@@ -53,11 +62,28 @@ $V_n$为区域$\mR_n$的体积，$k_n$为落在区间$\mR_n$中的样本个数�
 \end{figure}
 
 \subsection{最近邻规则}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/nearest_neighbors.png}
+\end{figure}
+
 定义$\omega_m(\vx)$为
 \[P(\omega_m\mid\vx)=\max_i P(\omega_i\mid\vx)\]
+令$P^*(e\mid\vx)$表示$P(e\mid\vx)$的最小可能值，$P^*$为$P(e)$的最小可能值，则根据贝叶斯风险
+\[P^*(e\mid\vx)=1-P(\omega_m\mid\vx)\]
+有总的误差率
+\[P^*=\int P^*(e\mid\vx)p(\vx)\diff\vx\]
 记$n$个样本的平均误差率为$P_n(e)$，且
-\[P=\lim_{n\to\infty}P_n(e)\]
-则希望证明
+\[\begin{aligned}
+P&=\lim_{n\to\infty}P_n(e)\\
+&=\lim_{n\to\infty}\int P_n(e\mid\vx)p(\vx)\diff\vx\\
+&=\int\lrs{1-\sum_{i=1}^cP^2(\omega_i\mid\vx)}p(\vx)\diff\vx
+\end{aligned}\]
+可以证明
 \[P^*\leq P\leq P^*\lrp{2-\frac{c}{c-1}P^*}\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{fig/kNN_error_bound.png}
+\end{figure}
 
 进而推广有$k$近邻规则(KNN)。
