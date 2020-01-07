@@ -80,7 +80,7 @@ G(u,v)&=F(u,v)+N(u,v)
 	\item 最大滤波器
 	\item 最小滤波器
 	\item \textbf{中点}滤波器：
-	\[\hat{f}(x,y)=\frac{1}{2}[\max_{(x,y)\in S_{xy}}g(s,t)+\min_{(x,y)\in S_{xy}}g(s,t)]\]
+	\[\hat{f}(x,y)=\frac{1}{2}\lrs{\max_{(x,y)\in S_{xy}}g(s,t)+\min_{(x,y)\in S_{xy}}g(s,t)}\]
 	\item 修正阿尔法均值滤波器：去除$d/2$个最大值（去盐）和$d/2$最小值（去椒），再取平均（去高斯）
 	\[\hat{f}(x,y)=\frac{1}{mn-d}\sum_{(x,y)\in S_{xy}}g_r(s,t)\]
 \end{itemize}

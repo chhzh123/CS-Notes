@@ -8,7 +8,7 @@
 
 \subsection{基本灰度变换}
 \begin{itemize}
-\item 基本灰度函数：线形、对数、幂次
+\item 基本灰度函数：线性、对数、幂次
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\linewidth]{fig/enhancement.png}
@@ -263,7 +263,7 @@ Af(x,y)+\nabla^2 f & \text{Laplacian中心系数为正}
 \subsubsection{梯度}
 一阶微分在灰度的跳跃性间断处（边界处）有较强的响应，所以在一些情况下也可以用于图像增强，常用作\textbf{边缘检测}。
 考虑二维函数的梯度
-\[\nabla\vf=\bmat{G_x & G_y}=\bmat{\pd{f}{x} & \pd{f}{y}}\]
+\[\nabla f=\bmat{G_x & G_y}=\bmat{\pd{f}{x} & \pd{f}{y}}\]
 定义$L_2$范数/模
 \[\nabla f=(G_x^2+G_y^2)^{1/2}=\lrp{\lrp{\pd{f}{x}}^2+\lrp{\pd{f}{x}}^2}^{1/2}\]
 $L_2$模具有各向同性的性质，但计算不方便，故常用$L_1$范数做代替
