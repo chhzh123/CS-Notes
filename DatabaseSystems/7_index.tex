@@ -97,7 +97,7 @@ $n$-阶B树满足以下性质：
 \begin{itemize}
 	\item 将$P_1,K_1,\ldots,K_{\lceil n/2\rceil-1},P_{\lceil n/2\rceil}$放到第一个节点
 	\item 将$P_{\lceil n/2\rceil+1},K_{\lceil n/2\rceil+1},\ldots,K_n,P_{n+1}$放到第二个节点
-	\item 将$(K_{\lceil n/2\rceil},N')$插入到父节点$N$
+	\item 将\textemph{$(K_{\lceil n/2\rceil},N')$}插入到父节点$N$
 \end{itemize}
 \begin{figure}[H]
 \centering
@@ -113,11 +113,13 @@ $n$-阶B树满足以下性质：
 	\item 直接移除
 	\item 如果删除导致下溢(underfull)且可合并到一个结点，则合并兄弟
 	\begin{itemize}
-		\item 若\textemph{兄弟节点}未满，则与兄弟节点合并（注意不是同层都是兄弟）
+		\item 若\textemph{兄弟节点}未满，则与兄弟节点合并（注意不是同层都是兄弟，能合并要先合并）
 		\item 删除$(K_{i-1},P_i)$，其中$P_i$是指向删除结点的指针，更新索引值，递归这个过程
 	\end{itemize}
 	\item 如果合并没法合到一个节点，则需要\textbf{重分配}(redistribute)指针使得两个兄弟节点都含有多于最小键值数目的项，同时更新父亲节点的搜索码
 \end{itemize}
+
+删除基本上是右旋操作，将左侧最后一个结点旋上一层，将上面一层结点旋下来。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/bp-tree_deletion.png}
@@ -126,10 +128,12 @@ $n$-阶B树满足以下性质：
 \centering
 \includegraphics[width=0.8\linewidth]{fig/bp-tree_deletion2.png}
 \end{figure}
+合并，指针重新分配，改键值
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/bp-tree_deletion3.png}
 \end{figure}
+拉下来三节点合并
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.7\linewidth]{fig/bp-tree_deletion_alg.png}

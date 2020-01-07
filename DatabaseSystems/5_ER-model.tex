@@ -86,7 +86,7 @@ E-R图，菱形代表联系，双横线代表全部参与，双框代表弱实�
 	\item 简单属性强实体集直接转关系模式，如
 	\[student(\underline{ID},name,tot\_cred)\]
 	\item 复杂属性强实体集展平后转关系模式，如名字含first\_name和last\_name，那就一起放入关系模式
-	\item 弱实体集由\textemph{其依赖的强实体集主码与自身}组成，主码为强实体集主码与弱实体集分辨符，且要在关系$A$上建立外码约束
+	\item 弱实体集由\textemph{其依赖的强实体集主码与自身}组成，主码为\underline{强实体集主码与弱实体集分辨符}，且要在关系$A$上建立外码约束
 	\item 联系集：\textemph{所有参与该联系的实体集的主码的并集}构成属性集合（弱实体集则要带上其依赖的强实体集主码），依据下列规则选择主码：
 	\begin{center}
 	\begin{tabular}{|c|c|c|}\hline
@@ -102,12 +102,13 @@ E-R图，菱形代表联系，双横线代表全部参与，双框代表弱实�
 	\[advisor(\underline{s\_ID},i\_ID)\]
 \end{itemize}
 
-通常，连接弱实体集与其依赖的强实体集的联系集的模式是冗余的，在基于E-R图的关系数据库设计中不必给出。
+通常，连接\textemph{弱实体集与其依赖的强实体集的联系集的模式是冗余的}，在基于E-R图的关系数据库设计中不必给出。
 
 当出现以下两种情况时，需要对关系模式进行合并：
 \begin{itemize}
-	\item 实体集$A$到实体集$B$是一个多对一的联系集$AB$，且$A$的参与是全部的，则将$A$和$AB$合并，如inst\_dept可以和instructor合并为
-	\[instructor(ID,name,dept\_name,salary)\]
+	\item 实体集$A$到实体集$B$是一个\textemph{多对一}的联系集$AB$，且$A$的\textemph{参与是全部的}，则将$A$和$AB$合并，如inst\_dept可以和instructor合并为
+	\[instructor(\underline{ID},name,dept\_name,salary)\]
+	合并后的主码是$A$的主码。
 	\item 一对一则联系集可以跟参与联系的任一个实体集模式进行合并
 \end{itemize}
 

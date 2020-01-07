@@ -49,9 +49,30 @@ $E$结果中的元组将会以如下方式分为若干组：
 \subsection{其他关系演算}
 \subsubsection{元组关系演算}
 元组关系演算是非过程化的查询语言（有点像声明式语言），它只描述所需信息，而不给出获得该信息的具体过程。
+查询表达为
+\[\{t\mid P(t)\}\]
+即使谓词$P$为真的元组$t$的集合，$t[A]$表示元组$t$在属性$A$上的值，用$t\in r$表示元组$t$在关系$r$中。
+
+如工资大于80000美元的所有教师的ID为（注意这里涉及到属性选择）
+\[\{t\mid\exists s\in instructor(t[ID]=s[ID]\land s[salary]>80000\}\]
+
+其实与命题逻辑类似
 \[t\in\text{instructor}\land\exists s\in\text{department}(t[\text{dept\_name}]=s[\text{dept\_name}])\]
 前者$t$为自由变量，后者$s$为受限变量。
+
+元组关系演算可能产生一个无限的关系
+\[\{t\mid\lnot(t\in instructor)\}\]
+这样的元组有无限多个且不在数据库中，因此这样写是\textbf{不安全的}。
+
+因此引入元组关系公式$P$的域的概念，如$\dom(t\in instructor\land t[salary]>80000)$是包括80000和出现在instructor中的所有值集合。
+若表达式$\{t\in P(t)\}$结果所有值均来自$\dom(P)$，则说表达式$\{t\in P(t)\}$是安全的。
 
 \subsubsection{域关系演算}
 \[\{<x_1,x_2,\ldots,x_n>\mid P(x_1,x_2,\ldots,x_n)\}\]
 其中$<x_1,\ldots,x_n>\in r$，每一个$x_i$为域变量，$r$为$n$个属性上的关系。
+
+与元组关系演算最大的区别在于，域关系演算更加细粒度。
+比如找出工资大于80000美元的所有教师的ID：
+\[\{<i>\mid\exists n,d,s(<i,n,d,s>\in instructor\land s>80000)\}\]
+
+同样有安全性问题，可类似定义。

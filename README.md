@@ -16,7 +16,7 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 | Computer Networking   | 2019 Spring | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)       |
 | Python Programming    | 2019 Spring |                    |        |
 | Parallel Computing    | 2019 Spring |  [:page_facing_up:](https://chhzh123.github.io/summary/parallel-computing/) | ![](https://img.shields.io/badge/-done-green)       |
-| Database Systems      | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-working-red)       |
+| Database Systems      | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)       |
 | Distributed Systems   | 2019 Autumn |  [:page_facing_up:](https://chhzh123.github.io/summary/distributed-systems/) | ![](https://img.shields.io/badge/-working-red)       |
 | Artificial Intelligence | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)       |
 | Computer Graphics     | 2019 Autumn |  |        |

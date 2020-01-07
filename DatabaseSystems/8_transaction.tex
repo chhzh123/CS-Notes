@@ -44,7 +44,7 @@
 \centering
 \includegraphics[width=0.8\linewidth]{fig/conflict_serializability.png}
 \end{figure}
-可以将左侧调度转为右侧，故是冲突可串行的。
+可以将左侧调度通过两个非冲突指令调换转为右侧，故是冲突可串行的。
 
 可以通过构造一个优先图(precedence graph)来判断是否冲突可串行化，顶点集由所有参与调度的事务构成，边集由满足下列三个条件之一的边$T_i\to T_j$构成：
 \begin{itemize}
@@ -52,15 +52,15 @@
 	\item 在$T_j$执行write(Q)前，$T_i$执行read(Q)
 	\item 在$T_j$执行write(Q)前，$T_i$执行write(Q)
 \end{itemize}
-即只有\textemph{两者都读才不冲突}。
+即只有\textemph{两者都读才不冲突，先执行到后执行连边}。
 
 如果无环（用环检测算法），则冲突可串行化，可以通过\textbf{拓扑排序}（所有父亲执行完才到孩子执行）得到串行化顺序。
 
 \begin{definition}[可恢复调度]
-若事务$T_j$读事务$T_i$先前写的数据（\textemph{先写后读}），则$T_i$的提交必须在$T_j$的提交之前。
+若事务$T_j$读事务$T_i$先前写的数据（\textemph{先写后读}），则$T_i$的提交必须在\textemph{$T_j$的提交之前}。
 \end{definition}
 \begin{definition}[无级联(cascadeless)调度]
-若事务$T_j$读事务$T_i$先前写的数据（\textemph{先写后读}），则$T_i$的提交必须在$T_j$这一读操作之前。
+若事务$T_j$读事务$T_i$先前写的数据（\textemph{先写后读}），则$T_i$的提交必须在\textemph{$T_j$这一读操作之前}。
 \end{definition}
 
 \subsection{隔离性级别}

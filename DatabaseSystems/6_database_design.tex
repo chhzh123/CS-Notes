@@ -37,7 +37,7 @@ $R$的子集$K$是$r(R)$的超码的条件是：在关系$r(R)$的任意合法�
 	\begin{itemize}
 		\item $\alpha\to\beta$是一个平凡的函数依赖
 		\item $\alpha$是$R$的一个超码
-		\item $\beta-\alpha$中的每个属性$A$都含于$R$的一个候选码中\footnote{并不要求单个候选码必须包含$\beta-\alpha$所有属性，$\beta-\alpha$每个属性可能含于不同候选码中。}
+		\item \textemph{$\beta-\alpha$}中的每个属性$A$都含于$R$的一个候选码中\footnote{并不要求单个候选码必须包含$\beta-\alpha$所有属性，$\beta-\alpha$每个属性可能含于不同候选码中。}
 	\end{itemize}
 	（非主属性依赖于主码但不能通过另一非主属性进行依赖，即\textemph{不存在传递依赖}）
 	\begin{example}
@@ -95,9 +95,9 @@ $F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
 \begin{theorem}[逻辑蕴含公理]
 下面的前三条为最基本的公理(Armstrong)，可以找出给定$F$的所有$F^+$
 \begin{itemize}
-	\item 自反律(reflexivity)：若$\alpha$为一属性集且$\beta\subset\alpha$，则$\alpha\to\beta$
-	\item 增补律(augmentation)：若$\alpha\to\beta$成立且$\gamma$为一属性集，则$\gamma\alpha\to\gamma\beta$成立
-	\item 传递律(transitivity)：若$\alpha\to\beta$和$\beta\to\gamma$成立，则$\alpha\to\gamma$成立
+	\item \textbf{自反律}(reflexivity)：若$\alpha$为一属性集且$\beta\subset\alpha$，则$\alpha\to\beta$
+	\item \textbf{增补律}(augmentation)：若$\alpha\to\beta$成立且$\gamma$为一属性集，则$\gamma\alpha\to\gamma\beta$成立
+	\item \textbf{传递律}(transitivity)：若$\alpha\to\beta$和$\beta\to\gamma$成立，则$\alpha\to\gamma$成立
 	\item 合并律(union)：若$\alpha\to\beta$和$\alpha\to\gamma$成立，则$\alpha\to\beta\gamma$成立
 	\item 分解律(decomposition)：若$\alpha\to\beta\gamma$成立，则$\alpha\to\beta$和$\alpha\to\gamma$成立
 	\item 伪传递律(pseudotransitivity)：若$\alpha\to\beta$和$\gamma\beta\to\delta$成立，则$\alpha\gamma\to\delta$成立
@@ -121,7 +121,7 @@ $F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
 \State result$:=\alpha$
 \Repeat
 \For{每一个函数依赖$\beta\to\gamma\in F$}
-\State 若$\beta\subset$ result，则result $:=$ result $\cup\gamma$
+\State 若$\beta\subset$ result，则result $:=$ result $\cup$ $\gamma$
 \EndFor
 \Until{result 不变}
 \end{algorithmic}
@@ -152,9 +152,9 @@ $F$的闭包是被$F$逻辑蕴含的所有函数依赖的集合，记作$F^+$。
 
 检验属性$A$是否无关的方法如下：
 \begin{itemize}
-	\item 若$A\in\alpha$，为检验$A$是否无关，令$\gamma=\alpha-\{A\}$，检验$\gamma\to\beta$是否可以由$F$推出\\
+	\item 若$A\in\alpha$，为检验$A$是否无关，令$\gamma=\alpha-\{A\}$，检验\textemph{$\gamma\to\beta$}是否可以由$F$推出\\
 	计算$F$下的$\gamma^+$，若$\gamma^+$包含$\beta$中所有属性，则$A$在$\alpha$中无关。
-	\item 若$A\in\beta$，为检验$A$是否无关，令$F'=(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}$，检验$\alpha\to A$是否能由$F'$推出\\
+	\item 若$A\in\beta$，为检验$A$是否无关，令$F'=(F-\{\alpha\to\beta\})\cup\{\alpha\to(\beta-A)\}$，检验\textemph{$\alpha\to A$}是否能由$F'$推出\\
 	计算$F'$下的$\alpha^+$，若$\alpha^+$包含$A$，则$A$在$\beta$中无关。
 \end{itemize}
 
@@ -251,14 +251,6 @@ $F$是模式$R$上一个函数依赖集，$R_i$为$R$的一个分解，$F$在$R_
 \State 若$R_j\in R_k$，则删除$R_j$，直至不再有可删除的$R_j$
 \end{algorithmic}
 \end{algorithm}
-
-\subsubsection{总结}
-应用函数以来进行数据库设计的目标是：
-\begin{enumerate}
-	\item BCNF
-	\item 无损
-	\item 保持依赖
-\end{enumerate}
 
 \subsection{多值依赖}
 函数依赖规定了某些元组不能出现在关系中。
