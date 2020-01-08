@@ -8,9 +8,9 @@
 
 若$S$是一个词，则满足
 \begin{itemize}
-\item $S$内部字串粘合度高
-\item $S$外部环境替换度高
-\item $S$本身频度高
+\item $S$\textbf{内部字串}粘合度高
+\item $S$\textbf{外部环境}替换度高
+\item $S$\textbf{本身频度}高
 \end{itemize}
 
 \subsection{文本分词中的歧义}
@@ -25,7 +25,15 @@
 你认为学生会$\mid$听老师的吗\\
 你认为学生$\mid$会听老师的吗\\
 \end{displayquote}
+	\item 交集型歧义
+\begin{displayquote}
+只有雷人$\mid$才能吸引人\\
+只有雷$\mid$人才$\mid$能吸引人\\
+只有雷$\mid$人$\mid$才能吸引人
+\end{displayquote}
 \end{itemize}
+
+中文文本中通常人名、地名、机构名、专业术语等等难被区分。
 
 \subsection{基本方法}
 \[\text{中文分词方法}\begin{cases}
@@ -50,8 +58,11 @@
 
 \subsubsection{最优路径法}
 \begin{itemize}
-\item 最短路径法：词数最少最优
-\item 半词罚分法（加权）：如果一个字不能单独使用则是半词，每个词罚1分，每个半词加罚1分，求罚分最低路径
+\item 最短路径法：词数最少最优\\
+优点：好于单向最大匹配方法\\
+缺点：同样无法解决大部分交集型歧义
+\item 半词罚分法（加权）：如果一个字不能单独使用则是半词，每个词罚1分，每个半词加罚1分，求罚分最低路径（词数最少、半词最少）\\
+缺点：依然无法解决有意见分歧的问题
 \item 最大概率法：在词图上选择词串概率最大的分词路径（动态规划），最优路径中第$i$个词$W_i$的累积概率等于左邻词$W_{i-1}$累积乘自身
 \[P'(w_i)=P'(w_{i-1})\times P(w_i)\]
 为方便计算，通常将概率转为路径代价，即取对数。
@@ -62,6 +73,7 @@
 	\item 如果当前$w_n$是字串$S$的尾词，且累积代价$C'(w_n)$最大，则$w_n$即为$S$的终点词
 	\item 从$w_n$开始，从右到左依次将最佳左邻词输出，即为$S$的分词结果
 \end{enumerate}
+缺点：并不能解决所有交集型歧义，一般也无法解决组合型歧义
 \end{itemize}
 \begin{figure}[H]
 \centering
@@ -74,11 +86,19 @@
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\linewidth]{fig/word_pos_labeling.png}
+\includegraphics[width=0.6\linewidth]{fig/word_seq_labeling.png}
 \end{figure}
+
+优点：简单、鲁棒、效果好
+\begin{itemize}
+	\item 能够平衡看待词表词和未登录词（未在词表中出现的词）的识别问题，因为都用统一字标注
+	\item 学习架构上不必专门强调词表词信息，也不用设计特定未登录词（如人名、地名、机构名）识别模块，分词系统大大简化
+	\item 字标注过程中，所有字根据预定义特征进行词位特性学习，获得一个概率模型。然后在待分字串上，根据字与字之间的结合紧密程度，得到一个词位标注结果
+\end{itemize}
 
 \subsubsection{评价指标}
 \[\begin{aligned}
-\text{准确率}P=\frac{\#切分正确}{\#切分结果所有分词}\\
-\text{召回率}R=\frac{\#切分正确}{\#标准答案所有分词}\\
+\text{准确率}P=\frac{\#\text{切分正确}}{\#\text{切分结果所有分词}}\\
+\text{召回率}R=\frac{\#\text{切分正确}}{\#\text{标准答案所有分词}}\\
 \text{F评价}F_1=\frac{2PR}{P+R}
 \end{aligned}\]

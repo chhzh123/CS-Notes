@@ -36,9 +36,23 @@ CFG赋予语言层次化结构，但是根据CFG构建的语法分析树通常�
 \subsection{概率上下文无关法}
 为了应对产生多种语法分析结果的问题，引入概率上下文无关文法(PCFG)：为每棵树计算一个概率。
 
+PCFG规则
+\[\begin{aligned}
+&\text{形式：}A\to\alpha\qquad [p]\\
+&\text{约束：}\sum_\alpha p(A\to\alpha)=1
+\end{aligned}\]
+如
+\begin{flushleft}
+NP $\to$ DT NN [$p=0.45$]\\
+NN $\to$ leprechaun [$p=0.0001$]
+\end{flushleft}
+
 对于给定的语法分析树，可以计算其概率
 \[P(T)=\prod_{i=1}^nP(RHS_i\mid LHS_i)\]
-
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/PCFG.png}
+\end{figure}
 
 \subsection{依存句法分析}
 \begin{definition}[依存]
@@ -50,12 +64,31 @@ CFG赋予语言层次化结构，但是根据CFG构建的语法分析树通常�
 \includegraphics[width=0.6\linewidth]{fig/dependency_parser.png}
 \end{figure}
 
-对依存图和依存树有约束：单一父节点、连通、无环、可投射，由此来保证句子的依存分析结果是一棵有根的树结构。
+依存语法的优势：
+\begin{itemize}
+	\item 依存关系和实际的语义关系比较接近，有助于对句子的语义方面的理解
+	\item 定义相对比较简单，有助于高效率的句法分析
+	\item 能够有效建模\textbf{长距离依赖关系}，依存句法更适合词序列比较自由、灵活的语言
+\end{itemize}
+
+对依存图和依存树有约束：
+\begin{itemize}
+\item 一个句子只有一个独立的成分
+\item 句子的其他成分都从属于某一成分
+\item 任何一成分都不能依存于两个或多个成分
+\item 如果成分$A$直接从属于成分$B$，而成分$C$在句子中位于$A$和$B$之间，那么，成分$C$或者从属于$A$，或者从属于$B$，或者从属于$A$和$B$之间的某一成分。
+\end{itemize}
+对应着对依存图和依存树的形式约束：单一父节点、连通、无环、可投射，由此来保证句子的依存分析结果是一棵有根的树结构。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\linewidth]{fig/projective.png}
 \end{figure}
+
 依存结构表达的信息和短语结构句法树不一样，可以表达更长距离的信息依存关系。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/dependency_tree.png}
+\end{figure}
 
 短语结构可以转成依存结构：
 \begin{itemize}

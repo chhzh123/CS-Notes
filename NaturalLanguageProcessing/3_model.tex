@@ -30,10 +30,17 @@ n元文法(n-gram)模型
 \end{itemize}
 
 对于n-gram，由最大似然估计求得
-\[p(w_i\mid w_{i-n+1}^{i-1}=f(w_i\mid w_{i-n+1}^{i-1})=\frac{c(w_{i-1+1})}{\sum_{w_i}c(w_{i-n+1}^i)}\]
+\[p(w_i\mid w_{i-n+1}^{i-1})=f(w_i\mid w_{i-n+1}^{i-1})=\frac{c(w_{i-1+1})}{\sum_{w_i}c(w_{i-n+1}^i)}\]
 其中$\sum_{w_i}c(w_{i-n+1}^i)$是历史串$w_{i-n+1}^{i-1}$在给定语料中出现的次数，即$c(w_{i-n+1}^{i-1})$。
 
+\begin{definition}[困惑度(perplexity)]
+假定测试语料$T$由$L$个句子$(t_1,\ldots,t_L)$构成，则整个测试集的概率为
+\[p(T)=\prod_{i=1}^Lp(t_i)\]
+\end{definition}
+
 为避免数据匮乏/稀疏导致的零概率问题，需要做数据平滑：调整最大似然估计的概率值，使零概率增值，使非零概率下调，消除零概率，改进模型的整体正确率。
+基本目标是测试样本语言模型的\textbf{困惑度越小越好}，基本约束是
+\[\sum_{w_i}p(w_i\mid w_1,w_2,\ldots,w_{i-1})=1\]
 \begin{itemize}
 	\item 加一法：
 	\[p(w_i\mid w_{i-1}=\frac{1+c(w_{i-1}w_i)}{|V|+\sum_{w_i}c(w_{i-1}w_i)}\]

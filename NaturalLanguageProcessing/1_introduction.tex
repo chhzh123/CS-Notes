@@ -7,18 +7,47 @@
 \subsection{基本问题与主要困难}
 \subsubsection{基本问题}
 \begin{itemize}
-\item 形态学(morphology)：词由有意义的基本单位---词素的构成问题、单词识别/汉语分词问题
-\item 句法(syntax)问题：研究句子结构成分之间的相互关系和组成句子序列的规则
-\item 语义(semantics)问题：
+\item 形态学(morphology)：词由有意义的基本单位---\textbf{词素}（词根、前缀、后缀、词尾）的构成问题、单词识别/汉语分词问题
+\item 句法(syntax)问题：研究句子结构成分之间的相互关系和组成句子序列的规则（\textbf{主谓宾}）
+\item 语义(semantics)问题：研究如何从一个语句中推导出词的意义，以及这些词在语句句法结构中的作用来推导出该语句的意义（同一个词在不同语境下会有\textbf{不同意思}）
+\item 语用学(pragmatics)：研究在不同上下文语句的应用，以及上下文对语句理解产生的影响
 \end{itemize}
 
 \subsubsection{主要困难}
 \begin{itemize}
-	\item 大量歧义：词法歧义、词性歧义、结构歧义、语义歧义、语音歧义
+	\item 大量歧义：
+	\begin{itemize}
+		\item 词法歧义
+		\begin{displayquote}
+		研究所/取得\\
+		研究/所取得
+		\end{displayquote}
+		\item 词性歧义
+		\begin{displayquote}
+		动物保护警察\\
+		Time flies like an arrow.
+		\end{displayquote}
+		\item 结构歧义
+		\begin{displayquote}
+		今天中午吃\underline{馒头}\\
+		今天中午吃\underline{食堂}\\
+		I saw [a man with a telescope].\\
+		I [saw a man] with a telescope.
+		\end{displayquote}
+		\item 语义歧义（缩略语、隐喻）
+		\begin{displayquote}
+		意思意思是几个意思？
+		\end{displayquote}
+		\item 语音歧义
+	\end{itemize}
 	\item 大量未知语言现象：新词、人名、地名、术语、新含义、新句法、新句型
 \end{itemize}
 
 \subsection{信息论基础}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\linewidth]{fig/entropy.png}
+\end{figure}
 \begin{definition}[熵/自信息]
 概率分布为$p(x)=P(X=x)$，则熵$H(X)$为
 \[H(X)=-\sum_{x\in X}p(x)\log_2p(x)\]
@@ -47,26 +76,31 @@ $X,Y$为离散型随机变量$X,Y\thicksim p(x,y)$，联合熵定义为
 互信息值越大，表示两个汉字之间的\textbf{结合越紧密}，越有可能成词。
 \end{definition}
 
-\subsection{语言学基础}
-\begin{definition}[词性(parts of speech, POS)/句法类/语法类]
-相似的语法结构行为和典型的语义类型聚成不同的类，称为词性。
-词法则是构词过程，包括变形（修改时态、数目等）、派生、复合。
-\end{definition}
-
-主要汉字编码标准：ASCII（英文）、GB2312（中文）、BIG5（繁体）、Unicode（统一编码）。
-
-UTF(Unicode Transformation Format)是Unicode的实现方式，从Unicode码点到唯一字节序列的映射算法，一一映射，保证无损转换。
-
-基于上下文分类的消歧方法：
-假设多义词$w$所处的上下文语境为$C$，若$w$的多个词义记为$s_i$，则可通过计算$\argmax p(s_i\mid C)$确定$w$的词义。
-
-由贝叶斯公式，并运用独立性假设
-\[p(s_i\mid C)=\frac{p(s_i)\times p(C\mid s_i)}{p(C)}=p(s_i)\prod_{v_k\in C}p(v_k\mid s_i)\Big/ p(C)\]
-因此只需求（可转换为对数加法运算）
-\[\hat{s}_i=\argmax_{s_i}\lrs{p(s_i)}\prod_{v_k\in C}p(v_k\mid s_i)\]
+\begin{example}[基于上下文分类的消歧方法]
+基于贝叶斯分类器，假设某个多义词$w$所处上下文语境为$C$，其多个语义为$s_i$，则可以通过计算
+\[\argmax_{s_i} p(s_i\mid C)=\argmax_{s_i}\lrs{\log p(s_i)+\sum_{v_k\in C}\log p(v_k\mid s_i)}\]
+确定词义。
 由统计数据可得
 \[\begin{aligned}
 p(v_k\mid s_i)&=\frac{N(v_k,s_i)}{N(s_i)}\\
 p(s_i)&=\frac{N(s_i)}{N(w)}
 \end{aligned}\]
 其中$N(s_i)$为训练数据中词$w$用于语义$s_i$时的次数，而$N(v_k,s_i)$为$w$用于语义$s_i$时词$v_k$出现在$w$的上下文中的次数，$N(w)$为$w$在训练数据中出现的总次数。
+\end{example}
+
+\subsection{语言学基础}
+\begin{definition}[词性(parts of speech, POS)/句法类/语法类]
+相似的语法结构行为和典型的语义类型聚成不同的类，称为词性。
+\end{definition}
+\begin{definition}[词法]
+词法则是构词过程，包括\textbf{变形}（修改时态、数目等）、\textbf{派生}、\textbf{复合}。
+\end{definition}
+
+短语结构可通过树来表达
+\begin{center}
+[S[NP[AT The][NNS children]][VP[VBD ate][NP[AT the][NN cake]]]]
+\end{center}
+
+主要汉字编码标准：ASCII（英文）、GB2312（中文）、BIG5（繁体）、Unicode（统一编码）。
+
+UTF(Unicode Transformation Format)是Unicode的实现方式，从Unicode码点到唯一字节序列的映射算法，一一映射，保证无损转换。
