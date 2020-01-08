@@ -1,12 +1,13 @@
 % !TEX root = main.tex
 
 \section{多层神经网络} % 6.1-6.6 6.8 (6.9)
-% 前馈网
-% BP
-% 误差表面
-% Bayes与NN
-% 激活函数
-% 权重衰减, early stoping
+% 前馈网 6.2
+% BP 6.3
+% 误差表面 6.4
+% 6.5 反向传播作为特征映射
+% Bayes与NN 6.6
+% 激活函数, 权重衰减, early stoping 6.8
+% 6.9 二阶技术（Hessian, Newton, Quickprop, 共轭梯度）
 
 三层神经网络：输入层、隐含层、输出层，也称多层感知器(multilayer perceptron, MLP)
 \begin{figure}[H]
@@ -29,3 +30,15 @@
 
 sigmoid函数
 \[f(\text{net})=a\tanh(b\cdot\text{net})=a\lrs{\frac{1-\ee^{-b\cdot \text{net}}}{1+\ee^{-b\cdot\text{net}}}}=\frac{2a}{1+\ee^{-b\cdot\text{net}}}-a\]
+
+改进反向传播的一些技术：
+\begin{itemize}
+	\item 输入信号尺度变换（归一化）
+	\item 带有噪声/人工扩充数据
+	\item 权值初始化
+	\item 隐单元数目、权重衰减、隐含层数目
+	\item 更好的激活函数
+	\item 优化器（学习率、冲量项）
+	\item 批训练
+	\item 早停(early stopping)
+\end{itemize}

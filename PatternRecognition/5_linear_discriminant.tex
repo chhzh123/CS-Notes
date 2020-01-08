@@ -1,17 +1,23 @@
 % !TEX root = main.tex
 
 \section{线性判别函数} % 5.1-5.8 (5.10-5.12)
-% 广义线性判别函数
-% MSE
-% 梯度下降法、牛顿法、Hessian矩阵
-% 感知器算法
-% MSE与Fisher线性判别
-% SVM
-%% VC Dimension
-%% Kernel Trick
-%% Soft Margin
-%% Model Selection
-% Cross Validation (k-fold)
+% 5.2 线性判别函数和判定面（单类、多类）
+% 广义线性判别函数 5.3
+% 5.4 两类线性可分情况
+%  梯度下降法、牛顿法、Hessian矩阵
+% 感知器算法 5.5
+% 5.6 松弛算法
+% 5.7 不可分情况
+% MSE 5.8
+%  MSE与Fisher线性判别
+% 5.10 线性规划
+% SVM 5.11
+%  VC Dimension
+%  Kernel Trick
+%  Soft Margin
+% 5.12 拓展到多类
+% Model Selection
+%  Cross Validation (k-fold)
 
 \subsection{线性判别函数和判定面}
 判别(discriminant)函数是指由$\vx$的各个分量线性组合而成的函数
@@ -33,6 +39,8 @@
 \centering
 \includegraphics[width=0.9\linewidth]{fig/linear_decision_boundary.png}
 \end{figure}
+
+对于多类样本来说，则将$c$类问题转化为$c$个二类问题；或者用$c(c-1)/2$个线性判别函数，将样本分为$c$个类别，每个线性判别函数只对其中两个类别分类。
 
 \subsection{广义线性判别函数}
 线性判别函数可写成
@@ -98,7 +106,7 @@ $\va\vy_i^\T$确定了一个穿过权空间原点的超平面，$\vy_i$为其法
 当方阵$Y^\T Y$非奇异时，有唯一解
 \[\va=(Y^\T Y)^{-1} Y^\T\vb=Y^\dag\vb\]
 这里的$\hat{d}\times n$矩阵
-\[Y^\dag (Y^\T Y)^{-1} Y^\T\]
+\[Y^\dag=(Y^\T Y)^{-1} Y^\T\]
 称为$Y$的伪逆矩阵。
 注意到若$Y$为方阵且非奇异，则这个伪逆矩阵即为$Y$的逆矩阵。
 还应注意到$Y^\dag Y=I$，但通常$YY^\dag\ne I$。
@@ -133,3 +141,36 @@ MSE与Fisher线性判别函数的解是一样的。
 &s.t.\sum_{k=1}^nz_k\alpha_k=0,\;\alpha_k\geq 0,\;k=1,\ldots,n
 \end{aligned}\]
 进行求解（先用约束消元，逐一令偏导为$0$求解）。
+
+\subsection{软间隔与正则化}
+前面都假定训练样本在样本空间或特征空间中线性可分，然而现实中却很难找到这些线性可分的任务，也很难判定不是由于过拟合造成。
+缓解该问题一个方法是允许支持向量机在一些样本上出错，为此引入软间隔(soft margin)概念。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/soft_margin.png}
+\end{figure}
+
+允许某些样本不满足不等式约束
+\[y_i(\vw^\T\vx_i+b)\geq 1\]
+于是在最大化间隔的同时，不满足约束的样本应尽可能少，得到优化目标
+\[\min_{\vw,b}\frac{1}{2}\norm{\vw}^2+C\sum_{i=1}^ml_{0/1}(y_i(\vw^\T\vx+b)-1),\,C>0\]
+其中$l_{0/1}$为0/1损失函数。
+
+也有其他损失函数
+\begin{itemize}
+	\item Hinge损失：$l_{hinge}(z)=\max(0,1-z)$
+	\item 指数损失：$l_{exp}(z)=\exp(z)$
+	\item 对率损失：$l_{log}(z)=\log(1+\exp(-z))$
+\end{itemize}
+
+\subsection{核方法}
+对变量升维，以便线性划分
+\[\kappa(\vx,\vx_i)=\phi(\vx_i)^\T\phi(\vx)\]
+
+\subsection{VC维}
+衡量函数复杂性，通过评估函数类中函数的弯曲程度实现。
+VC维越大，曲线越弯曲。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/vc_dimension.png}
+\end{figure}

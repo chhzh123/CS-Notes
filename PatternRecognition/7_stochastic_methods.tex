@@ -10,7 +10,7 @@
 \includegraphics[width=0.9\linewidth]{fig/stochastic_opt_problem.png}
 \end{figure}
 
-\subsection{模拟退火}
+\subsection{模拟退火} % 7.2 随机搜索
 一个系统具有能量$E_\gamma$通过下式给出
 \[P(\gamma)=\frac{\ee^{-E_\gamma/T}}{Z(T)}\]
 其中分子为Boltzmann因子，而$Z$是一个归一化常量/分配(partition)函数
@@ -35,8 +35,13 @@
 \includegraphics[width=0.8\linewidth]{fig/simulated_annealing.png}
 \end{figure}
 
-\subsection{Boltzmann学习}
+确定性模拟退火则考虑采用连续函数($\tanh$)来进行变换（模拟状态值），然后再取整到$\pm 1$。
+
+\subsection{Boltzmann学习} % 7.3
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/boltzmann_learning.png}
 \end{figure}
+
+% 7.4 Boltzmann网络和图示模型
+% 7.5 进化方法
