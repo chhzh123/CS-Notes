@@ -21,7 +21,7 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 | Artificial Intelligence | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)       |
 | Computer Graphics     | 2019 Autumn |  |        |
 | Natural Language Processing | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-working-red)       |
-| Pattern Recognition   | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-working-red) |
+| Pattern Recognition   | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green) |
 | Digital Image Processing | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)       |
 | Machine Learning      | 2020 Spring | :ballot_box_with_check: |        |
 

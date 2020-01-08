@@ -33,7 +33,7 @@
 \includegraphics[width=0.8\linewidth]{fig/biased_ML_Gaussian.png}
 \end{figure}
 
-而\textbf{样本协方差矩阵}的无差估计如下
+而\textbf{样本协方差矩阵}的无偏估计如下
 \[C=\frac{1}{n-1}\sum_{k=1}^n(\vx_k-\hat{\vmu})(\vx_k-\hat{\vmu})^\T\]
 
 \subsection{贝叶斯参数估计}
@@ -67,7 +67,7 @@ p(\vx\mid\mD)&=\int p(\vx,\vtheta\mid\mD)\diff\vtheta
 
 而最大后验(maximum a posteriori, MAP)则是使$p(\mD\mid\vtheta)p(\vtheta)$取最大值的参数向量$\vtheta$，这里通常先乘起来再取对数
 \[\argmax_{\vtheta} \lrp{\ln p(\mD\mid\vtheta) + \ln p(\vtheta)}
-=\lrp{\sum_{k=1}^n\ln p(\vx_k\mid\vtheta)+\ln p(\vtheta)}\]
+=\argmax_{\vtheta}\lrp{\sum_{k=1}^n\ln p(\vx_k\mid\vtheta)+\ln p(\vtheta)}\]
 
 可以比较最大似然与贝叶斯之间的差异。
 \begin{center}

@@ -14,53 +14,47 @@
 % 2.11 贝叶斯置信网
 % 样本均值 协方差矩阵
 
-\subsection{离散变量}
-处于类别$\sC_k$并具有特征值$\vx$，有后验概率\footnote{课本用$\omega_i$表示类别。通常用$p(\cdot)$代表概率密度函数（连续变量），用$P\lrp{\cdot}$代表概率质量函数（离散变量）}\textemph{（给特征判类别）}
+\subsection{贝叶斯决策}
+处于类别$\sC_k$并具有特征值$\vx$，有后验概率\footnote{课本用$\omega_i$表示类别，用$p(\cdot)$代表概率密度函数（连续变量），用$P\lrp{\cdot}$代表概率质量函数（离散变量）}\textemph{（给特征判类别）}
 \[p(\sC_k\mid\vx)=\frac{p(\vx\mid\sC_k)p(\sC_k)}{p(\vx)}\]
 即
 \[posterior=\frac{likelihood\times prior}{evidence}\]
 
-决策域$\mR_k$使得落在其中的点都被归为类别$\omega_k$，在两个决策域的交界称为\textbf{决策边界}，则平均错误概率可表示为
+决策域$\mR_k$使得落在其中的点都被归为类别$\sC_k$，在两个决策域的交界称为\textbf{决策边界}，则平均错误概率可表示为
 \[\begin{aligned}
-P\lrp{error}&=p(\vx\in\mR_1,\sC_2)+p(\vx\in\mR_2,\sC_1)\\
-&=\intabu{\mR_1}{}{p(\vx,\sC_2)}{\vx}+\intabu{\mR_1}{}{p(\vx,\sC_2)}{\vx}\\
-&=\intabu{\mR_1}{}{p(\sC_2\mid\vx)p(\vx)}{\vx}+\intabu{\mR_1}{}{p(\sC_2\mid\vx)p(\vx)}{\vx}\\
+p\lrp{error}&=p(\vx\in\mR_1,\sC_2)+p(\vx\in\mR_2,\sC_1)\\
+&=\intabu{\mR_1}{}{p(\vx,\sC_2)}{\vx}+\intabu{\mR_2}{}{p(\vx,\sC_1)}{\vx}\\
+&=\intabu{\mR_1}{}{p(\sC_2\mid\vx)p(\vx)}{\vx}+\intabu{\mR_2}{}{p(\sC_1\mid\vx)p(\vx)}{\vx}\\
 \end{aligned}\]
-注意$p(x)$是证据，可以看为是固定分布（常量）。
+注意$p(\vx)$是证据，可以看为是固定分布（常量）。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\linewidth]{fig/bayesian_decision.png}
 \end{figure}
 \begin{theorem}[贝叶斯决策/最小错误率准则]
-若$P(\omega_1\mid x)>P(\omega_2\mid x)$，则判定类别为$\omega_1$；否则判为$\omega_2$。
-或有等价判别$P(x\mid \omega_1)p(\omega_1)>P(x\mid\omega_2)p(\omega_2)$。
-依照这种准则可以获得最小错误率，即$P(error\mid x)=\min [P(\omega_1\mid x),P(\omega_2\mid x)]$
+若$p(\sC_1\mid \vx)>p(\sC_2\mid \vx)$，则判定类别为$\sC_1$；否则判为$\sC_2$。
+或有等价判别$p(\vx\mid \sC_1)p(\sC_1)>p(\vx\mid\sC_2)p(\sC_2)$。
+依照这种准则可以获得最小错误率，即
+\[p(error\mid \vx)=\min [p(\sC_1\mid \vx),p(\sC_2\mid \vx)]\]
 \end{theorem}
 
-Neyman-Pearson准则是限定某一类别$w_i$的误差率不能超过一个常数，但会导致总的误差率提升。
+由于在现实生活中，我们的目标往往不仅是令归类错误率最小，而通常附带了权重，因此有损失函数$\lambda_{ij}$代表将正确类别$\sC_j$归为$\sC_i$的损失，则将$\vx$归到$\sC_i$的风险(risk)为
+\[R_i=\sum_{j=1}^c\lambda_{ij}\lambda_{ij}p(\vx\in\sR_i,\sC_j)\]
+总风险为
+\[\begin{aligned}
+R&=\sum_{i=1}^cR_i\\
+&=\sum_i\sum_j\lambda_{ij}\int_{\sR_i}p(\sC_j\mid \vx)p(\vx)\diff x\\
+&=\sum_i\int_{\sR_i}\sum_j\lambda_{ij}p(\sC_j\mid \vx)p(\vx)\diff x
+\end{aligned}\]
+由于$p(\vx)$为常量，故要让总风险最小化只需令每一项决策的条件风险最小化
+\[R(\sC_i\mid\vx)=\sum_{j=1}^v\lambda_{ij}p(\sC_j\mid\vx)\]
+此即贝叶斯决策论，最小化总的风险称为贝叶斯风险，记为$R^*$
 
-% \subsection{连续变量}
-% 考虑特征向量$\vx\in\rr^d$（$\rr^d$称为特征空间），令$\{\omega_1,\ldots,\omega_c\}$表示有限的$c$个类别集，$\{\alpha_1,\ldots,\alpha_a\}$表示有限的$a$种可能采取的行为集，损失函数(loss)$\lambda(\alpha_t\mid\omega_j)$描述类别状态为$\omega_j$时采取行动$\alpha_i$的风险。
-% $p(\vx\mid\omega_j)$表示在真实类别为$\omega_j$的条件下$\vx$的概率密度函数，$P(\omega_j)$表示类别处于状态$\omega_j$时的先验概率，后验概率$P(\omega_j\mid \vx)$则通过贝叶斯公式
-% \[P(\omega_j\mid\vx)=\frac{p(\vx\mid\omega_j)P(\omega_j)}{p(\vx)}\]
-% 计算得到，证据变为
-% \[p(\vx)=\sum_{j=1}^cp(\vx\mid\omega_j)P(\omega_j)\]
-
-记损失函数$\lambda_{kj}$代表将正确类别$\sC_k$归为$\sC_j$的损失，则将$\vx$归到$\sC_j$的风险(risk)为
-\[R_j=\sum_{k=1}^c\lambda_{kj}\prc{\sC_k}{\vx}\]
-进而得到总风险
-\[R=\intabu{}{}{R(\alpha(\vx)\mid\vx)p(\vx)}{\vx}\]
-
-因此得到连续情形下的贝叶斯决策论：
-\begin{theorem}
-为最小化$R$，计算条件概率
-\[R(\alpha_i\mid\vx)=\sum_{j=1}^c\lambda(\alpha_i\mid\omega_j)\prc{\omega_j}{\vx},\;\forall i=1,\ldots,a\]
-选择$\alpha_i$使得$R(\alpha_i\mid\vx)$最小，进而最小化总的风险即称为贝叶斯风险，记为$R^*$
-\end{theorem}
+Neyman-Pearson准则是限定某一类别$\sC_i$的风险不能超过一个常数，但会导致总的误差率提升。
 
 \subsubsection{二类分类}
-对称损失/0-1损失
+特别地，对于二类分类问题，定义对称损失/0-1损失
 \[\lambda(\alpha_i\mid\omega_j)=
 \begin{cases}
 0 & i=j\\
@@ -75,6 +69,9 @@ R(\alpha_2\mid\vx)&=\lambda_{21}P(\omega_1\mid\vx)+\lambda_{22}P(\omega_2\mid\vx
 
 可得贝叶斯决策
 \[\frac{p(\vx\mid\omega_1)}{p(\vx\mid\omega_2)}>\frac{\lambda_{12}-\lambda_{22}}{\lambda_{21}-\lambda_{11}}\frac{P(\omega_2)}{P(\omega_1)}\]
+
+\subsubsection{极小极大化准则}
+有时先验$p(\vx)$并不准确，因此我们想要让最小风险尽可能小，即极小极大化准则。
 
 \subsection{正态密度}
 \begin{itemize}
@@ -111,7 +108,7 @@ R(\alpha_2\mid\vx)&=\lambda_{21}P(\omega_1\mid\vx)+\lambda_{22}P(\omega_2\mid\vx
 \includegraphics[width=0.8\linewidth]{fig/covariance_matrix.png}
 \end{figure}
 
-某个分布的协方差矩阵与单位阵$I$成比例，若定义矩阵$\Phi$，其列向量是$\Sigma$的正交本征向量，$\Lambda$为与相应本征值对应的对角矩阵，变换
+某个分布的协方差矩阵与单位阵$I$成比例，若定义矩阵$\Phi$，其列向量是$\Sigma$的正交本征向量\footnote{先求特征值和特征向量，然后将特征向量归一化}，$\Lambda$为与相应本征值对应的对角矩阵，变换
 \[A_w=\Phi\Lambda^{-1/2}\]
 将使变换后的分布的协方差矩阵成为\textbf{单位阵}\footnote{这种表示方法是$\Cov{A_w^\T}=I$}，此变换称为白化变换。
 
@@ -126,7 +123,7 @@ R(\alpha_2\mid\vx)&=\lambda_{21}P(\omega_1\mid\vx)+\lambda_{22}P(\omega_2\mid\vx
 \end{cases}\]
 因此对于一给定维数，样本的离散程度直接随$|\Sigma|^{1/2}$而变化。
 
-最小误差概率分类可用判别函数获得
+最小误差概率分类可用判别函数获得（即极大后验）
 \[g_i(\vx)=\ln p(\vx\mid\omega_i)+\ln P(\omega_i)\]
 如果$p(\vx\mid\omega_i)\thicksim N(\vmu,\Sigma)$，则可以求得
 \[g_i(\vx)=-\frac{1}{2}(\vx-\vmu)^\T\Sigma_i^{-1}(\vx-\vmu_i)-\frac{d}{2}\ln 2\pi-\frac{1}{2}\ln|\Sigma_i|+\ln P(\omega_i)\]
