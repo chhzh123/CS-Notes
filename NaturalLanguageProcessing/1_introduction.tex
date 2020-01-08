@@ -1,9 +1,25 @@
 % !TEX root = main.tex
 
 \section{简介}
-自然语言处理(natrual language processing, NLP)的主要内容：机器翻译、信息检索、自动文摘、观点挖掘、问答系统、信息抽取、文档分类、文字编辑和自动校对、语音识别、文语转换、语音合成、说话人识别/认同/验证。
+自然语言处理(natrual language processing, NLP)又叫计算语言学，是研究如何利用计算机技术对语言文本（句子、篇章、话语等）进行加工处理的一门学科，包括对词法、句法、语义、语用等信息的识别、分类、提取转换和生成等各种处理方法和实现技术。
+主要内容包括：机器翻译、信息检索、自动文摘、观点挖掘、问答系统、信息抽取、文档分类、文字编辑和自动校对、语音识别、文语转换、语音合成、说话人识别/认同/验证。
 
-\begin{definition}[熵]
+\subsection{基本问题与主要困难}
+\subsubsection{基本问题}
+\begin{itemize}
+\item 形态学(morphology)：词由有意义的基本单位---词素的构成问题、单词识别/汉语分词问题
+\item 句法(syntax)问题：研究句子结构成分之间的相互关系和组成句子序列的规则
+\item 语义(semantics)问题：
+\end{itemize}
+
+\subsubsection{主要困难}
+\begin{itemize}
+	\item 大量歧义：词法歧义、词性歧义、结构歧义、语义歧义、语音歧义
+	\item 大量未知语言现象：新词、人名、地名、术语、新含义、新句法、新句型
+\end{itemize}
+
+\subsection{信息论基础}
+\begin{definition}[熵/自信息]
 概率分布为$p(x)=P(X=x)$，则熵$H(X)$为
 \[H(X)=-\sum_{x\in X}p(x)\log_2p(x)\]
 并约定$0\log 0=0$，单位为二进制位比特(bit)
@@ -11,6 +27,7 @@
 \begin{definition}[联合熵]
 $X,Y$为离散型随机变量$X,Y\thicksim p(x,y)$，联合熵定义为
 \[H(X,Y)=-\sum_{x\in X}\sum_{y\in Y}p(x,y)\log_2 p(x,y)\]
+是描述一对随机变量平均所需的信息量
 \end{definition}
 \begin{definition}[条件熵]
 \[H(Y\mid X)=-\sum_{x\in Y}\sum_{y\in Y}p(x,y)\log_2 p(y\mid x)\]
@@ -27,8 +44,18 @@ $X,Y$为离散型随机变量$X,Y\thicksim p(x,y)$，联合熵定义为
 \begin{definition}[互信息]
 如果$(X,Y)\thicksim p(x,y)$，则$X,Y$之间的互信息$I(X;Y)$定义为
 \[I(X;Y)=H(X)-H(X\mid Y)=\sum_{x\in X}\sum_{y\in Y}p(x,y)\log_2\frac{p(x,y)}{p(x)p(y)}\]
-互信息值越大，表示两个汉字之间的结合越紧密，越有可能成词。
+互信息值越大，表示两个汉字之间的\textbf{结合越紧密}，越有可能成词。
 \end{definition}
+
+\subsection{语言学基础}
+\begin{definition}[词性(parts of speech, POS)/句法类/语法类]
+相似的语法结构行为和典型的语义类型聚成不同的类，称为词性。
+词法则是构词过程，包括变形（修改时态、数目等）、派生、复合。
+\end{definition}
+
+主要汉字编码标准：ASCII（英文）、GB2312（中文）、BIG5（繁体）、Unicode（统一编码）。
+
+UTF(Unicode Transformation Format)是Unicode的实现方式，从Unicode码点到唯一字节序列的映射算法，一一映射，保证无损转换。
 
 基于上下文分类的消歧方法：
 假设多义词$w$所处的上下文语境为$C$，若$w$的多个词义记为$s_i$，则可通过计算$\argmax p(s_i\mid C)$确定$w$的词义。

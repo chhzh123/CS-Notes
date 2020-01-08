@@ -1,6 +1,8 @@
 % !TEX root = main.tex
 
 \section{语言模型}
+语言模型主要包括统计语言模型和神经语言模型。
+
 \subsection{统计语言模型}
 考虑语句的先验概率
 \[p(s)=\prod_{i=1}^{m}p(w_i\mid w_1\cdots w_{i-1}),\;p(w_1\mid w_0)=p(w_1)\]
@@ -18,7 +20,7 @@ n元文法(n-gram)模型
 实际操作加上句首\verb'<BOS>'和句尾标记\verb'<EOS>'。
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/n-gram.png}
+\includegraphics[width=0.6\linewidth]{fig/n-gram.png}
 \end{figure}
 
 应用：
@@ -36,7 +38,30 @@ n元文法(n-gram)模型
 	\item 加一法：
 	\[p(w_i\mid w_{i-1}=\frac{1+c(w_{i-1}w_i)}{|V|+\sum_{w_i}c(w_{i-1}w_i)}\]
 	\item 减值法/折扣法：将剩余概率量分配给未见概率
+	\begin{itemize}
+		\item Good-Turing估计
+		\item 绝对减值法：从每个计数$r$中减去相同的量，剩余概率量由未见事件均分
+		\[p_r=\begin{cases}
+		\frac{r-b}{N} & r>0\\
+		\frac{b(R-n_0)}{Nn_0} & r=0
+		\end{cases}\]
+		其中$n_0$为样本中未出现的事件数目，$b\leq 1$为减去的常量，$b(R-n_0)/N$是由于减值而产生的剩余概率量
+	\end{itemize}
 \end{itemize}
 
 \subsection{神经语言模型}
-词向量、RNN
+对于固定窗口大小的神经网络显然是不适用的，需要采用一种能够处理任意长度输入的架构，即循环神经网络(RNN)，不同神经元共享相同的参数。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/RNN.png}
+\end{figure}
+
+RNN的优点：
+\begin{itemize}
+	\item 能够处理任意长度输入
+	\item $t$时刻可以访问之前任意时刻的信息
+	\item 对于较长输入，模型大小不变
+	\item 权重共享
+\end{itemize}
+
+不足：循环计算过程慢，难以访问到距当前时刻较远的信息。
