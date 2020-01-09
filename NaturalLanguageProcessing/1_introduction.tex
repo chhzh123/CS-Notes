@@ -15,7 +15,7 @@
 
 \subsubsection{主要困难}
 \begin{itemize}
-	\item 大量歧义：
+	\item 大量\textbf{歧义}：
 	\begin{itemize}
 		\item 词法歧义
 		\begin{displayquote}
@@ -40,7 +40,7 @@
 		\end{displayquote}
 		\item 语音歧义
 	\end{itemize}
-	\item 大量未知语言现象：新词、人名、地名、术语、新含义、新句法、新句型
+	\item 大量\textbf{未知语言现象}：新词、人名、地名、术语、新含义、新句法、新句型
 \end{itemize}
 
 \subsection{信息论基础}
@@ -59,15 +59,16 @@ $X,Y$为离散型随机变量$X,Y\thicksim p(x,y)$，联合熵定义为
 是描述一对随机变量平均所需的信息量
 \end{definition}
 \begin{definition}[条件熵]
-\[H(Y\mid X)=-\sum_{x\in Y}\sum_{y\in Y}p(x,y)\log_2 p(y\mid x)\]
+\[H(Y\mid X)=-\sum_{x\in X}\sum_{y\in Y}p(x,y)\log_2 p(y\mid x)\]
 \end{definition}
 \begin{definition}[相对熵(KL距离)]
 两个概率分布$p(x)$和$q(x)$的相对熵定义为
-\[D(p||q)=\sum_{x\in X}p(x)\log\frac{p(x)}{q(x)}\]
+\[D(p||q)=\sum_{x\in X}p(x)\log_2\frac{p(x)}{q(x)}\]
+注意\textbf{相对熵没有负号}！
 \end{definition}
 \begin{definition}[交叉熵]
 若随机变量$X\thicksim p(x)$，$q(x)$用于近似$p(x)$的概率分布，则$X$与模型$q$的交叉熵定义为
-\[H(X,q)=H(X)+D(p||q)=-\sum_x p(x)\log q(x)\]
+\[H(X,q)=H(X)+D(p||q)=-\sum_x p(x)\log_2 q(x)\]
 其常用来衡量估计模型与真实概率分布之间的差异
 \end{definition}
 \begin{definition}[互信息]

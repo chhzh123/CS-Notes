@@ -43,7 +43,7 @@ n元文法(n-gram)模型
 \[\sum_{w_i}p(w_i\mid w_1,w_2,\ldots,w_{i-1})=1\]
 \begin{itemize}
 	\item 加一法：
-	\[p(w_i\mid w_{i-1}=\frac{1+c(w_{i-1}w_i)}{|V|+\sum_{w_i}c(w_{i-1}w_i)}\]
+	\[p(w_i\mid w_{i-1})=\frac{1+c(w_{i-1}w_i)}{|V|+\sum_{w_i}c(w_{i-1}w_i)}\]
 	\item 减值法/折扣法：将剩余概率量分配给未见概率
 	\begin{itemize}
 		\item Good-Turing估计

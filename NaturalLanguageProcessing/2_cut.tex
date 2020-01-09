@@ -25,7 +25,7 @@
 你认为学生会$\mid$听老师的吗\\
 你认为学生$\mid$会听老师的吗\\
 \end{displayquote}
-	\item 交集型歧义
+	\item 混合型歧义
 \begin{displayquote}
 只有雷人$\mid$才能吸引人\\
 只有雷$\mid$人才$\mid$能吸引人\\
@@ -45,7 +45,7 @@
 \end{cases} & \text{分词}\\
 \text{基于子序列标注的方法}\begin{cases}
 \text{最大熵模型}\\
-\text{CRF模型}
+\text{条件随机场(CRF)模型}
 \end{cases} & \text{合词}
 \end{cases}\]
 
@@ -57,13 +57,17 @@
 \end{figure}
 
 \subsubsection{最优路径法}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/best_path.png}
+\end{figure}
 \begin{itemize}
 \item 最短路径法：词数最少最优\\
 优点：好于单向最大匹配方法\\
 缺点：同样无法解决大部分交集型歧义
 \item 半词罚分法（加权）：如果一个字不能单独使用则是半词，每个词罚1分，每个半词加罚1分，求罚分最低路径（词数最少、半词最少）\\
 缺点：依然无法解决有意见分歧的问题
-\item 最大概率法：在词图上选择词串概率最大的分词路径（动态规划），最优路径中第$i$个词$W_i$的累积概率等于左邻词$W_{i-1}$累积乘自身
+\item 最大概率法：在词图上选择词串概率最大的分词路径（动态规划），最优路径中第$i$个词$w_i$的累积概率等于左邻词$w_{i-1}$累积乘自身
 \[P'(w_i)=P'(w_{i-1})\times P(w_i)\]
 为方便计算，通常将概率转为路径代价，即取对数。
 \begin{enumerate}
@@ -75,10 +79,6 @@
 \end{enumerate}
 缺点：并不能解决所有交集型歧义，一般也无法解决组合型歧义
 \end{itemize}
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.6\linewidth]{fig/best_path.png}
-\end{figure}
 
 \subsubsection{基于字序列标注的方法}
 字位标注法：分词可以看作是对字加``词位标注''的过程。
@@ -98,7 +98,7 @@
 
 \subsubsection{评价指标}
 \[\begin{aligned}
-\text{准确率}P=\frac{\#\text{切分正确}}{\#\text{切分结果所有分词}}\\
-\text{召回率}R=\frac{\#\text{切分正确}}{\#\text{标准答案所有分词}}\\
-\text{F评价}F_1=\frac{2PR}{P+R}
+\text{准确率}P&=\frac{\#\text{切分正确}}{\#\text{切分结果所有分词}}\\
+\text{召回率}R&=\frac{\#\text{切分正确}}{\#\text{标准答案所有分词}}\\
+\text{F评价}F_1&=\frac{2PR}{P+R}
 \end{aligned}\]
