@@ -1,0 +1,38 @@
+\documentclass{note}
+\usepackage[python,table,pseudo]{mypackage}
+\usepackage{xcolor}
+\hypersetup{colorlinks=false,urlbordercolor=red}
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+
+\usepackage{tcolorbox}
+% \begin{tcolorbox}[sharp corners, colback=green!30, colframe=green!80!blue, title=Another paragraph with title]
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\newcommand{\newterm}[1]{\textcolor{blue}{\emph{\textbf{#1}}}}
+
+\title{深度学习笔记}
+\author{陈鸿峥}
+\date{{\builddatemonth\today}\protect\footnote{\text{Build \builddate\today}}} % protect!
+
+\setcounter{secnumdepth}{5}
+
+\begin{document}
+
+\maketitle
+\renewcommand{\thefootnote}{\arabic{footnote}}
+\setcounter{footnote}{0}
+
+\setcounter{tocdepth}{2}%设置深度
+\tableofcontents
+
+\bigskip\bigskip
+
+本课程主要选用Ian Goodfellow, Yoshua Bengio, Aaron Courville的《深度学习》(Deep Learning)一书。
+
+\input{1_introduction}
+
+\bibliographystyle{unsrt}
+\bibliography{dl}
+
+\end{document}
