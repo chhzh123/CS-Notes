@@ -1,4 +1,5 @@
 % !TEX root = main.tex
+% !TEX encoding = UTF-8
 
 \section{简介} % ch1
 图~\ref{fig:venn}反映了\newterm{深度学习}与其他几个常见概念之间的关系。
@@ -30,13 +31,13 @@
 总结来讲有以下几点：
 \begin{itemize}
     \item \textbf{数据}：我们每天产生的数据量越来越多，能够处理的数据量越来越大，名副其实地进入了大数据时代。
-    其中的一些数据经过处理能够变得很干净，2010年拥有大量标注图片的数据集ImageNet就是这样的例子，它的提出使得有监督学习迎来了一波兴起。
-    \item \textbf{算法}：我们有更多更优秀的模型，从AlexNet的dropout，再到后来ResNet的残差模块。
+    其中的一些数据经过处理能够变得很干净，2010年拥有大量标注图片的数据集ImageNet\cite{deng:imagenet_2009}就是这样的例子，它的提出使得有监督学习迎来了一波兴起。
+    \item \textbf{算法}：我们有更多更优秀的模型，从AlexNet的dropout\cite{krizhevsky:alexnet_2012}，再到后来ResNet的残差模块\cite{he:resnet_2016}。
     ImageNet的发展历程，也是深度学习算法/模型改进和发展的历程。
-    \item \textbf{软件系统}：早年的深度学习框架Caffe、Theano、MXNet等使得研究人员可以方便地编写神经网络模型，而2015年前后诞生的TensorFlow和PyTorch则是成为了现在深度学习框架的主流范式，程序员不需知道底层的实施细节，只用“调库”和“调参”也可以实现很高效的模型，这些软件系统的诞生极大程度推动了深度学习的遍地开花。
-    再到现在XLA和TVM等深度学习编译器的出现，更是进一步解放程序员，使上层模型可以方便快捷地部署到后端不同硬件平台上。
+    \item \textbf{软件系统}：早年的深度学习框架Caffe\cite{jia:caffe_2014}、Theano\cite{ai-rfou:theano_2016}、MXNet\cite{chen:mxnet_2016}等使得研究人员可以方便地编写神经网络模型，而2015年前后诞生的TensorFlow\cite{abadi:tensorflow_2016}和PyTorch\cite{paszke:pytorch_2019}则是成为了现在深度学习框架的主流范式，程序员不需知道底层的实施细节，只用“调库”和“调参”也可以实现很高效的模型，这些软件系统的诞生极大程度推动了深度学习的遍地开花。
+    再到现在XLA\cite{google:xla}和TVM\cite{chen:tvm_2018}等深度学习编译器的出现，更是进一步解放程序员，使上层模型可以方便快捷地部署到后端不同硬件平台上。
     \item \textbf{硬件}：GPU为深度学习做出了不可磨灭的贡献，没有GPGPU的发展，很多深度学习任务根本没有办法完成。
-    现在的TPU及各种神经网络加速器也都是在拓宽这一层面，以进一步提升深度学习的能力。
+    现在的TPU\cite{jouppi:tpu_2017}及各种神经网络加速器\cite{moreau:vta_2018}也都是在拓宽这一层面，以进一步提升深度学习的能力。
 \end{itemize}
 上面提到的这几点都不可或缺，它们共同造就了整个深度学习栈，从而带来现在深度学习的繁荣。
 \end{tcolorbox}
