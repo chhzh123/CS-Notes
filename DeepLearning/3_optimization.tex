@@ -3,11 +3,11 @@
 \section{优化} % ch8, ch7
 为了方便叙述，这里采用\href{http://cs229.stanford.edu/notes2019fall/cs229-notes-deep_learning.pdf}{Stanford CS229}的记号，矩阵微积分的推导主要参考：
 \begin{itemize}
-    \item Andrew Ng, Kian Katanforoosh, Anand Avati, \emph{Stanford CS 229 Lecture Notes: Deep Learning}, \url{http://cs229.stanford.edu/notes2019fall/cs229-notes-deep_learning.pdf}
-    \item Andrew Ng, Kian Katanforoosh, \emph{Stanford CS 229 Lecture Notes: Backpropagation}, \url{http://cs229.stanford.edu/notes/cs229-notes-backprop.pdf}
-    \item Kaare Brandt Petersen, Michael Syskind Pedersen, \emph{Matrix Cookbook}, \url{https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf}
-    \item 矩阵求导术 - 长躯鬼侠的文章 - 知乎，\url{https://zhuanlan.zhihu.com/p/24709748}
-    \item Daiwk，机器学习中的矩阵、向量求导，\url{https://daiwk.github.io/assets/matrix+vector+derivatives+for+machine+learning.pdf}
+    \item Andrew Ng, Kian Katanforoosh, Anand Avati, \href{http://cs229.stanford.edu/notes2019fall/cs229-notes-deep_learning.pdf}{\emph{Stanford CS 229 Lecture Notes: Deep Learning}}
+    \item Andrew Ng, Kian Katanforoosh, \href{http://cs229.stanford.edu/notes/cs229-notes-backprop.pdf}{\emph{Stanford CS 229 Lecture Notes: Backpropagation}}
+    \item Kaare Brandt Petersen, Michael Syskind Pedersen, \href{https://www.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf}{\emph{Matrix Cookbook}}
+    \item \href{https://zhuanlan.zhihu.com/p/24709748}{矩阵求导术} - 长躯鬼侠的文章 - 知乎
+    \item Daiwk，\href{https://daiwk.github.io/assets/matrix+vector+derivatives+for+machine+learning.pdf}{机器学习中的矩阵、向量求导}
 \end{itemize}
 
 \subsection{反向传播算法}
@@ -150,6 +150,17 @@ x_2 &= \layer{a_2}{0} & & \\
 }
 
 \subsection{梯度下降}
+\subsubsection{挑战}
+神经网络优化的过程中主要存在以下这些挑战：
+\begin{itemize}
+    \item 病态(ill-conditioning)Hessian矩阵：小步长也会导致大损失（参见数值计算）
+    \item 局部极小值
+    \item 平台(plateau)和鞍点(saddle point)
+    \item 悬崖和梯度爆炸：梯度裁剪(clipping)可解决
+    \item 长期依赖：网络太深时会导致梯度消失或爆炸
+\end{itemize}
+
+\subsubsection{基本算法}
 \begin{itemize}
     \item 批梯度下降
     \[\vtheta_{t+1}=\vtheta_t-\frac{\eta}{N}\sum_{n=1}^N\nabla\mL(\vy_n,\vf(\vx_n;\vtheta_t))\]
@@ -159,11 +170,36 @@ x_2 &= \layer{a_2}{0} & & \\
     \[\vtheta_{t+1}=\vtheta_t-\frac{\eta}{|S|}\sum_{(\vx_n,\vy_n)\in S}\nabla\mL(\vy_n,\vf(\vx_n;\vtheta_t))\]
 \end{itemize}
 
-添加动量(momentum)项，使得梯度下降可以保持原来的方向，以减少震荡
+添加Nesterov动量(momentum)项，使得梯度下降可以保持原来的方向，以减少震荡
 \[\begin{cases}
-    \vnu_{t+1}=\textcolor{red}{\gamma\vnu_t}+\eta\nabla\mL(\vtheta_t)\\
-    \vtheta_{t+1}=\vtheta_t-\vnu_{t+1}
+    \vnu_{t+1}=\textcolor{red}{\gamma\vnu_t}-\eta\nabla\mL(\vtheta_t)\\
+    \vtheta_{t+1}=\vtheta_t+\vnu_{t+1}
 \end{cases}\]
 通常$\gamma$取$0.9$。
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/gd_catalog.jpg}
+\caption{梯度下降算法分类}
+\end{figure}
+
 \subsection{过拟合}
+提升模型泛化能力的几种方法：
+\begin{itemize}
+    \item 数据集分划：训练集60\%、验证集20\%、测试集20\%
+    \item 早停(early stopping)：验证集误差不再下降时
+    \item 规范化(regularization)
+    \[\mL(\vtheta)=\frac{1}{N}\mL(\vy_n,\vf(\vx_n;\vtheta))+\lambda\norm{\vtheta}_p\]
+    \begin{itemize}
+        \item $p=2$：权重衰减(weight decay)/岭回归(ridge)，更小的权重值
+        \item $p=1$：更少的非零权重
+    \end{itemize}
+    \item Dropout：训练时某一神经元只有$p$概率出现
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.6\linewidth]{fig/dropout.jpg}
+        \caption{Dropout示意图}
+    \end{figure}
+    \item 数据增量(augmentation)：对原始图片做变换
+    \item 集成学习(ensemble)
+\end{itemize}
