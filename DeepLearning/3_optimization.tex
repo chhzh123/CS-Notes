@@ -69,7 +69,7 @@ x_2 &= \layer{a_2}{0} & & \\
 其中真实结果$\vy^{(i)}$为独热码(one-hot encoding)。
 
 考虑损失函数(loss)为交叉熵
-\[\mL(\hat{\vy},\vy)=-\vy^\T\ln\hat{\vy}^{(i)}\]
+\[\mL(\hat{\vy},\vy)=-\vy^\T\ln\hat{\vy}\]
 且激活函数$h(\cdot)$为sigmoid函数，$g(\cdot)$为softmax函数。
 
 接下来推导反向传播(backpropagation, BP)算法，利用链式法则求导数。
@@ -78,7 +78,7 @@ x_2 &= \layer{a_2}{0} & & \\
 注意上式并非良定，其中涉及到实值函数对向量求导，也涉及到向量对向量求导（雅可比矩阵），还有向量对矩阵求导。
 \[\begin{aligned}
 \pd{\mL}{\layer{\va}{2}}
-&=\pd{}{\layer{\va}{2}}(-\vy^\T\ln\hat{\va}^{[2]}) \qquad\mbox{实数对向量求导}\\
+&=\pd{}{\layer{\va}{2}}(-\vy^\T\ln \va^{[2]}) \qquad\mbox{实数对向量求导}\\
 &=-\frac{\vy}{\layer{\va}{2}} \qquad\mbox{逐元素相除}
 \end{aligned}\]
 
@@ -139,8 +139,12 @@ x_2 &= \layer{a_2}{0} & & \\
 \pd{\mL}{\vx}&=\layer{W}{1}^\T\layer{\delta}{1}
 \end{aligned}\]
 
-总结来说，对于$l=N-1,N-2,\ldots,1$层，设\textcolor{red}{
-\[\layer{\delta}{l}=\lrp{\layer{W}{l+1}^\T\layer{\delta}{l+1}}\odot h'(\layer{\vz}{l})\]
+总结来说，对于第$n_l$层，\textcolor{red}{
+\[\layer{\delta}{n_l}=-(\vy-\layer{\va}{n_l})\odot g'(\layer{\vz}{n_l})=\layer{\tilde{\delta}}{n_l}\odot g'(\layer{\vz}{n_l})\]
+}
+对于第$l=n_l-1,n_l-2,\ldots,1$层，
+\textcolor{red}{
+\[\layer{\delta}{l}=\lrp{\layer{W}{l+1}^\T\layer{\delta}{l+1}}\odot h'(\layer{\vz}{l})=\layer{\tilde{\delta}}{l}\odot h'(\layer{\vz}{l})\]
 }
 则有权重和偏置的梯度\textcolor{red}{
 \[\begin{aligned}
@@ -182,24 +186,3 @@ x_2 &= \layer{a_2}{0} & & \\
 \includegraphics[width=0.5\linewidth]{fig/gd_catalog.jpg}
 \caption{梯度下降算法分类}
 \end{figure}
-
-\subsection{过拟合}
-提升模型泛化能力的几种方法：
-\begin{itemize}
-    \item 数据集分划：训练集60\%、验证集20\%、测试集20\%
-    \item 早停(early stopping)：验证集误差不再下降时
-    \item 规范化(regularization)
-    \[\mL(\vtheta)=\frac{1}{N}\mL(\vy_n,\vf(\vx_n;\vtheta))+\lambda\norm{\vtheta}_p\]
-    \begin{itemize}
-        \item $p=2$：权重衰减(weight decay)/岭回归(ridge)，更小的权重值
-        \item $p=1$：更少的非零权重
-    \end{itemize}
-    \item Dropout：训练时某一神经元只有$p$概率出现
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.6\linewidth]{fig/dropout.jpg}
-        \caption{Dropout示意图}
-    \end{figure}
-    \item 数据增量(augmentation)：对原始图片做变换
-    \item 集成学习(ensemble)
-\end{itemize}
