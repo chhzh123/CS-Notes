@@ -109,3 +109,42 @@
 \[W\thicksim \mN\lrp{0,\frac{2}{\layer{n}{l}}}\]
 或者从均匀分布中采样
 \[W\thicksim \mU\lrp{-\sqrt{\frac{6}{\layer{n}{l}}},\sqrt{\frac{6}{\layer{n}{l}}}}\]
+
+\subsection{归一化}
+\subsubsection{批归一化}
+不同批次可能有不同的分布，导致梯度下降难收敛，因此希望使输入的批次都有相似的分布，于是就有了批归一化(batch normalization, BN)技术\cite{ioffe:bn_2015}。
+
+对于每一个批$\{\smp{\vx}{i}\}$，归一化每一个维度
+\[\hat{\vx}_k=\frac{\vx_k-\E{\vx_k}}{\sqrt{\Var{\vx_k}+\eps}}\]
+但直接这样做会降低神经元的表达力，因此要恢复其多样性/非线性性
+\[\tilde{\vx}_k=\gamma_k\hat{\vx}_k+\beta_k\equiv \mathrm{BN}_{\gamma_k,\beta_k}(\vx_k)\]
+其中$\gamma_k$和$\beta_k$与每个批次数据独立，不同维度有不同$\gamma_k$和$\beta_k$。
+为了确定每个神经元的$\gamma_k$和$\beta_k$，则可以将其作为参数进行训练。
+
+\subsubsection{组归一化}
+批归一化可以实现更快的收敛速度及更高的精度，但批归一化不能对小的批次大小起作用（如批大小为$4$）。
+组归一化(group normalization, GN)\cite{he:gn_2018}则将通道划分为组，然后在每个组内做归一化，这可以对单一数据起作用。
+
+各种归一化技术的比较可见图\ref{fig:normalization}。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/normalization.jpg}
+\caption{批训练归一化技术}
+\label{fig:normalization}
+\end{figure}
+
+\subsection{更深的网络}
+随着神经网络层的增加，训练和测试误差反倒会增加\cite{he:identity_resnet_2016}，优化的难度也会越大。
+
+因此尝试用网络学习\textbf{残差映射}，而不是直接学习目标映射，此即ResNet\cite{he:resnet_2016}的思想。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/residual_block.jpg}
+\caption{残差模块}
+\end{figure}
+\[\begin{aligned}
+\mathcal{H}(\vx) &= \mF(\vx)+\vx\\
+\mF(\vx) &= \mathcal{H}(\vx)-\vx
+\end{aligned}\]
+
+ResNet在ImageNet数据集上首次超过人类水平，之后出现了大量拓展，包括DenseNets\cite{huang:densenet_2017}、ResNeXt\cite{xie:resnext_2017}、SENet\cite{hu:senet_2018}、PNASNet\cite{liu:pnasnet}等。
