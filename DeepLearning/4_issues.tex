@@ -2,6 +2,10 @@
 
 \section{深层网络训练的挑战} % ch8.7.1
 \subsection{过拟合}
+过拟合的表现是模型在\textbf{训练集上效果好}，但是在\textbf{测试集上效果差}，\textbf{模型泛化能力弱}。
+
+过拟合的原因：噪音数据干扰过大、训练集数量级与模型复杂度不匹配、参数太多/模型复杂度高、训练集测试集特征分布不一致、迭代次数过多(overtraining)。
+
 提升模型泛化能力的几种方法：
 \begin{itemize}
     \item 数据集分划：训练集60\%、验证集20\%、测试集20\%
@@ -23,6 +27,7 @@
 \end{itemize}
 
 \subsection{梯度问题}
+% https://zhuanlan.zhihu.com/p/33006526?from_voters_page=true
 由反向传播算法
 \[\begin{aligned}
 \pd{\mL}{\layer{W}{1}}
