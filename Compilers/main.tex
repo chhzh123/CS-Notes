@@ -2,6 +2,13 @@
 \usepackage[cpp,table,pseudo]{mypackage}
 \usepackage{footnote}
 \makesavenoteenv{tabular}
+\usetikzlibrary{automata,backgrounds,fit,shapes,positioning}
+
+\tikzset{->, % makes the edges directed
+>=stealth, % makes the arrow heads bold
+node distance=2cm, % specifies the minimum distance between two nodes. Change if necessary.
+every state/.style={thick, fill=gray!10}, % sets the properties for each 'state' node
+}
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 

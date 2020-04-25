@@ -24,6 +24,13 @@
 字母表$\Sigma=\{0,1\}$，则$\{001,1001\}$和$\{\}$都是定义在$\Sigma$上的语言。
 \end{example}
 
+\begin{definition}[字符串术语]
+前缀(prefix)和后缀(suffix)都可以包括$\epsilon$。
+字串(substring)可通过删除任意前缀和任意后缀（包括\textbf{零个}）获得。
+真(proper)字串则不包含$\epsilon$。
+子序列(subsequence)是删除\textbf{零个}或多个\textbf{不一定连续}的字母得到的字符串。
+\end{definition}
+
 语言是一种集合，故集合运算也适用于语言。
 \begin{table}[H]
 \centering
@@ -44,7 +51,7 @@
 		\item $\epsilon$是正则表达式，即$L(\epsilon)=\{\epsilon\}$
 		\item $a\in\Sigma$是正则表达式，即$L(\va)=\{a\}$（这里用斜体代表符号，粗体代表符号对应的正则表达式）
 	\end{itemize}
-	\item 推论：若$r$和$s$都是正则表达式给出了语言$L(r)$和$L(s)$，则
+	\item 推论(induction)：若$r$和$s$都是正则表达式给出了语言$L(r)$和$L(s)$，则
 	\begin{itemize}
 		\item $(r)|(s)$是正则表达式，表示$L(r)\cup L(s)$
 		\item $(r)(s)$是正则表达式，表示$L(r)L(s)$
@@ -81,3 +88,184 @@ id &\to letter\_(letter\_|digit)^*
 	\item $r?$代表零或一个
 	\item $[a-z]$字母类
 \end{itemize}
+
+\subsection{有限自动机}
+\subsubsection{确定性/非确定性有限自动机}
+确定有限自动机(DFA)不可对$\epsilon$进行移动，而且对于每一状态$s$，输入符号$a$，只有唯一一条出边标记为$a$；而非确定性有限自动机(NFA)可能有多种转换路径。
+有限状态集$S$，状态$s_0\in S$为初始状态(start/initial)，$F\subset S$为终止状态(accepting/final)。
+\begin{example}
+识别语言$L((a|b)^*abb)$，下面为一个NFA
+\begin{center}
+% http://madebyevan.com/fsm/
+% \begin{tikzpicture}[scale=0.2]
+% \tikzstyle{every node}+=[inner sep=0pt]
+% \draw [black] (22.6,-23.6) circle (3);
+% \draw (22.6,-23.6) node {$0$};
+% \draw [black] (34.6,-23.6) circle (3);
+% \draw (34.6,-23.6) node {$1$};
+% \draw [black] (47.3,-23.6) circle (3);
+% \draw (47.3,-23.6) node {$2$};
+% \draw [black] (59.5,-23.6) circle (3);
+% \draw (59.5,-23.6) node {$3$};
+% \draw [black] (59.5,-23.6) circle (2.4);
+% \draw [black] (21.277,-20.92) arc (234:-54:2.25);
+% \draw (22.6,-16.35) node [above] {$a$};
+% \fill [black] (23.92,-20.92) -- (24.8,-20.57) -- (23.99,-19.98);
+% \draw [black] (23.923,-26.28) arc (54:-234:2.25);
+% \draw (22.6,-30.85) node [below] {$b$};
+% \fill [black] (21.28,-26.28) -- (20.4,-26.63) -- (21.21,-27.22);
+% \draw [black] (25.6,-23.6) -- (31.6,-23.6);
+% \fill [black] (31.6,-23.6) -- (30.8,-23.1) -- (30.8,-24.1);
+% \draw (28.6,-24.1) node [below] {$a$};
+% \draw [black] (37.6,-23.6) -- (44.3,-23.6);
+% \fill [black] (44.3,-23.6) -- (43.5,-23.1) -- (43.5,-24.1);
+% \draw (40.95,-24.1) node [below] {$b$};
+% \draw [black] (50.3,-23.6) -- (56.5,-23.6);
+% \fill [black] (56.5,-23.6) -- (55.7,-23.1) -- (55.7,-24.1);
+% \draw (53.4,-24.1) node [below] {$b$};
+% \draw [black] (15.4,-23.6) -- (19.6,-23.6);
+% \draw (14.9,-23.6) node [left] {$start$};
+% \fill [black] (19.6,-23.6) -- (18.8,-23.1) -- (18.8,-24.1);
+% \end{tikzpicture}
+\begin{tikzpicture}
+\node[state, initial] (0) {$0$};
+\node[state, right of=0] (1) {$1$};
+\node[state, right of=1] (2) {$2$};
+\node[state, accepting, right of=2] (3) {$3$};
+\draw (0) edge[loop above] node{$a$} (0)
+(0) edge[loop below] node{$b$} (0)
+(0) edge[above] node{$a$} (1)
+(1) edge[above] node{$b$} (2)
+(2) edge[above] node{$c$} (3);
+\end{tikzpicture}
+\end{center}
+\end{example}
+
+\begin{algorithm}[H]
+\centering
+\caption{基于DFA的识别算法}
+\begin{algorithmic}[1]
+\State $s=s_0$
+\State $c=nextChar()$
+\While{($c$!=\textbf{eof})}
+\State $s=move(s,c)$
+\State $c=nextChar()$
+\EndWhile
+\If{$s\in F$}
+\State
+\Return ``yes''
+\Else
+\Return ``no''
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+时间复杂度为$O(|str|)$。
+
+\subsubsection{正则表达式转NFA}
+% https://www3.nd.edu/~kogge/courses/cse30151-fa17/Public/other/tikz_tutorial.pdf
+
+\begin{enumerate}
+	\item 奠基
+\begin{itemize}
+\item 对于表达式$\epsilon$，构建NFA
+\begin{center}
+\begin{tikzpicture}
+\node[state, initial] (1) {$i$};
+\node[state, accepting, right of=1] (2) {$f$};
+\draw (1) edge[above] node{$\epsilon$} (2);
+\end{tikzpicture}
+\end{center}
+
+\item 对于任意子表达式$a\in\Sigma$，构建NFA
+\begin{center}
+\begin{tikzpicture}
+\node[state, initial] (1) {$i$};
+\node[state, accepting, right of=1] (2) {$f$};
+\draw (1) edge[above] node{$a$} (2);
+\end{tikzpicture}
+\end{center}
+\end{itemize}
+	\item 推论
+\begin{itemize}
+\item $r=s|t$，取并集
+\begin{center}
+\begin{tikzpicture}
+\node[state, initial] (1) {$i$};
+\node[state, above right of=1] (2) {};
+\node[state, below right of=1] (3) {};
+\node[state, right of=2] (4) {};
+\node[state, right of=3] (5) {};
+\node[state, accepting, below right of=4] (6) {$f$};
+\draw (1) edge[above] node{$\epsilon$} (2)
+(1) edge[below] node{$\epsilon$} (3)
+(4) edge[above] node{$\epsilon$} (6)
+(5) edge[below] node{$\epsilon$} (6);
+\begin{pgfonlayer}{background}
+\node[fit=(2)(4), fill=gray!30, ellipse] {$N(s)$};
+\node[fit=(3)(5), fill=gray!30, ellipse] {$N(t)$};
+\end{pgfonlayer}
+\end{tikzpicture}
+\end{center}
+
+\item $r=st$，取连接
+\begin{center}
+\begin{tikzpicture}[node distance=3cm,
+	FIT/.style args = {#1/#2/#3}{ellipse, fill=#1, inner xsep=#2, fit=#3}]
+\node[state, initial] (1) {$i$};
+\node[state, right of=1] (2) {};
+\node[state, accepting, right of=2] (3) {$f$};
+\node[right=0.41cm of 1] {$N(s)$};
+\node[right=0.41cm of 2] {$N(t)$};
+% \draw[draw=gray!30,arrows={->[gray!30]}] (1) edge[above] node{$N(s)$} (2);
+% \draw[draw=gray!30,arrows={->[gray!30]}] (2) edge[above] node{$N(t)$} (3);
+\begin{pgfonlayer}{background}
+\node[FIT=gray!30/-5mm/(1)(2), draw=black, opacity=0.6] {};
+\node[FIT=gray!30/-5mm/(2)(3), draw=black, opacity=0.6] {};
+\end{pgfonlayer}
+\end{tikzpicture}
+\end{center}
+
+\item $r=s^*$，Kleene闭包
+\begin{center}
+\begin{tikzpicture}[node distance=3.2cm,
+	FIT/.style args = {#1/#2/#3}{ellipse, fill=#1, inner xsep=#2, fit=#3}]
+\node[state, initial] (1) {$i$};
+\node[state, right of=1] (2) {};
+\node[state, right of=2] (3) {};
+\node[state, accepting, right of=3] (4) {$f$};
+\draw (1) edge[above] node{$\epsilon$} (2)
+(1) edge[bend right, below] node{$\epsilon$} (4)
+(3) edge[above, bend right] node(e){$\epsilon$} (2)
+(3) edge[below] node{$\epsilon$} (4);
+\begin{pgfonlayer}{background}
+\node[FIT=gray!30/-5mm/(2)(3)] {$N(s)$};
+\end{pgfonlayer}
+\end{tikzpicture}
+\end{center}
+\end{itemize}
+\end{enumerate}
+
+\subsubsection{NFA转DFA}
+\begin{definition}[$\epsilon$闭包及$move$]
+$\epsilon$闭包是可通过NFA的$\epsilon$边转换的状态。
+$move(T,a)$为状态$s\in T$通过输入符号$a$可到达的新的状态。
+\end{definition}
+\begin{algorithm}[H]
+\centering
+\caption{子集构造}
+\begin{algorithmic}[1]
+\Require NFA $N$
+\Ensure DFA $D$（与$N$接受相同的语言）
+\State $\epsilon-closure(s_0)$是$Dstates$的唯一状态，且未被标记(unmarked)
+\While{在$Dstates$中还有未被标记的状态$T$}
+\State 标记$T$
+\For{每一个输入符号$a$}
+\State $U=\epsilon-closure(move(T,a))$
+\If{$U\notin Dstates$}
+\State 将$U$作为未标记的状态加入$Dstates$
+\EndIf
+\State $Dtran[T,a]=U$
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
