@@ -1,0 +1,83 @@
+% !TEX root = main.tex
+
+\section{词法分析}
+分离词法分析和语法分析可以简化这两个任务，同时提升编译器的性能与兼容性。
+
+\subsection{基本定义}
+\begin{definition}
+令牌(token)是一个\underline{令牌名字}与\underline{可选属性值}构成的对；模式(pattern)描述了每个词素(lexeme)要遵循什么规则；而词素（最小意义单位）则是源程序中一连串满足模式的字母，作为令牌的实例化。
+\end{definition}
+\begin{example}
+考虑C语句\\
+ \qquad\qquad\verb'printf("Total = %d\n", score);'\\
+其中\verb'printf'和\verb'score'是匹配(match)上令牌\textbf{id}模式的词素，而\verb'"Total = %d\n"'是匹配上字面值\textbf{literal}的词素。
+\end{example}
+简单来讲，令牌是一个更大的概念，是同类词素的集合。
+比如一个令牌\textbf{comparison}的样例词素可以有\texttt{<=}和\texttt{!=}。
+
+\begin{definition}[字母表与语言]
+字母表(alphabet)$\Sigma$是有限符号(symbol)的集合，如ASCII就是一个字母表。
+字符串(string)$s$是从字母表中抽取的有限符号的序列，$|s|$为字符串长度，$\epsilon$为空串。
+语言(language)是字符串的可数集合。
+\end{definition}
+\begin{example}
+字母表$\Sigma=\{0,1\}$，则$\{001,1001\}$和$\{\}$都是定义在$\Sigma$上的语言。
+\end{example}
+
+语言是一种集合，故集合运算也适用于语言。
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}\hline
+并集(union) & $L\cup M$\\\hline
+连接(concatenation)/交集 & $LM$\\\hline
+柯林闭包(Kleene closure) & $L^*=\cup_{i=0}^\infty L^i$\\\hline
+正闭包(positive) & $L^+=\cup_{i=1}^\infty L^i$\\\hline
+\end{tabular}
+\end{table}
+
+\subsection{正则表达式}
+\begin{definition}[正则表达式(regular expression, regex)]
+正则表达式$r$定义了语言$L(r)$，以递归形式定义：
+\begin{enumerate}
+	\item 奠基：
+	\begin{itemize}
+		\item $\epsilon$是正则表达式，即$L(\epsilon)=\{\epsilon\}$
+		\item $a\in\Sigma$是正则表达式，即$L(\va)=\{a\}$（这里用斜体代表符号，粗体代表符号对应的正则表达式）
+	\end{itemize}
+	\item 推论：若$r$和$s$都是正则表达式给出了语言$L(r)$和$L(s)$，则
+	\begin{itemize}
+		\item $(r)|(s)$是正则表达式，表示$L(r)\cup L(s)$
+		\item $(r)(s)$是正则表达式，表示$L(r)L(s)$
+		\item $(r)^*$是正则表达式，表示$(L(r))^*$
+		\item $(r)$是正则表达式，表示$L(r)$
+	\end{itemize}
+\end{enumerate}
+正则表达式表示的语言叫做正规集。
+\end{definition}
+
+有以下运算规定：
+\begin{itemize}
+	\item 一元运算符${}^*$有最高优先级，左结合
+	\item 连接优先级次之，左结合
+	\item $|$优先级\textbf{最低}，左结合
+\end{itemize}
+
+\begin{definition}[正则定义]
+$d_i\to r_i$，其中$d_i$都是名字，且各不相同。
+每个$r_i$是$\Sigma\cup\{d_1,\ldots,d_{i-1}\}$中符号上的正则表达式。
+\end{definition}
+\begin{example}
+比如C语言的标识符可记为
+\[\begin{aligned}
+letter\_ &\to A|B|\cdots|Z|a|b|\cdots|z|\_\\
+digit &\to 0|1|\cdots|9\\
+id &\to letter\_(letter\_|digit)^*
+\end{aligned}\]
+\end{example}
+
+正则表达式的拓展\footnote{更多可参见\href{https://regex101.com/}{Regex101}}：
+\begin{itemize}
+	\item $r^+$代表一个或多个
+	\item $r?$代表零或一个
+	\item $[a-z]$字母类
+\end{itemize}
