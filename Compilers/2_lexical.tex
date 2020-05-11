@@ -336,7 +336,7 @@ $\{3,4\}$ & $E$ & $\{2,3\}$ & $\{1,4\}$\\\hline
 直接用NFA识别语言算法如下，需要每次算所有当前\textbf{可能状态}执行动作$c$后的$\epsilon$闭包。
 \begin{algorithm}[H]
 \centering
-\caption{子集构造（NFA转DFA）}
+\caption{用NFA识别语言}
 \begin{algorithmic}[1]
 \State $S=\epsilon$-$closure(s_0)$
 \State $c=nextChar()$
@@ -355,3 +355,216 @@ $\{3,4\}$ & $E$ & $\{2,3\}$ & $\{1,4\}$\\\hline
 \begin{theorem}
 DFA，NFA和正则表达式三者的描述能力是一样的。
 \end{theorem}
+
+但从NFA转为DFA可能导致状态数的指数增长。
+\begin{example}
+$L_n=(a\mid b)^*a(a\mid b)^{n-1}$，与此NFA等价的DFA状态数必不少于$2^n$。
+\end{example}
+\begin{analysis}
+反证法。
+假设存在一个DFA $D$接受语言$L_n$，且状态数少于$2^n$。
+构造$2^n$个长度为$n$的字符串
+\begin{flushleft}
+$aa\cdots a$\\
+$aa\cdots 1$\\
+$\cdots$\\
+$bb\cdots a$\\
+$bb\cdots b$
+\end{flushleft}
+由于$D$的状态数少于$2^n$，故上面必存在两个不同的字符串$s$和$t$，它们在DFA上会走到同一状态。
+因为$s$和$t$不等，因此总存在$i$，使得$s[i]\ne t[i]$。
+不妨设$s[i]=0$，$t[i]=1$，令$s'=s+(n-1)$个$a$，$t'=t+(n-1)$个$a$。
+由$L_n$的表达式，$s'$应该走到接受状态，而$t'$应该走到非接受状态。
+但由于$s$和$t$走到同一状态，那么它们再走$(n-1)$个$a$也应该到达同一状态，但这个状态既是接受状态又是非接受状态，因此矛盾。
+\end{analysis}
+
+\subsection{Regex转DFA}
+构造正则表达式的语法树，以\#结尾
+
+\begin{minipage}{0.25\linewidth}
+\begin{forest}
+[$\circ$
+	[$\circ$
+		[$\circ$
+			[$\circ(n_2)$
+				[$*(n_1)$
+					[$|$
+						[$a(1)$]
+						[$b(2)$]
+					]
+				]
+				[$a(3)$]
+			]
+			[$b(4)$]
+		]
+		[$b(5)$]
+	]
+	[$\#(6)$]
+]
+\end{forest}
+\end{minipage}
+\begin{minipage}{0.75\linewidth}
+$*$为star，$|$为or，$\circ$为cat
+\begin{itemize}
+	\item $nullable(n)$：$\epsilon$包含在子树中则为真
+	\item $firstpos(n)$：符合regex子树的字符串中第一个字符可能出现的位置
+	\item $lastpos(n)$：符合要求字符串最后一个字符可能出现的位置
+	\item $followpos(p)$：紧跟$p$可能的位置
+\end{itemize}
+\begin{example}
+结点$n_1$代表$(a|b)^*$，结点$n_2$代表$(a|b)^*a$
+\begin{itemize}
+	\item $nullable(n_1)=true$
+	\item $firstpos(n_2)=\{1,2,3\}$
+	\item $lastpos(n_2)=\{3\}$
+	\item $followpos(1)=\{1,2,3\}$
+\end{itemize}
+\end{example}
+\end{minipage}
+
+\bigskip
+计算$followup$的两条法则：
+\begin{itemize}
+	\item 若$n$为cat结点，则对于左子树$c_1$的所有$i\in lastpos(c_1)$，有右子树$firstpos(c_2)\in followpos(i)$
+	\item 若$n$为star结点，则对于所有$i\in lastpos(n)$，有$firstpos(n)\in followpos(i)$
+\end{itemize}
+
+构建$followpos$的过程实际上是深搜的过程，可构造出一个有向图表示状态迁移。
+\begin{algorithm}[H]
+\centering
+\caption{Regex转DFA}
+\begin{algorithmic}[1]
+\Require 正则表达式 $r$
+\Ensure DFA $D$可识别$L(r)$
+\State 语法树$T$的根节点为$n_0$，$firstpos(n_0)$是$Dstates$的唯一状态，且未被标记(unmarked)
+\While{在$Dstates$中还有未被标记的状态$S$}
+\State 标记$S$
+\For{每一个输入符号$a$}
+\State $U=\bigcup_{\text{对应}a\text{的位置}p\in S} followpos(p)$
+\If{$U\notin Dstates$}
+\State 将$U$作为未标记的状态加入$Dstates$
+\EndIf
+\State $Dtran[S,a]=U$
+\EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+\begin{example}
+考虑正则表达式
+\begin{tabular}{ccccccccc}
+$($ & $a$ & $|$ & $b$ & $)^*$ & $a$ & $b$ & $b$ & $\#$\\
+ & 1 & & 2 & & 3 & 4 & 5 & 6
+\end{tabular}
+\end{example}
+\begin{analysis}
+由表达式其实可以直接得到$followpos$函数
+\begin{center}
+\begin{tabular}{cc}\hline
+position & $followpos(i)$\\\hline
+$1$ & $\{1,2,3\}$\\\hline
+$2$ & $\{1,2,3\}$\\\hline
+$3$ & $\{4\}$\\\hline
+$4$ & $\{5\}$\\\hline
+$5$ & $\{6\}$\\\hline
+$6$ & $\varnothing$\\\hline
+\end{tabular}
+\end{center}
+进而构造出一个有向图
+\begin{center}
+\begin{tikzpicture}
+\node[state] (3) {$3$};
+\node[state, above left of=3] (1) {$1$};
+\node[state, below left of=3] (2) {$2$};
+\node[state, right of=3] (4) {$4$};
+\node[state, right of=4] (5) {$5$};
+\node[state, right of=5] (6) {$6$};
+\draw (1) edge[loop above] (1)
+(2) edge[loop below] (2)
+(1) edge[bend right] (2)
+(2) edge[bend right] (1)
+(1) edge (3)
+(2) edge (3)
+(3) edge (4)
+(4) edge (5)
+(5) edge (6);
+\end{tikzpicture}
+\end{center}
+然后可得DFA
+\begin{center}
+\begin{tikzpicture}
+\node[state, initial] (1) {$123$};
+\node[state, right of=1] (2) {$1234$};
+\node[state, right of=2] (3) {$1235$};
+\node[state, accepting, right of=3] (4) {$1236$};
+\draw (1) edge[loop above, above] node{$b$} (1)
+(1) edge[above] node{$a$} (2)
+(2) edge[above] node{$b$} (3)
+(3) edge[above] node{$b$} (4)
+(2) edge[loop below, below] node{$a$} (2)
+(3) edge[bend right, above] node{$a$} (2)
+(4) edge[bend right, above] node{$b$} (1)
+(4) edge[bend left, below] node{$a$} (2);
+\end{tikzpicture}
+\end{center}
+\end{analysis}
+
+\subsection{最小化DFA}
+\begin{definition}[区别(distinguish)]
+字符串$w$\textbf{区别}状态$s$和$t$，如果DFA $M$从状态$s$出发，对输入串$w$进行状态转换，最后停在某个接受状态；
+从$t$出发，对输入串$w$进行状态转换，停在一个非接受状态；反之亦然。
+\end{definition}
+
+\begin{theorem}
+每一个正则集都可以\textbf{唯一}由一个状态数最少的DFA识别。
+\end{theorem}
+\begin{analysis}
+反证法。
+设算法得到的DFA为$D$，假设存在另一个DFA $D'$，$D'$和$D$接受同一语言，并且$D'$的状态数比$D$更少。
+设$D$的起始状态为$S$，$D'$的起始状态为$S'$，则$S$与$S'$不可区分。
+如果对于$S$和输入符号$a$，在$D$中迁移到状态$A$；
+对于$S'$和输入符号$a$，在$D'$中迁移到状态$A'$，则$A$与$A'$不可区分。
+依此类推可知对于$D$中的任一状态$T$，在$D'$中都有一个状态$T'$与$T$不可区分。
+又由于$D$的状态数多于$D'$的状态数，所以$D$中至少存在两个状态$T_1$和$T_2$，使得$D'$中的一个状态$T$与它们均不可区分。
+因此$T_1$和$T_2$也不可区分，于是矛盾。
+\end{analysis}
+
+\begin{example}
+如下状态转移图
+\begin{center}
+\begin{tikzpicture}
+\node[state, initial] (1) {$A$};
+\node[state, right of=1] (2) {$B$};
+\node[state, above of=2] (3) {$C$};
+\node[state, right of=2] (4) {$D$};
+\node[state, accepting, right of=4] (5) {$E$};
+\draw (3) edge[loop above] node{$b$} (3)
+(1) edge[above] node{$b$} (3)
+(1) edge[above] node{$a$} (2)
+(2) edge[loop below, below] node{$a$} (2)
+(3) edge[above] node{$a$} (2)
+(2) edge[above] node{$b$} (4)
+(4) edge[bend left, below] node{$a$} (2)
+(4) edge[above] node{$b$} (5)
+(5) edge[above] node{$b$} (3)
+(5) edge[bend left, below] node{$a$} (2);
+\end{tikzpicture}
+\end{center}
+\end{example}
+\begin{analysis}
+初始划分$\Pi$包括两个组：接受状态组$(E)$和非接受状态组$(ABCD)$。
+构造$\Pi_{new}$，先考虑$(E)$，仅一个状态，不可划分，仍将$(E)$放回$\Pi_{new}$。
+然后考虑$(ABCD)$，对于输入$a$，这些状态都转换到$B$，分组$(ABCD)$不变；
+但对于输入$b$，$A$、$B$和$C$都转换到状态组$(ABCD)$的一个成员，而$D$转换到另一组成员$E$。
+因此，在$\Pi_{new}$中，状态组$(ABCD)$需要分裂为两个新组$(ABC)$和$D$，$\Pi_{new}=(ABC)(D)(E)$。
+继续执行下一轮操作，最终得到$\Pi_{final}=(AC)(B)(D)(E)$。
+因此选择$A$作为$(AC)$的代表，其他不变，可得到简化的自动机。
+\begin{center}
+\begin{tabular}{c|cc}\hline
+ & $a$ & $b$\\\hline\hline
+$A$ & $B$ & $A$\\\hline
+$B$ & $B$ & $D$\\\hline
+$D$ & $B$ & $E$\\\hline
+$E$ & $B$ & $A$\\\hline
+\end{tabular}
+\end{center}
+\end{analysis}
