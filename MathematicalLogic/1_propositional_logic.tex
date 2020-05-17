@@ -1,0 +1,74 @@
+% !TEX root = main.tex
+
+\section{命题逻辑}
+\subsection{自然推断}
+\begin{definition}[命题(proposition)]
+命题或声明式句子是指可判断为真或者假的句子。
+不可被分解的(indecomposable)命题为原子命题。
+\end{definition}
+
+关于命题公式的定义在这里不再给出，注意$\to$是右结合(right-associative)的，如$p\to q\to r$等价于$p\to(q\to r)$。
+
+\begin{definition}[自然推断(deduction)]
+假设有一系列前提(premise)公式$\phi_1,\phi_2\ldots,\phi_n$，及结论$\psi$，那么推断过程可记为
+\[\phi_1,\phi_2,\ldots,\phi_n\vdash\psi\]
+这一表达式称为一个序列(sequent)，若一个证明可以被找到则称它是合法的(valid)。
+\end{definition}
+
+推理的基本规则：
+\begin{itemize}
+	\item and-introduction ($\land i$)：前提与前提为真
+	\[\frac{\phi\qquad\psi}{\phi\land\psi}\land i\]
+	\item and-elimination ($\land e_i$)：前提与中子成分为真
+	\[\frac{\phi\land\psi}{\phi}\land e_1\qquad \frac{\phi\land\psi}{\psi}\land e_2\]
+	\item negation-introduction ($\lnot\lnot i$)
+	\[\frac{\phi}{\lnot\lnot\phi}\lnot\lnot i\]
+	\item negation-elimination ($\lnot\lnot e$)
+	\[\frac{\lnot\lnot\phi}{\phi}\lnot\lnot e\]
+	\item implication-elimination $\to e$
+	\[\frac{\phi\quad \phi\to\psi}{\psi}\to e\]
+	\item implies-introduction $\to i$
+	\[\dfrac{\fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\psi$\end{tabular}}}{\phi\to\psi}\to i\]
+	\item or-introduction $\lor e$
+	\[\frac{\phi}{\phi\lor\psi}\lor i_1\qquad
+	\frac{\psi}{\phi\lor\psi}\lnot\lnot i_2\qquad
+	\frac{\phi\lor\psi\quad \fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\chi$\end{tabular}}\quad \fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\chi$\end{tabular}}}{\chi}\lor e\]
+	\item bottom/not-elimination
+	\[\frac{\bot}{\phi}\bot e\qquad \frac{\phi\qquad\lnot\phi}{\bot}\lnot e\]
+	\item negation
+	\[\frac{\fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\bot$\end{tabular}}}{\lnot \phi}\lnot i\]
+\end{itemize}
+
+\begin{example}
+证明$p\land q,r\vdash q\land r$是合法的。
+\end{example}
+\begin{analysis}
+推理过程如下
+\begin{center}
+\begin{tabular}{lll}
+1 & $p\land q$ & premise\\
+2 & $r$ & premise\\
+3 & $q$ & $\land e_2\quad 1$\\
+4 & $q\land r$ & $\land i\quad 3,2$
+\end{tabular}
+\end{center}
+\[\frac{\frac{p\land q}{q}\land e_2\quad r}{q\land r}\land i\]
+\end{analysis}
+
+\begin{definition}[定理(theorem)]
+有着合法序列$\vdash\phi$的逻辑公式$\phi$称为定理。
+\end{definition}
+
+三条进阶推理规则：
+\begin{itemize}
+\item 拒取式(modus tollens, MT)
+\[\frac{\phi\to\psi\quad \lnot\psi}{\lnot\phi} MT\]
+\item 反证法(proof by contradition, PBC)
+\[\frac{\fbox{\begin{tabular}{c}$\lnot\phi$\\$\vdots$\\$\bot$\end{tabular}}}{\phi} PBC\]
+\item 排中律(the law of the excluded middle, LEM)
+\[\phi\lor\lnot\phi\text{必有一个为真}\]
+\end{itemize}
+
+\begin{definition}[可证明等价性(provably equivalent)]
+令$\phi$和$\psi$为命题逻辑公式，$\phi$和$\psi$是可证明等价的当且仅当序列$\phi\vdash\psi$和$\psi\vdash\phi$都是合法的，或者$\phi\dashv\vdash\psi$
+\end{definition}
