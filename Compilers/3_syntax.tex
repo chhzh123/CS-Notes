@@ -1,0 +1,117 @@
+% !TEX root = main.tex
+
+\section{语法分析}
+\subsection{上下文无关法}
+语法分析需要解决：从词法分析中获得的每个属性字(token)在语句中承担什么角色，同时检查语句是否符合程序语言的语法。
+\begin{definition}[上下文无关法(context-free gramma, CFG)]
+包括四部分
+\begin{itemize}
+	\item 终端符号(terminal)的集合$T$
+	\item 非终端符号的集合$N$
+	\item 唯一的开始符号$S\in N$
+	\item 若干以下形式的产生式(production)
+	\[X\to Y_1Y_2\ldots Y_n\]
+	其中$X\in N$且$Y_i\in T\cup N\cup\{\epsilon\}$。
+	多个左侧相同的产生式右侧可用$\mid$合并。
+\end{itemize}
+\end{definition}
+\begin{definition}[推导(derivation)]
+从开始符号开始，每一步推导就是用一个产生式的右方取代左端的非终端符号。
+\end{definition}
+
+CFG定义语言的能力比正则表达式强很大原因是它引入了\textbf{递归}的因素。
+
+\begin{example}
+用上下文无关文法定义下列语言：
+\begin{itemize}
+	\item $L=\{0^n1^n\mid n\geq 1\}$：$E\to 0E1\mid 01$
+	\item 只含有$0$和$1$的回文串：$S\to 0S0\mid 1S1\mid 0\mid 1\mid \epsilon$
+	\item 只含有$($和$)$的匹配括号串：$E\to (E)\mid EE\mid \epsilon$
+\end{itemize}
+\end{example}
+
+\begin{itemize}
+	\item 最左推导：每步推导都替换最左侧的非终端符号
+	\[E\xRightarrow{lm}
+	-E\xRightarrow{lm}
+	-(E)\xRightarrow{lm}
+	-(E+E)\xRightarrow{lm}
+	-(id+E)\xRightarrow{lm}
+	-(id+id)\]
+	\item 最右推导：每步推导都替换最右侧的非终端符号
+	\[E\implies
+	-E\implies
+	-(E)\implies
+	-(E+E)\implies
+	-(E+id)\implies
+	-(id+id)\]
+\end{itemize}
+
+\begin{definition}[二义性]
+如果对于一个文法，存在一个句子，对这个句子可以构造两棵不同的分析树，那么我们称这个文法为二义的。
+\end{definition}
+看语法分析树的叶子结点能不能连成句子。
+
+\begin{example}
+对于文法$E\to E+E\mid E*E\mid -E\mid (E)\mid id$及句子$id+id*id$，有以下两种推导：
+
+\begin{minipage}{0.5\linewidth}
+\[\begin{aligned}
+E &\implies E+E\\
+&\implies id+E\\
+&\implies id+E*E\\
+&\implies id+id*E\\
+&\implies id+id*id\\
+\end{aligned}\]
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\[\begin{aligned}
+E &\implies E+E\\
+&\implies id+E\\
+&\implies id+E*E\\
+&\implies id+id*E\\
+&\implies id+id*id\\
+\end{aligned}\]
+\end{minipage}
+\end{example}
+
+文法二义性的消除可通过引入更多的产生式。
+\begin{example}
+$E\to E+E\mid E*E\mid (E)\mid id$是有二义的，因为不知道应该先算加法还是乘法。
+可将其改为
+\[\begin{aligned}
+E &\to E+T\mid T\\
+T &\to T*F\mid F\\
+F &\to (E)\mid id
+\end{aligned}\]
+其中$E$为Expression，$T$为Term，$F$为Facotr，即可消除二义性（必然得先算乘法）。
+\end{example}
+
+并不是所有上下文无关文法都可以做到无二义，也无法判断一个上下文无关文法是否是二义的。
+
+\subsection{NFA转CFG}
+\begin{enumerate}
+	\item 对于NFA的每一状态$i$，创建非终态$A_i$
+	\item 若状态$i$在输入$a$上有转换边到状态$j$，则添加生成式$A_i\to aA_j$；
+	若状态$i$在输入$\epsilon$上转换到状态$j$，则添加生成时$A_i\to A_j$
+	\item 若$i$是接受状态，则添加$A_i\to\epsilon$
+	\item 若$i$是初始状态，则令$A_i$为语法的初始符号
+\end{enumerate}
+
+\begin{definition}[右线性文法]
+如果每个产生式都属于下列形式之一
+\[A\to aB\qquad A\to a\qquad A\to\epsilon\]
+则这样的文法称为右线性文法
+\end{definition}
+\begin{definition}[左线性文法]
+如果每个产生式都属于下列形式之一
+\[A\to Ba\qquad A\to a\qquad A\to\epsilon\]
+则这样的文法称为左线性文法
+\end{definition}
+
+在处理程序时，上下文无法文法存在局限性，无法解决诸如以下问题：
+\begin{itemize}
+\item 变量先声明，再使用
+\item 调用函数时，实参个数和形参个数一致
+\end{itemize}
+都得留到语义分析阶段才解决。
