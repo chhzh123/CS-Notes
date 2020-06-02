@@ -115,3 +115,53 @@ F &\to (E)\mid id
 \item 调用函数时，实参个数和形参个数一致
 \end{itemize}
 都得留到语义分析阶段才解决。
+
+\subsection{递归下降}
+\begin{definition}[左递归]
+对于非终端符号$A$有生成式$A\to A\alpha$，则该文法是左递归的。
+\end{definition}
+消除左递归的方法：
+\[A\to A\alpha_1\mid \cdots\mid A\alpha_m\mid\beta_1\mid\cdots\beta_n
+\implies
+\begin{aligned}
+A &\to\beta_1 A'\mid\cdots\mid\beta_n A'\\
+A' &\to\alpha_1 A'\mid\cdots\mid\alpha_m A'\epsilon
+\end{aligned}\]
+
+\begin{definition}[FIRST集与FOLLOW集]
+$FIRST(\alpha)$集为从$\alpha$中推导出来的字符串第一个终端符号的集合，若$\alpha\to\epsilon$，则$\epsilon\in FIRST(\alpha)$；若$A\to c\gamma$，则$c\in FIRST(A)$。
+$FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
+若$A$是最右端的符号，则字符串结束符号$\$\in FOLLOW(A)$。
+\end{definition}
+
+LL(1)文法
+\begin{itemize}
+	\item 第一个L：输入字符串从左边开始扫描
+	\item 第二个L：得到的推导是最左推导
+	\item (1)：向前看1个输入符号（或单词）
+\end{itemize}
+
+基于表的预测语法分析
+\begin{algorithm}
+\caption{Table-Driven Predictive Parsing}
+\begin{algorithmic}[1]
+\State \verb'ip=0'
+\State \verb'X=stack.top()'
+\While {$X\ne\$$}
+\If {X == w[ip]}
+\State \verb'stack.pop(); ip++;'
+\Else \If {X is a terminal or M[X,a]=$\varnothing$}
+\State Error()
+\Else
+\State Output production \verb'M[X,a]'$=X\to Y_1Y_2\cdots Y_k$
+\State stack.pop()
+\State push $Y_k,Y_{k-1},\ldots,Y_1$ onto the stack
+\EndIf
+\EndIf
+\State \verb'X=stack.top()'
+\EndWhile
+\If {w[ip] != '\$'}
+\State Error()
+\EndIf
+\end{algorithmic}
+\end{algorithm}
