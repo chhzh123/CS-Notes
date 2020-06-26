@@ -23,16 +23,22 @@
 因此为找到最大间隔来划分超平面（分类结果最鲁棒，泛化能力最强），则需要求解下述最优化问题
 \begin{maxi*}
 {\vw,b}{\frac{2}{\norm{\vw}}}{}{}
-\addConstraint{y_i(\vw^\T \vx_i+b)}{\geq 1}{i=1,2,\ldots,m}
+\addConstraint{y_i(\vw^\T \vx_i+b)}{\geq 1}{\qquad i=1,2,\ldots,m}
 \end{maxi*}
 显然，为了最大化间隔，只需最大化$\norm{\vw}^{-1}$，等价于最小化$\norm{\vw}^2$，于是上述优化问题可重写为
 \begin{maxi*}
 {\vw,b}{\frac{1}{2}\norm{\vw}^2}{}{}
-\addConstraint{y_i(\vw^\T \vx_i+b)}{\geq 1}{i=1,2,\ldots,m}
+\addConstraint{y_i(\vw^\T \vx_i+b)}{\geq 1}{\qquad i=1,2,\ldots,m}
 \end{maxi*}
 此即为支持向量机(Support Vector Machine, SVM)的基本型。
 
 可以用拉格朗日乘子法求对偶问题并得到KKT条件，可利用凸优化的方法进行求解。
+
+对偶问题为
+\begin{mini*}
+{\valpha}{\frac{1}{2}\sum_{i=1}^m\sum_{j=1}^m\alpha_i\alpha_j y_iy_j\phi(\vx_i)^\T\phi(\vx_j)-\sum_{i=1}^m\alpha_i}{}{}
+\addConstraint{\sum_{i=1}^m\alpha_iy_i=0}
+\end{mini*}
 
 支持向量机于[Cortes and Vapnik, 1995]正式发表，由于在文本分类任务中显示出卓越性能[Joachims, 1998]，很快成为机器学习主流技术，并直接掀起统计学习(statistical learning)在2000年前后的高潮。
 
@@ -56,6 +62,16 @@
 高斯核 & $\kappa(\vx_i,\vx_j)=\exp\lrp{-\frac{\norm{\vx_i-\vx_j}^2}{2\sigma^2}}$ & $\sigma>0$为高斯核的带宽(width)\\\hline
 \end{tabular}
 \end{center}
+
+软间隔允许支持向量机在一些样本上不满足约束。
+基本想法是最大化间隔的同时，让不满足约束的样本尽可能少。
+\[\min_{\vw,b}\frac{1}{2}\norm{\vw}^2+C\sum_{i=1}^ml_{0/1}(y_i(\vw^\T\phi(\vx_i)+b)-1)\]
+其中$l_{0/1}$是0/1损失函数
+\[l_{0/1}=\begin{cases}
+1 & z < 0\\
+0 & \text{otherwise}
+\end{cases}\]
+存在的问题是0/1损失函数非凸、非连续，不易优化。
 
 \subsection{支持向量回归}
 支持向量回归(Support vector regression, SVR)允许$f(\vx)$与$y$之间最多有$\eps$的偏差
