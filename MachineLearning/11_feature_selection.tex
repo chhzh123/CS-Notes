@@ -1,0 +1,39 @@
+% !TEX root = main.tex
+
+\section{特征选择}
+特征选择是从原始特征中挑选出最有代表性、性能最好的特征，而特征提取则是用映射（或变换）的方法将原始特征变换维较少的新特征；降维则是通过原始特征构造新的特征，新的特征能够更好表示原始数据，且特征数量较原始特征少。
+
+\subsection{子集搜索}
+\begin{itemize}
+	\item 前向搜索：逐渐增加相关特征
+	\item 后向搜索：从完整特征集合开始，逐渐减少特征
+	\item 双向搜索：每一轮逐渐增加相关特征，同时减少无关特征
+\end{itemize}
+
+\subsection{特征选择方法}
+\begin{itemize}
+	\item 过滤型(filter)：先进行特征选择，再进行建模；
+	评价指标：
+	\begin{itemize}
+		\item 皮尔逊相关系数：系数取值区间为$[-1,1]$，$-1$完全负相关，$+1$完全正相关，$0$则没有相关
+		\[r=\frac{\mathop{cov}(X,Y)}{\mathop{var}(X)\mathop{var}(Y)}\]
+		计算简单，但是不能反映变量之间的非线性关系
+		\item 信息增益：特征子集$A$确定了对数据集$D$的一个划分，$A$上的取值将数据集$D$分为$V$份，每一份用$D^v$表示，$\mathop{Ent}(D^v)$表示$D^v$上的信息熵
+		\[\mathop{Gain}(D,A)=\mathop{Ent}(D)-\sum_{v=1}^V\frac{|D^v|}{|D|}\mathop{Ent}(D^v)\]
+	\end{itemize}
+	\item 封装型(wrapper)：直接将学习器的性能作为特征子集的评价标准，如召回率、准确率、AUC等指标。LVW (Las Vegas Wrapper)采用随机策略进行子集搜索，并以最终分类器的误差作为特征子集评价标准
+	\begin{enumerate}
+		\item 在循环的每一轮随机产生一个特征子集
+		\item 在随机产生的特征子集上通过交叉验证推断当前特征子集的误差
+		\item 多次循环，在多个随机产生的特征子集中选择误差最小的特征子集作为最终解
+	\end{enumerate}
+	\item 嵌入型(embedded)：将特征选择和模型训练融为一体
+	\begin{itemize}
+		\item 正则化方法：L1范数LASSO回归$\lambda\norm{\vw}_1$，L2范数岭回归$\lambda\norm{\vw}_2$
+		\item 随机森林/决策树：平均不纯度减少，平均精确率减少
+		\item 递归特征消除(Recursive Feature Eliminiation, RFE)：反复构建模型选出最好/最坏的特征，将选出来的特征放到一边，然后在剩余特征上重复这个过程，遍历所有特征。
+		在这个过程中特征被消除的次序就是特征的排序。
+		消除的稳定性很大程度取决于模型迭代时选用的底层模型。
+	\end{itemize}
+	\item 无监督特征选择：Laplacian score选择那些能够最好保持数据流形结构的特征子集
+\end{itemize}
