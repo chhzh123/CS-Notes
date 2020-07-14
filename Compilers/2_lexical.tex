@@ -91,7 +91,7 @@ id &\to letter\_(letter\_|digit)^*
 
 \subsection{有限自动机}
 \subsubsection{确定性/非确定性有限自动机}
-确定有限自动机(DFA)不可对$\epsilon$进行移动，而且对于每一状态$s$，输入符号$a$，只有唯一一条出边标记为$a$；而非确定性有限自动机(NFA)可能有多种转换路径。
+确定有限自动机(DFA)不可对$\epsilon$进行移动，而且对于每一状态$s$，输入符号$a$，只有唯一一条出边标记为$a$；而非确定性有限自动机(NFA)可能有多种转换路径，而且有$\epsilon$移动。
 有限状态集$S$，状态$s_0\in S$为初始状态(start/initial)，$F\subset S$为终止状态(accepting/final)。
 \begin{example}
 识别语言$L((a|b)^*abb)$，下面为一个NFA
