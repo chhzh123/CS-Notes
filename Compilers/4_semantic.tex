@@ -1,0 +1,62 @@
+% !TEX root = main.tex
+
+\section{语义分析与中间表示}
+\begin{itemize}
+\item 高层中间表示：语法树、有向无环图(DAG)，用于静态类型检查
+\item 低层中间表示：三地址码，适合机器相关的任务（寄存器分配、指令选择）
+\end{itemize}
+\begin{lstlisting}[language=c++]
+x = y op z // arithmetic and logical
+x = op y  // negation and conversion
+x = y // copy
+goto L // unconditional jump
+if x goto L // conditional jump 
+if False x goto L // conditional jump
+if x op y goto L // relational operation
+param x1 // parameter passing
+param x2
+...
+param xn
+call p, n // procedure call
+y = call p, n // function call
+return y // return a value
+x = y[i] // indexed copy, i is the offset
+x[i] = y
+x = &y // address and pointer assignment
+x = *y
+*x = y
+\end{lstlisting}
+
+\verb'top'指代当前的符号表，\verb'gen'代表生成中间代码，\verb'||'代表代码的连接。
+\begin{center}
+\begin{tabular}{|l|l|}\hline
+$S \to id = E$ & \verb"S.code = E.code || gen(top.get(id.lexeme) '=' E.addr)"\\\hline
+$E \to E_1 + E_2$ & \begin{tabular}{l}
+\verb'E.addr = new Temp()'\\
+\verb"E.code = E1.code || E2.code || gen(E.addr '=' E1.addr '+' E2.addr)"
+\end{tabular}\\\hline
+$E \to -E_1$ & \begin{tabular}{l}
+\verb'E.addr = new Temp()'\\
+\verb"E.code = E1.code || gen(E.addr '=' minus E1.addr)"
+\end{tabular}\\\hline
+$E \to (E_1)$ & \begin{tabular}{l}
+\verb'E.addr = E1.addr'\\
+\verb"E.code = E1.code"
+\end{tabular}\\\hline
+$L \to L_1 [E]$ & \begin{tabular}{l}
+\verb'L.array = L1.array'\\
+\verb"L.type = L1.type.element"\\
+\verb"t = new Temp()"\\
+\verb"L.addr = new Temp()"\\
+\verb"gen(t '=' E.addr '*' L.type.width)"\\
+\verb"gen(L.addr '=' L1.addr '+' t)"
+\end{tabular}\\\hline
+\verb'S'$\to$\verb'if (B) S1 else S2' & \begin{tabular}{l}
+\verb'B.true = new Label()'\\
+\verb'B.false = new Label()'\\
+\verb'S1.next = S2.next = S.next'\\
+\verb'S.code = B.code || label(B.true) || S1.code ||'\\
+\verb"         gen('goto' S.next) || label(B.false) || S2.code"
+\end{tabular}\\\hline
+\end{tabular}
+\end{center}
