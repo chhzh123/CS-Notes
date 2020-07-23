@@ -1,0 +1,18 @@
+% !TEX root = main.tex
+
+\section{代码生成及优化}
+\begin{itemize}
+	\item 指令选择：选择最适合目标机器的指令来实现IR
+	\item 寄存器分配和指派
+	\item 指令调度
+\end{itemize}
+
+\begin{definition}[基本块(basic block)]
+单一入口单一出口。
+成为leader的指令：
+\begin{enumerate}
+	\item 第一条三地址指令
+	\item 条件或无条件跳转指令的目标
+	\item 条件或无条件跳转指令的下一指令
+\end{enumerate}
+\end{definition}
