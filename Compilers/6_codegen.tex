@@ -1,6 +1,7 @@
 % !TEX root = main.tex
 
 \section{代码生成及优化}
+\subsection{代码生成}
 \begin{itemize}
 	\item 指令选择：选择最适合目标机器的指令来实现IR
 	\item 寄存器分配和指派
@@ -15,4 +16,28 @@
 	\item 条件或无条件跳转指令的目标
 	\item 条件或无条件跳转指令的下一指令
 \end{enumerate}
+\end{definition}
+
+\subsection{代码优化}
+\begin{itemize}
+	\item 窥孔优化(peephole)：基于滑动窗口，最小粒度
+\begin{lstlisting}[language=c++]
+x = x + 0 // eliminated
+x = x * 1 // eliminated
+y = x * 2 // y = x << 1
+LD R0, a
+ST a, R0 // eliminated
+\end{lstlisting}
+	\item 局部优化：在基本块内的优化
+\begin{itemize}
+	\item 公共子表达式删除
+	\item 常量/拷贝传递
+	\item 荣誉操作消除
+\end{itemize}
+	\item 循环优化：在循环内的优化
+	\item 全局优化：最粗粒度的优化
+\end{itemize}
+
+\begin{definition}[循环(loop)]
+只有唯一入口/头的强连通子图
 \end{definition}
