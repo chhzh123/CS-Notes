@@ -60,13 +60,28 @@
 	\end{itemize}
 \end{enumerate}
 正则表达式表示的语言叫做正规集。
+如果两个正则$r$和$s$定义了相同的正则集，则记作$r=s$。
 \end{definition}
+
+正则表达式的拓展\footnote{更多可参见\href{https://regex101.com/}{Regex101}}：
+\begin{itemize}
+	\item $r^+$代表一个或多个
+	\item $r?$代表零或一个
+	\item $[a-z]$字母类
+\end{itemize}
 
 有以下运算规定：
 \begin{itemize}
-	\item 一元运算符${}^*$有最高优先级，左结合
+	\item 一元运算符${}^*$有最高优先级，左结合（也包括\verb'+'、\verb'?'等扩展）
 	\item 连接优先级次之，左结合
 	\item $|$优先级\textbf{最低}，左结合
+\end{itemize}
+
+等价规则：
+\begin{itemize}
+	\item 连接具有分配律：$r(s|t)=rs|rt$，$(s|t)r=sr|tr$
+	\item $\epsilon$在闭包里被保证：$r^*=(r|\epsilon)^*$
+	\item 闭包幂等(idempotent)：$r^{**}=r^*$
 \end{itemize}
 
 \begin{definition}[正则定义]
@@ -80,14 +95,34 @@ letter\_ &\to A|B|\cdots|Z|a|b|\cdots|z|\_\\
 digit &\to 0|1|\cdots|9\\
 id &\to letter\_(letter\_|digit)^*
 \end{aligned}\]
+更简洁的写法
+\[\begin{aligned}
+letter\_ &\to [A-Za-z\_]\\
+digit &\to [0-9]\\
+id &\to letter\_(letter|digit)^*
+\end{aligned}\]
 \end{example}
-
-正则表达式的拓展\footnote{更多可参见\href{https://regex101.com/}{Regex101}}：
+\begin{example}
+下列正则表达式描述什么语言？
 \begin{itemize}
-	\item $r^+$代表一个或多个
-	\item $r?$代表零或一个
-	\item $[a-z]$字母类
+	\item \verb'a(a|b)*a'：首尾是a中间任意个（可为0）a或b的字符串
+	\item \verb'(a|b)*a(a|b)(a|b)'：倒数第三个字符为a仅含a或b的字符串
+	\item \verb'a*ba*ba*ba*'：只含3个b且a在中间穿插（可没有）的字符串
+	\item \verb'((E|a)b*)*'：空、全a全b、开头一个a紧接多个b的重复串
+	\item \verb'b*(ab*ab*)*'：所有包含偶数个a的由a和b组成的字符串
 \end{itemize}
+注意考虑\textbf{闭包为空}的情况，$\epsilon$出现也可能导致空串！
+\end{example}
+\begin{example}
+用正则表达式描述下列语言：
+\begin{itemize}
+	\item 所有由按词典递增序排列的小写字母组成的字符串
+	（如add、low都符合要求，而zzg则不符合）\footnote{参见\url{https://www.zhihu.com/question/28714623/answer/41865697}}：
+	\verb'a+b*c*...z* | a*b+c*...z* | a*b*c+...z* | ...'
+	\item 不以ab开头的所有只含有字母a和b的字符串：
+	\verb'(ba|aa|bb)(a|b)*'
+\end{itemize}
+\end{example}
 
 \subsection{有限自动机}
 \subsubsection{确定性/非确定性有限自动机}
@@ -141,7 +176,7 @@ id &\to letter\_(letter\_|digit)^*
 \end{center}
 \end{example}
 
-判别字符串能否被DFA识别很简单，只需要读入字符按照状态转移表跳转，判断末态是不是终态即可。
+判别字符串能否被DFA识别很简单，只需要读入字符按照状态转移表跳转，判断末态是不是终态即可（即模拟）。
 \begin{algorithm}[H]
 \centering
 \caption{基于DFA的识别算法}
@@ -162,9 +197,35 @@ id &\to letter\_(letter\_|digit)^*
 \end{algorithm}
 时间复杂度为$O(|str|)$。
 
+对于DFA或NFA\textbf{求反}相当于将所有接受状态改为非接受状态，非接受状态改为接受状态。
+注意可能出现DFA无对应符号出边的情况，如\verb'a'，这时可以添加冗余结点来接受这些非法输入。
+\begin{center}
+\begin{tabular}{cc}
+\begin{tikzpicture}
+\node[state, initial] (1) {$0$};
+\node[state, accepting, right of=1] (2) {$1$};
+\draw (1) edge[above] node{$a$} (2);
+\end{tikzpicture}&
+\begin{tikzpicture}
+\node[state, initial] (1) {$0$};
+\node[state, accepting, right of=1] (2) {$1$};
+\node[state, right of=2] (3) {$2$};
+\draw (1) edge[above] node{$a$} (2);
+\draw (2) edge[above] node{$a$} (3);
+\end{tikzpicture}
+\end{tabular}
+\end{center}
+
+\begin{theorem}
+对任一正则表达式$R$，一定存在另一正则表达式$R'$，使得$L(R')$是$L(R)$的补集.
+\end{theorem}
+\begin{analysis}
+由正则表达式与DFA的等价性，对于正则表达式$R$，必然存在DFA $M$可以识别$L(R)$，那么将$M$中的接受状态改为非接受状态，将非接受状态改为接收状态，得到新的DFA $M'$可以识别$L(R)$的补集，进而存在$M'$对应的正则表达式$R'$，使得$L(R')$是$L(R)$的补集.
+\end{analysis}
+
 \subsubsection{正则表达式转NFA}
 % https://www3.nd.edu/~kogge/courses/cse30151-fa17/Public/other/tikz_tutorial.pdf
-
+McNaughton-Yamada-Thompson算法
 \begin{enumerate}
 	\item 奠基
 \begin{itemize}
@@ -246,9 +307,15 @@ id &\to letter\_(letter\_|digit)^*
 \end{itemize}
 \end{enumerate}
 
+其他拓展符号可通过上述基本符号得到，如
+\begin{itemize}
+	\item $R^+$等价于$RR^*$
+	\item $R?$等价于$\epsilon|R$
+\end{itemize}
+
 \subsubsection{NFA转DFA}
 \begin{definition}[$\epsilon$闭包及$move$]
-$\epsilon$闭包是可通过NFA的$\epsilon$边转换的状态。
+$\epsilon$闭包是可通过NFA的$\epsilon$边转换的状态（包括自己）。
 $move(T,a)$为状态$s\in T$通过输入符号$a$可到达的新的状态。
 \end{definition}
 \begin{algorithm}[H]
@@ -270,6 +337,9 @@ $move(T,a)$为状态$s\in T$通过输入符号$a$可到达的新的状态。
 \EndWhile
 \end{algorithmic}
 \end{algorithm}
+
+思路即\textbf{先求出初态的$\epsilon$闭包，然后对每个输入符号做转移后再求$\epsilon$闭包，看是否产生新的子集状态}。
+注意这里的输入符号转移一定得转，即不能留在原状态。
 
 \begin{example}
 考虑以下NFA：
@@ -379,7 +449,9 @@ $bb\cdots b$
 \end{analysis}
 
 \subsection{Regex转DFA}
-构造正则表达式的语法树，以\#结尾
+可以由正则表达式通过NFA转为DFA，本节则讲述直接由正则表达式转为DFA。
+
+构造正则表达式的语法树，以\#结尾。
 
 \begin{minipage}{0.25\linewidth}
 \begin{forest}
@@ -414,7 +486,7 @@ $*$为star，$|$为or，$\circ$为cat
 \begin{example}
 结点$n_1$代表$(a|b)^*$，结点$n_2$代表$(a|b)^*a$
 \begin{itemize}
-	\item $nullable(n_1)=true$
+	\item $nullable(n_1)=true\qquad nullable(n_2)=false$
 	\item $firstpos(n_2)=\{1,2,3\}$
 	\item $lastpos(n_2)=\{3\}$
 	\item $followpos(1)=\{1,2,3\}$
@@ -423,7 +495,29 @@ $*$为star，$|$为or，$\circ$为cat
 \end{minipage}
 
 \bigskip
-计算$followup$的两条法则：
+计算上述函数的方式：
+\begin{center}
+\begin{tabular}{|c|c|c|c|}\hline
+结点$n$ & $nullable(n)$ & $firstpos(n)$ & $lastpos(n)$\\\hline
+标记为$\epsilon$的叶子 & \textbf{true} & $\varnothing$ & $\varnothing$\\\hline
+位置为$i$的叶子 & \textbf{false} & $\{i\}$ & $\{i\}$\\\hline
+or结点$n=c_1|c_2$ & $nullable(c_1)$ \textbf{or} $nullable(c_2)$ & 
+$firstpos(c_1)\cup firstpos(c_2)$ & 
+$lastpos(c_1)\cup lastpos(c_2)$\\\hline
+cat结点$n=c_1c_2$ & $nullable(c_1)$ \textbf{and} $nullable(c_2)$ & 
+\begin{tabular}{c}
+\textbf{if} $(nullable(c_1))$\\
+$firstpos(c_1)\cup firstpos(c_2)$\\
+\textbf{else} $firstpos(c_1)$
+\end{tabular} &
+\begin{tabular}{c}
+\textbf{if} $(nullable(c_2))$\\
+$lastpos(c_1)\cup lastpos(c_2)$\\
+\textbf{else} $lastpos(c_2)$
+\end{tabular}\\\hline
+star结点$n=c_1^*$ & \textbf{true} & $firstpos(c_1)$ & $followpos(c_1)$\\\hline
+\end{tabular}
+\end{center}
 \begin{itemize}
 	\item 若$n$为cat结点，则对于左子树$c_1$的所有$i\in lastpos(c_1)$，有右子树$firstpos(c_2)\in followpos(i)$
 	\item 若$n$为star结点，则对于所有$i\in lastpos(n)$，有$firstpos(n)\in followpos(i)$
@@ -469,7 +563,7 @@ $5$ & $\{6\}$\\\hline
 $6$ & $\varnothing$\\\hline
 \end{tabular}
 \end{center}
-进而构造出一个有向图
+进而构造出一个有向图（加上标号可变成NFA）
 \begin{center}
 \begin{tikzpicture}
 \node[state] (3) {$3$};
@@ -488,6 +582,16 @@ $6$ & $\varnothing$\\\hline
 (4) edge (5)
 (5) edge (6);
 \end{tikzpicture}
+\end{center}
+由正则表达式转DFA的算法可得以下状态转移表
+\begin{center}
+\begin{tabular}{|c|c|c|}\hline
+ & a & b\\\hline
+$\{1,2,3\}$ & $\{1,2,3,4\}$ & $\{1,2,3\}$\\\hline
+$\{1,2,3,4\}$ & $\{1,2,3,4\}$ & $\{1,2,3,5\}$\\\hline
+$\{1,2,3,5\}$ & $\{1,2,3,4\}$ & $\{1,2,3,6\}$\\\hline
+$\{1,2,3,6\}$ & $\{1,2,3,4\}$ & $\{1,2,3\}$\\\hline
+\end{tabular}
 \end{center}
 然后可得DFA
 \begin{center}
@@ -551,7 +655,7 @@ $6$ & $\varnothing$\\\hline
 \end{center}
 \end{example}
 \begin{analysis}
-初始划分$\Pi$包括两个组：接受状态组$(E)$和非接受状态组$(ABCD)$。
+初始划分$\Pi$包括两个组(group)：接受状态组$(E)$和非接受状态组$(ABCD)$\footnote{准确来说是接受状态的补，如果接受状态组为全集，那么另一组将为空。另外需要考虑转移到外部结点的情况，即DFA中无对应跳转符号。}。
 构造$\Pi_{new}$，先考虑$(E)$，仅一个状态，不可划分，仍将$(E)$放回$\Pi_{new}$。
 然后考虑$(ABCD)$，对于输入$a$，这些状态都转换到$B$，分组$(ABCD)$不变；
 但对于输入$b$，$A$、$B$和$C$都转换到状态组$(ABCD)$的一个成员，而$D$转换到另一组成员$E$。
