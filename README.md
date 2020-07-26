@@ -23,8 +23,10 @@ Codes and projects are in [Assignments](https://github.com/chhzh123/Assignments)
 | Natural Language Processing | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)       |
 | Pattern Recognition   | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green) |
 | Digital Image Processing | 2019 Autumn | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)       |
+| Principles of Compilers  | 2020 Spring | :white_check_mark: | ![](https://img.shields.io/badge/-done-green)        |
+| Multicore Programming | 2020 Spring | [:page_facing_up:](https://chhzh123.github.io/summary/parallel-computing/cuda/) | ![](https://img.shields.io/badge/-done-green) |
 | Deep Learning         | 2020 Spring | :white_check_mark: | ![](https://img.shields.io/badge/-working-red)       |
-| Machine Learning and Data Mining | 2020 Spring | :ballot_box_with_check: | ![](https://img.shields.io/badge/-working-red) |
+| Machine Learning and Data Mining | 2020 Spring | :ballot_box_with_check: | ![](https://img.shields.io/badge/-done-green) |
 | Logic in Computer Science        | 2020 Spring | :white_check_mark: | ![](https://img.shields.io/badge/-working-red)       |
 
 **Notice**: There may be lots of typos in my notes, so do NOT fully trust in them. If you find any mistakes, please raise an issue or directly mail to [me](mailto:chenhzh37@mail2.sysu.edu.cn).
