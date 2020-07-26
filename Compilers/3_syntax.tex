@@ -9,7 +9,7 @@
 \begin{definition}[上下文无关法(context-free gramma, CFG)]
 包括四部分
 \begin{itemize}
-	\item 终端符号(terminal)的集合$T$
+	\item 终端符号(terminal)的集合$T$（即token名字）
 	\item 非终端符号的集合$N$
 	\item 唯一的开始符号$S\in N$
 	\item 若干以下形式的产生式(production)
@@ -22,7 +22,7 @@
 从开始符号开始，每一步推导就是用一个产生式的右方取代左端的非终端符号。
 \end{definition}
 
-CFG定义语言的能力比正则表达式强很大原因是它引入了\textbf{递归}的因素。
+CFG定义语言的能力比正则表达式强很大原因是它引入了\textcolor{red}{\textbf{递归}}的因素。
 
 \begin{example}
 用上下文无关文法定义下列语言：
@@ -34,19 +34,19 @@ CFG定义语言的能力比正则表达式强很大原因是它引入了\textbf{
 \end{example}
 
 \begin{itemize}
-	\item 最左推导：每步推导都替换最左侧的非终端符号
+	\item 最左推导(left-most)：每步推导都替换最左侧的非终端符号
 	\[E\xRightarrow{lm}
 	-E\xRightarrow{lm}
 	-(E)\xRightarrow{lm}
 	-(E+E)\xRightarrow{lm}
 	-(id+E)\xRightarrow{lm}
 	-(id+id)\]
-	\item 最右推导：每步推导都替换最右侧的非终端符号
-	\[E\implies
-	-E\implies
-	-(E)\implies
-	-(E+E)\implies
-	-(E+id)\implies
+	\item 最右推导(right-most)：每步推导都替换最右侧的非终端符号
+	\[E\xRightarrow{rm}
+	-E\xRightarrow{rm}
+	-(E)\xRightarrow{rm}
+	-(E+E)\xRightarrow{rm}
+	-(E+id)\xRightarrow{rm}
 	-(id+id)\]
 \end{itemize}
 
@@ -64,21 +64,21 @@ E &\implies E+E\\
 &\implies id+E\\
 &\implies id+E*E\\
 &\implies id+id*E\\
-&\implies id+id*id\\
+&\implies id+id*id
 \end{aligned}\]
 \end{minipage}
 \begin{minipage}{0.5\linewidth}
 \[\begin{aligned}
-E &\implies E+E\\
-&\implies id+E\\
+E &\implies E*E\\
+&\implies E+E*E\\
 &\implies id+E*E\\
 &\implies id+id*E\\
-&\implies id+id*id\\
+&\implies id+id*id
 \end{aligned}\]
 \end{minipage}
 \end{example}
 
-文法二义性的消除可通过引入更多的产生式。
+文法二义性可通过引入更多的产生式来消除。
 \begin{example}
 $E\to E+E\mid E*E\mid (E)\mid id$是有二义的，因为不知道应该先算加法还是乘法。
 可将其改为
@@ -88,7 +88,7 @@ T &\to T*F\mid F\\
 F &\to (E)\mid id
 \end{aligned}\]
 其中$E$为Expression，$T$为Term，$F$为Facotr，即可消除二义性（必然得先算乘法）。
-相当于先算$F$，再算$T$，最后算$E$。
+相当于先算$F$，再算$T$，最后算$E$，强行添加了括号/优先级。
 \end{example}
 \begin{example}
 悬挂的if-else：\verb'if E1 then if E2 then E3 else E4'，可以令\verb'else'匹配最近的\verb'then'。
@@ -123,6 +123,9 @@ UIF &\to \text{if } E \text{ then } E &\\
 \[A\to Ba\qquad A\to a\qquad A\to\epsilon\]
 则这样的文法称为左线性文法
 \end{definition}
+\begin{theorem}
+正则表达式/NFA/DFA与左/右线性文法得表达能力是等价的
+\end{theorem}
 
 在处理程序时，上下文无法文法存在局限性，无法解决诸如以下问题：
 \begin{itemize}
@@ -132,18 +135,60 @@ UIF &\to \text{if } E \text{ then } E &\\
 都得留到语义分析阶段才解决。
 
 \subsection{递归下降}
-递归下降语法翻译即从顶层的非终端符号$E$开始，顺序尝试$E$的所有规则，完整例子可见\href{http://web.stanford.edu/class/cs143/lectures/lecture06.pdf}{此文档}，但需要先消除左递归。
+递归下降语法翻译即从顶层的非终端符号$E$开始，顺序尝试$E$的所有规则，不断回溯遍历，完整例子可见\href{http://web.stanford.edu/class/cs143/lectures/lecture06.pdf}{此文档}，但需要先消除左递归。
 
 \begin{definition}[左递归]
 对于非终端符号$A$有生成式$A\to A\alpha$，则该文法是左递归的。
 \end{definition}
-消除左递归的方法：
+\begin{example}
+消除左递归的方法：先把单元素拎出来放左侧，然后把所有递归移至右侧
 \[A\to A\alpha_1\mid \cdots\mid A\alpha_m\mid\beta_1\mid\cdots\beta_n
 \implies
 \begin{aligned}
 A &\to\beta_1 A'\mid\cdots\mid\beta_n A'\\
-A' &\to\alpha_1 A'\mid\cdots\mid\alpha_m A'\epsilon
+A' &\to\alpha_1 A'\mid\cdots\mid\alpha_m A'\mid\textcolor{red}{\epsilon}
 \end{aligned}\]
+如果是多级左递归，则需要先将上级生成式代入到中间级生成式中，再做消除
+\[\begin{aligned}
+S &\to Aa\mid b\\
+A &\to Ac\mid Sd\mid \epsilon
+\end{aligned}\]
+将下式改写为$A \to Ac\mid Aad\mid bd\mid \epsilon$，进而可消除左递归
+\[\begin{aligned}
+S &\to Aa\mid b\\
+A &\to bdA'\mid A'\\
+A' &\to cA'\mid adA'\mid \epsilon
+\end{aligned}\]
+\end{example}
+
+\begin{definition}[提取左因子(left-factoring)]
+将生成式右侧左部相同的因子部分提取出来，找最长前缀
+\[A\to\alpha\beta_1\mid\alpha\beta_2\mid\cdots\alpha\beta_n\mid\gamma\]
+$\gamma$代表所有不以$\alpha$开始的生成式，提取左因子则得到（将$\alpha$拿出来）
+\[\begin{aligned}
+A &\to \alpha A'\mid\gamma\\
+A' &\to \beta_1\mid\beta_2\mid\cdots\beta_n
+\end{aligned}\]
+直至没有生成式有相同前缀
+\end{definition}
+
+\begin{algorithm}[H]
+\centering
+\caption{递归下降(top-down parser)}
+\begin{algorithmic}[1]
+\State 选择$A$生成式$A\to X_1X_2\cdots X_k$
+\For{$i=1$ to $k$}
+\If{$X_i$是非终端符号}
+\State 调用$X_i()$
+\Else\If{$X_i$等于当前的输入符号$a$}
+\State 读取下一输入符号
+\Else
+\State $error()$
+\EndIf
+\EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
 
 \begin{definition}[FIRST集与FOLLOW集]
 $FIRST(\alpha)$集为从$\alpha$中推导出来的字符串第一个终端符号的集合，若$\alpha\to\epsilon$，则$\epsilon\in FIRST(\alpha)$；若$A\to c\gamma$，则$c\in FIRST(A)$。
@@ -173,7 +218,7 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 \end{enumerate}
 \end{myalgorithm}
 
-简而言之，$FOLLOW$集看下一符号的$FIRST$，如果$\epsilon$在下一符号的$FIRST$集中，则看生成式左端的$FOLLOW$集。
+简而言之，$FOLLOW$集看下一符号的$FIRST$，\textbf{如果$\epsilon$在下一符号的$FIRST$集中，则看生成式左端的$FOLLOW$集}。
 
 另一种方式：
 \begin{enumerate}
@@ -190,13 +235,65 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 \end{tabular}
 \end{figure}
 
-\subsection{预测分析}
-LL(1)文法
+\begin{myalgorithm}[构造预测语法表]
+对于每一生成式$A\to\alpha$，
+\begin{enumerate}
+	\item 对于每一终端符号$a\in FIRST(\textcolor{red}{\alpha})$，将$A\to\alpha$添加到$M[A,a]$中。
+	\item 若$\epsilon\in FIRST(\textcolor{red}{\alpha})$，则对$b\in FOLLOW(A)$，将$A\to\alpha$添加到$M[A,b]$中（$\beta$可以为\$）。
+\end{enumerate}
+注意是生成式右端。
+\end{myalgorithm}
+
+\begin{example}
+考虑下面语法
+\[\begin{array}{lrl}
+(1) & E &\to T E'\\
+(2) & E' &\to + T E'\mid\epsilon\\
+(3) & T &\to F T'\\
+(4) & T' &\to * F T'\mid\epsilon\\
+(5) & F &\to (E) \mid id
+\end{array}\]
+计算$FIRST$集
 \begin{itemize}
-	\item 第一个L：输入字符串从左边开始扫描
-	\item 第二个L：得到的推导是最左推导
-	\item (1)：向前看1个输入符号（或单词）
+	\item 从终端符号多的开始(5)，$FIRST(F)=\{(,id\}$
+	\item 向上找含$F$的生成式(3)，$FIRST(T)=FIRST(F)$
+	\item 向上找含$T$的生成式(1)，$FIRST(E)=FIRST(T)$
+	\item $FIRST(E')=\{+,\epsilon\}$
+	\item $FIRST(T')=\{*,\epsilon\}$
 \end{itemize}
+计算$FOLLOW$集
+\begin{itemize}
+	\item 从起始符号开始(1)，注意(5)也有$E$，故$FOLLOW(E)=\{),\$\}$
+	\item $E'$只出现在$E$的生成式末尾，因此$FOLLOW(E')=FOLLOW(E)=\{),\$\}$
+	\item $FOLLOW(T)\subset FIRST(E')=\{+,\epsilon\}$，由于$\epsilon\in FIRST(E')$，故$FOLLOW(T)\subset FOLLOW(E)=\{),\$\}$，即$FOLLOW(T)=\{+,),\$\}$
+	\item $FOLLOW(F)\subset FIRST(T')=\{*,\epsilon\}$，由于$\epsilon\in FIRST(T')$，故$FOLLOW(F)\subset FOLLOW(T)=\{+,),\$\}$，即$FOLLOW(F)=\{*,+,),\$\}$
+	\item $T'$只出现在$T$的生成式末尾，因此$FOLLOW(T')=FOLLOW(T)=\{*,+,),\$\}$
+\end{itemize}
+对应有语法预测表
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}\hline
+ & $id$ & $+$ & $*$ & $($ & $)$ & \$\\\hline
+$E$ & $E\to TE'$ & & & $E\to TE'$ & &\\\hline
+$E'$ & & $E'\to +TE'$ & & & $E'\to\epsilon$ & $E'\to\epsilon$\\\hline
+$T$ & $T\to FT'$ & & & $T\to FT'$ & &\\\hline
+$T'$ & & $T'\to\epsilon$ & $T'\to*FT'$ & & $T'\to\epsilon$ & $T'\to\epsilon$\\\hline
+$F$ & $F\to id$ & & & $F\to(E)$ & &\\\hline
+\end{tabular}
+\end{center}
+\end{example}
+
+\subsection{自顶向下分析}
+\begin{definition}[LL(1)文法\protect\footnote{第一个L代表输入字符串从左边开始扫描，第二个L代表得到的推导是最左推导，(1)代表向前看1个输入符号（或单词）}]
+语法$G$是LL(1)文法当且仅当对于任意$A\to\alpha\mid\beta$为$G$两个不同的生成式，满足
+\begin{enumerate}
+	\item $\alpha$和$\beta$不会同时推导出由同一终端符号$a$开始的字符串
+	\item $\alpha$和$\beta$中至多一个能获得空字串
+	\item 若$\beta\to\epsilon$，则$\alpha$不能推出任何以$FOLLOW(A)$中终端符号开始的字符串；
+	同样地，若$\alpha\to\epsilon$，则$\beta$不能推出任何以$FOLLOW(A)$中终端符号开始的字符串
+\end{enumerate}
+前两个条件等价于$FIRST(\alpha)\cap FIRST(\beta)=\varnothing$，第三个条件等价于若$\epsilon\in FIRST(\beta)$，则$FIRST(\alpha)\cap FOLLOW(A)=\varnothing$，反之同理
+\end{definition}
+通常没有左递归、无歧义的语法可以是LL(1)。
 
 递归下降在每一步都会有多种生成式的选择，这会导致大量的回溯。
 而在LL(1)文法中，每一步都只有一种生成式的选择，避免了回溯。
@@ -227,6 +324,25 @@ $Y$ &  & $*T$ & $\epsilon$ & & $\epsilon$ & $\epsilon$\\\hline
 \end{center}
 \end{example}
 
+\begin{example}
+经典的二义if-else语法（已提取左因子）
+\[\begin{aligned}
+S &\to iEtSS'\mid a\\
+S' &\to eS\mid\epsilon\\
+E &\to b
+\end{aligned}\]
+可以求得
+\[\begin{aligned}
+FIRST(S) &= \{i,a\}\\
+FIRST(S') &= \{\epsilon,e\}\\
+FIRST(E) &= b\\
+FOLLOW(S) &= \{\$\} + FIRST(S')-\{\epsilon\}=\{\$,e\}\\
+FOLLOW(S') &= \{\$\} + FOLLOW(S) = \{\$,\textcolor{red}{e}\}\\
+FOLLOW(E) &= \{\$,t\}
+\end{aligned}\]
+因为$\epsilon\in FIRST(S'\to\epsilon)$里，而$FIRST(S'\to eS)\cap FOLLOW(S')=\{e\}\ne\varnothing$，所以不是LL(1)文法。
+\end{example}
+
 基于表的预测语法分析，用栈实现。
 \begin{algorithm}
 \caption{Table-Driven Predictive Parsing}
@@ -252,7 +368,72 @@ $Y$ &  & $*T$ & $\epsilon$ & & $\epsilon$ & $\epsilon$\\\hline
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{移进-规约}
+\begin{example}
+考虑以下文法：
+\[\begin{aligned}
+S &\to (L) \mid a\\
+L &\to L, S \mid S
+\end{aligned}\]
+\begin{enumerate}
+	\item 消除文法的左递归.
+	\item 构造文法的LL(1)分析表.
+	\item 对于句子$(a, (a, a))$，给出语法分析的详细过程（参照课本228页的图4.21）.
+\end{enumerate}
+\end{example}
+\begin{analysis}
+\begin{enumerate}
+	\item 如下
+	\[\begin{aligned}
+	S &\to (L)\mid a\\
+	L &\to SL'\\
+	L' &\to , SL'\mid\epsilon
+	\end{aligned}\]
+	\item 先求出FIRST集和FOLLOW集（由于文法中存在逗号，故将字符用引号括起来以示区分）
+	\[\begin{array}{rlrl}
+	FIRST(S) &= \{'(','a'\} & FOLLOW(S) &= \{'\$',')'\}\\
+	FIRST(L) &= \{'(','a'\} & FOLLOW(L) &= \{')'\}\\
+	FIRST(L') &= \{',',\epsilon\} & FOLLOW(L') &= \{')'\}
+	\end{array}\]
+	LL(1)分析表如下，其中第一列为非终端符号，第一行为输入符号.
+	\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|}\hline
+	 & $($ & $)$ & $a$ & $,$ & \$\\\hline
+	S & $S\to(L)$ & & $S\to a$ & &\\\hline
+	L & $L\to SL'$ & & $L\to SL'$ & &\\\hline
+	L' & & $L'\to\epsilon$ & & $L'\to,SL'$ & \\\hline
+	\end{tabular}
+	\end{center}
+	\item 语法分析过程如下
+	\begin{center}
+	\begin{tabular}{|l|r|r|l|}\hline
+	Matched & Stack & Input & Action\\\hline
+	 & $S\$$ & $(a,(a,a))\$$ & \\\hline
+	 & $(L)\$$ & $(a,(a,a))\$$ & output $S\to (L)$\\\hline
+	$($ & $L)\$$ & $a,(a,a))\$$ & \\\hline
+	$($ & $SL')\$$ & $a,(a,a))\$$ & output $L\to SL'$\\\hline
+	$($ & $aL')\$$ & $a,(a,a))\$$ & output $S\to a$\\\hline
+	$(a$ & $L')\$$ & $,(a,a))\$$ & \\\hline
+	$(a$ & $,SL')\$$ & $,(a,a))\$$ & output $L'\to ,SL'$\\\hline
+	$(a,$ & $SL')\$$ & $(a,a))\$$ & \\\hline
+	$(a,$ & $(L)L')\$$ & $(a,a))\$$ & output $S\to (L)$\\\hline
+	$(a,($ & $L)L')\$$ & $a,a))\$$ & \\\hline
+	$(a,($ & $SL')L')\$$ & $a,a))\$$ & output $L\to SL'$\\\hline
+	$(a,($ & $aL')L')\$$ & $a,a))\$$ & output $S\to a$\\\hline
+	$(a,(a$ & $L')L')\$$ & $,a))\$$ & \\\hline
+	$(a,(a$ & $,SL')L')\$$ & $,a))\$$ & output $L'\to,SL'$\\\hline
+	$(a,(a,$ & $SL')L')\$$ & $a))\$$ & \\\hline
+	$(a,(a,$ & $aL')L')\$$ & $a))\$$ & output $S\to a$\\\hline
+	$(a,(a,a$ & $L')L')\$$ & $))\$$ & \\\hline
+	$(a,(a,a$ & $)L')\$$ & $))\$$ & output $L'\to\epsilon$\\\hline
+	$(a,(a,a)$ & $L')\$$ & $)\$$ & \\\hline
+	$(a,(a,a)$ & $)\$$ & $)\$$ & output $L'\to\epsilon$\\\hline
+	$(a,(a,a))$ & $\$$ & $\$$ & \\\hline
+	\end{tabular}
+	\end{center}
+\end{enumerate}
+\end{analysis}
+
+\subsection{自底向上分析}
 自底向上的语法分析采用两种动作：
 \begin{itemize}
 \item 移进(shift)：将\verb'|'向右移动一格
@@ -268,17 +449,40 @@ $Y$ &  & $*T$ & $\epsilon$ & & $\epsilon$ & $\epsilon$\\\hline
 移进将终端符号移入栈中，规约将生成式的右端符号弹出，将生成式的左端\textbf{非终端}符号推入。
 
 \begin{definition}[句柄(handle)]
-A handle is a string that can be reduced and also allows further reductions back to the start symbol.
+A handle is a string that can be \textbf{reduced} and also allows further reductions back to the start symbol.
+可以理解为当前正在处理的token，用于\textbf{规约}而不是移进。
 \end{definition}
 
 \begin{definition}[活前缀(viable prefix)]
 $\alpha$是活前缀若存在$\omega$使得$\alpha\mid\omega$是移进-规约语法分析器的状态。
 \end{definition}
 
+LR分析是最通用的\textbf{非回溯}移进-规约语法解析方法，难点在于构建分析表太过麻烦，但Yacc等工具可辅助构建。
+
+\subsubsection{LR(0)语法}
+为构建规范(canoical)LR(0)项，定义增量语法$G'$有生成式$S'\to S$，其中$S$为原语法$G$的开始符号。
+这个生成式用于告知parser接受(accept)输入并停止解析，即接受仅发生在要对$S'\to S$进行规约的时候。
+
+\begin{definition}[CLOSURE]
+若$I$为语法$G$项的集合，则$CLOSURE(I)$为从$I$中构造出项的集合：
+\begin{enumerate}
+	\item 初始时，在$I$中的每一项都会被加到$CLOSURE(I)$中
+	\item 若$A\to\alpha\cdot B\beta$在$CLOSURE(I)$中且$B\to\beta$是一个生成式，则将项$B\to\cdot\gamma$加入到$CLOSURE(I)$中；重复使用此规则，直至没有新项可以被加入
+\end{enumerate}
+\end{definition}
+\begin{definition}[GOTO]
+$I$是项的集合，$X$为输入符号，$GOTO(I,X)$为所有项$[A\to\alpha X\cdot\beta]$的闭包使得$[A\to\alpha\cdot X\beta]$在$I$中
+\end{definition}
+
+\begin{definition}[核项(kernel item)]
+初始项$S'\to\cdot S$及所有$\cdot$不在左端的项称为核项，
+除了初始项外所有$\cdot$在左端的项称为非核项（即那些新加入闭包的项）
+\end{definition}
+
 LR(0)语法：
 \begin{itemize}
 	\item 栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上终止在状态$s$
-	\item 当$s$包含$X\to\beta$的项时进行规约
+	\item 当$s$包含$X\to\beta$的项时进行规约（没有得移进就规约，自动机无对应符号出边）
 	\item 当$s$包含$X\to\beta.t\omega$的项时移进
 \end{itemize}
 
@@ -288,7 +492,32 @@ LR(0)可能存在以下两种冲突：
 	\item 移进-规约冲突：$X\to\beta.$且$Y\to\omega.t\delta$
 \end{itemize}
 
-\begin{example}[用NFA识别活前缀]
+\subsubsection{SLR分析}
+SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)}用启发式算法提升了LR(0)移进规约的效率，减少冲突。
+\begin{itemize}
+	\item 栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上停在状态$s$
+	\item 当$s$包含$X\to\beta$的项且\textcolor{red}{$t\in FOLLOW(X)$}时进行$X\to\beta$规约
+	\item 当$s$包含$X\to\beta.t\omega$的项时移进
+\end{itemize}
+
+\begin{myalgorithm}[SLR(1)分析表]
+构造$\mathcal{C}=\{I_0,I_1,\ldots,I_n\}$为LR(0)项的集合$G'$
+\begin{enumerate}
+	\item 若$[A\to\alpha\cdot a \beta]\in I_i$且$GOTO(I_i,a)=I_j$，则设$ACTION[i,a]$为移进$j$，
+	\item 若$[A\to\alpha\cdot]\in I_i$，则$\forall a\in FOLLOW(A)$，设$ACTION[i,a]$为规约$A\to\alpha$
+	\item 若$[S'\to S\cdot]\in I_i$，则设$ACTION[i,\$]$为接受(ACC)
+\end{enumerate}
+若上述有冲突的动作，则该文法不是SLR(1)的。
+
+依照分析表可以得到语法分析的算法
+\begin{itemize}
+	\item 若$ACTION[s,a]$为移进$t$，则将$t$\textbf{推入}栈中
+	\item 若$ACTION[s,a]$为\textbf{规约$A\to\beta$}，则将\textcolor{red}{$|\beta|$个}符号从栈顶\textbf{弹出}，令$t$为\textbf{栈顶符号}，\textbf{将$GOTO[t,A]$推入栈中}，输出规约$A\to\beta$
+	\item 若$ACTION[s,a]=acc$，则语法解析结束
+\end{itemize}
+\end{myalgorithm}
+
+\begin{example}
 考虑以下文法：
 \[\begin{array}{rrll}
 (1) & E &\to & E+T\\
@@ -299,19 +528,66 @@ LR(0)可能存在以下两种冲突：
 (6) & F &\to & a\\
 (7) & F &\to & b
 \end{array}\]
-构造识别这一文法所有活前缀(viable prefixes)的LR(0)自动机.
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\linewidth]{fig/T06.pdf}
-\end{figure}
+\begin{enumerate}
+	\item 写出每个非终端符号的FIRST集和FOLLOW集.
+	\item 构造识别这一文法所有活前缀(viable prefixes)的LR(0)自动机（参照课本4.6.2节图4.31）.
+	\item 构造这一文法的SLR分析表（参照课本4.6.3节图4.37）.
+	\item 给出SLR分析器识别输入串$a+ab^*$的过程（参照课本4.6.4节图4.38）
+\end{enumerate}
 \end{example}
-
-SLR(simple left-to-right scan)用启发式算法提升了LR(0)移进规约的效率，减少冲突。
-\begin{itemize}
-	\item 栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上终止在状态$s$
-	\item 当$s$包含$X\to\beta$的项且\textcolor{red}{$t\in FOLLOW(X)$}时进行规约
-	\item 当$s$包含$X\to\beta.t\omega$的项时移进
-\end{itemize}
+\begin{analysis}
+\begin{enumerate}
+	\item $FIRST$集和$FOLLOW$集如下
+	\[\begin{array}{rlrl}
+	FIRST(E) &= \{a,b\} & FOLLOW(E) &=\{\$,+\}\\
+	FIRST(T) &= \{a,b\} & FOLLOW(T) &=\{\$,+,a,b\}\\
+	FIRST(F) &= \{a,b\} & FOLLOW(F) &=\{\$,+,*,a,b\}\\
+	\end{array}\]
+	\item 构造增广语法$E'\to E$，并得到LR(0)自动机如下
+	\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/T06.pdf}
+	\end{figure}
+	\item 依据上述两问结果，可构造SLR分析表如下（s后面的数字为DFA状态编号，r后面的数字为生成式的编号）
+	\begin{center}
+	\begin{tabular}{|c|ccccc|ccc|}\hline
+	\multirow{2}{*}{STATE} & \multicolumn{5}{c|}{ACTION} & \multicolumn{3}{c|}{GOTO}\\\cline{2-9}
+	  & a  & b  & +  & *  & \$  & E & T & F \\\hline
+	0 & s4 & s5 &    &    &     & 1 & 2 & 3 \\\hline
+	1 &    &    & s6 &    & ACC &   &   &   \\\hline
+	2 & s4 & s5 & r2 &    & r2  &   &   & 7 \\\hline
+	3 & r4 & r4 & r4 & s8 & r4  &   &   &   \\\hline
+	4 & r6 & r6 & r6 & r6 & r6  &   &   &   \\\hline
+	5 & r7 & r7 & r7 & r7 & r7  &   &   &   \\\hline
+	6 & s4 & s5 &    &    &     &   & 9 & 3 \\\hline
+	7 & r3 & r3 & r3 & s8 & r3  &   &   &   \\\hline
+	8 & r5 & r5 & r5 & r5 & r5  &   &   &   \\\hline
+	9 & s4 & s5 & r1 &    & r1  &   &   & 7 \\\hline
+	\end{tabular}
+	\end{center}
+	\item 依上述ACTION-GOTO表，可得以下过程
+	\begin{center}
+	\begin{tabular}{|r|l|l|r|l|}\hline
+		& STACK & SYMBOLS & INPUT      & ACTION\\\hline
+	(1) & 0     &         & $a+ab^*\$$ & $[0,a]s4$\\\hline
+	(2) & 04    & $a$     & $+ab^*\$$  & $[4,a]r6\;F\to a$, $[0,F]s3$\\\hline
+	(3) & 03    & $F$     & $+ab^*\$$  & $[3,+]r4\;T\to F$, $[0,T]s2$\\\hline
+	(4) & 02    & $T$     & $+ab^*\$$  & $[2,+]r2\;E\to T$, $[0,E]s1$\\\hline
+	(5) & 01    & $E$     & $+ab^*\$$  & $[1,+]s6$\\\hline
+	(6) & 016    & $E+$     & $ab^*\$$  & $[6,a]s4$\\\hline
+	(7) & 0164    & $E+a$     & $b^*\$$  & $[4,b]r6\;F\to a$, $[6,F]s3$\\\hline
+	(8) & 0163    & $E+F$     & $b^*\$$  & $[3,b]r4\;T\to F$, $[6,T]s9$\\\hline
+	(9) & 0169    & $E+T$     & $b^*\$$  & $[9,b]s5$\\\hline
+	(10) & 01695  & $E+Tb$    & ${}^*\$$ & $[5,*]r7\;F\to b$, $[9,F]s7$\\\hline
+	(11) & 01697  & $E+TF$    & ${}^*\$$ & $[7,*]s8$\\\hline
+	(12) & 016978 & $E+TF^*$    & $\$$ & $[8,\$]r5\;F\to F^*$, $[\textcolor{red}{9},F]s7$\\\hline
+	(13) & 01697  & $E+TF$    & $\$$ & $[7,\$]r3\;T\to TF$, $[\textcolor{red}{6},T]s9$\\\hline
+	(14) & 0169   & $E+T$     & $\$$ & $[9,\$]r1\;E\to E+T$, $[\textcolor{red}{0},E]s1$\\\hline
+	(15) & 01     & $E$     & $\$$ & $[1,\$]ACC$\\\hline
+	\end{tabular}
+	\end{center}
+\end{enumerate}
+\end{analysis}
 
 \subsection{语法制导翻译}
 抽象语法树(Abstract Syntax Trees, AST)是将原本语法树中冗余的成分给去除，比如左右括号原本都是各自一个结点，但在AST中不会呈现。
