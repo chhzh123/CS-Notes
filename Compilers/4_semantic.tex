@@ -60,3 +60,95 @@ $L \to L_1 [E]$ & \begin{tabular}{l}
 \end{tabular}\\\hline
 \end{tabular}
 \end{center}
+
+三地址码与对应的DAG如下图所示
+
+\begin{minipage}{0.5\linewidth}
+\[\begin{aligned}
+t_1 &= b - c\\
+t_2 &= a * t_1\\
+t_3 &= a + t_2\\
+t_4 &= t_1 * d\\
+t_5 &= t_3 + t_4
+\end{aligned}\]
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/three-addr-code-dag.jpg}
+\end{figure}
+\end{minipage}
+
+\begin{example}
+令\verb'a'表示一个$2\times 3$的整型数组，\verb'b'表示一个$3\times 4$的整型数组.
+假定一个整数的宽度为$4$.
+试使用课本图6.22的翻译模式，翻译赋值语句\verb'x=a[i][j]+b[i][j]'.
+提示：参考课本例6.12.
+\end{example}
+\begin{analysis}
+带注释的分析树如下
+\begin{center}
+\scalebox{0.8}{
+\begin{forest}
+sn edges
+[{$S$}
+	[{$x$}]
+	[{$=$}]
+	[{$E.addr=t_9$}
+		[{$E.addr=t_4$}
+			[{\begin{tabular}{l}$L.array=a$\\ $L.type=int$\\ $L.addr=t_3$\end{tabular}}
+				[{\begin{tabular}{l}$L.array=a$\\ $L.type=array(3,int)$\\ $L.addr=t_1$\end{tabular}}
+					[{\begin{tabular}{l}$a.type=$\\$array(2,array(3,int))$\end{tabular}}]
+					[{$[$}]
+					[{$E.addr=i$}
+						[{$i$}]
+					]
+					[{$]$}]
+				]
+				[{$[$}]
+				[{$E.addr=j$}
+					[{$j$}]
+				]
+				[{$]$}]
+			]
+		]
+		[{$+$}]
+		[{$E.addr=t_8$}
+			[{\begin{tabular}{l}$L.array=b$\\ $L.type=int$\\ $L.addr=t_7$\end{tabular}}
+				[{\begin{tabular}{l}$L.array=b$\\ $L.type=array(4,int)$\\ $L.addr=t_5$\end{tabular}}
+					[{\begin{tabular}{l}$b.type=$\\$array(3,array(4,int))$\end{tabular}}]
+					[{$[$}]
+					[{$E.addr=i$}
+						[{$i$}]
+					]
+					[{$]$}]
+				]
+				[{$[$}]
+				[{$E.addr=j$}
+					[{$j$}]
+				]
+				[{$]$}]
+			]
+		]
+	]
+]
+\end{forest}
+}
+\end{center}
+
+生成的三地址码如下
+\begin{center}
+\begin{tabular}{l}
+$t_1 = i * 12$\\
+$t_2 = j * 4$\\
+$t_3 = t_1 + t_2$\\
+$t_4 = a[t_3]$\\
+$t_5 = i * 16$\\
+$t_6 = j * 4$\\
+$t_7 = t_5 + t_6$\\
+$t_8 = b[t_7]$\\
+$t_9 = t_4 + t_8$\\
+$x   = t_9$
+\end{tabular}
+\end{center}
+\end{analysis}
