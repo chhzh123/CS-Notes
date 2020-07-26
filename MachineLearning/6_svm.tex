@@ -1,6 +1,8 @@
 % !TEX root = main.tex
 
 \section{支持向量机}
+支持向量机（support vector machines, SVM）是一种\textbf{二分类模型}，它的基本模型是定义在特征空间上的\textbf{间隔最大的线性分类器}。
+
 \subsection{支持向量}
 超平面由下列方程决定
 \[\vw^\T\vx+b=0\]
@@ -20,7 +22,7 @@
 \includegraphics[width=0.6\linewidth]{fig/SVM.png}
 \end{figure}
 
-因此为找到最大间隔来划分超平面（分类结果最鲁棒，泛化能力最强），则需要求解下述最优化问题
+因此为找到\textbf{最大间隔}来划分超平面（分类结果最鲁棒，泛化能力最强），则需要求解下述最优化问题
 \begin{maxi*}
 {\vw,b}{\frac{2}{\norm{\vw}}}{}{}
 \addConstraint{y_i(\vw^\T \vx_i+b)}{\geq 1}{\qquad i=1,2,\ldots,m}
@@ -40,18 +42,26 @@
 \addConstraint{\sum_{i=1}^m\alpha_iy_i=0}
 \end{mini*}
 
+SVM可用SMO求解，通过选取一对更新的变量$\alpha_i$和$\alpha_j$，固定$\alpha_i$和$\alpha_j$以外的参数，求解对偶问题更新$\alpha_i$和$\alpha_j$。
+
+支持向量机的解具有稀疏性: 训练完成后, 大部分的训练样本都不需保留, 最终模型仅与支持向量有关。
+
 支持向量机于[Cortes and Vapnik, 1995]正式发表，由于在文本分类任务中显示出卓越性能[Joachims, 1998]，很快成为机器学习主流技术，并直接掀起统计学习(statistical learning)在2000年前后的高潮。
 
 \subsection{核函数}
-如果将非线性可分样本从原始空间映射到更高维的特征空间，则可以使其在新的特征空间中线性可分。
+如果将非线性可分样本从原始空间\textbf{映射到更高维的特征空间}，则可以使其在新的特征空间中线性可分。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\linewidth]{fig/xor-nonlinear.png}
 \end{figure}
 
-由于$\phi(\vx_i)^\T\phi(\vx_j)$的维度可能很高，故设想有这样的核函数(kernel function)
+由于$\phi(\vx_i)^\T\phi(\vx_j)$的维度可能很高，故不显式地设计核映射，而是设想有这样的核函数(kernel function)
 \[\kappa(\vx_i,\vx_j)=\lrang{\phi(\vx_i),\phi(\vx_j)}=\phi(\vx_i)^\T\phi(\vx_j)\]
 使得$\vx_i$和$\vx_j$在特征空间的内积等于它们在原始样本空间中通过核函数计算的结果。
+
+\begin{theorem}[Mercer定理（充分非必要）]
+只要一个对称函数所对应的核矩阵半正定，则它就能作为核函数来使用。
+\end{theorem}
 
 几种常见的核函数如下
 \begin{center}
@@ -63,8 +73,9 @@
 \end{tabular}
 \end{center}
 
-软间隔允许支持向量机在一些样本上不满足约束。
-基本想法是最大化间隔的同时，让不满足约束的样本尽可能少。
+现实中, 很难确定合适的核函数使得训练样本在特征空间中线性可分；一个线性可分的结果也很难断定是否是有过拟合造成的。
+\textbf{软间隔}允许支持向量机在一些样本上不满足约束。
+基本想法是最大化间隔的同时，让\textbf{不满足约束的样本尽可能少}。
 \[\min_{\vw,b}\frac{1}{2}\norm{\vw}^2+C\sum_{i=1}^ml_{0/1}(y_i(\vw^\T\phi(\vx_i)+b)-1)\]
 其中$l_{0/1}$是0/1损失函数
 \[l_{0/1}=\begin{cases}
@@ -72,6 +83,14 @@
 0 & \text{otherwise}
 \end{cases}\]
 存在的问题是0/1损失函数非凸、非连续，不易优化。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/soft-margin-loss.png}
+\end{figure}
+替代损失函数数学性质较好, 一般是0/1损失函数的上界。
+
+根据KKT条件可推得最终模型仅与支持向量有关，也即hinge损失函数依然保持了支持向量机解的稀疏性。
 
 \subsection{支持向量回归}
 支持向量回归(Support vector regression, SVR)允许$f(\vx)$与$y$之间最多有$\eps$的偏差
@@ -90,6 +109,6 @@ SVR问题可写为
 |z|-\eps & \text{otherwise}
 \end{cases}\]
 
-\subsection{核方法}
-基于核函数的学习方法统称为核方法。
-最常见是通过``核化''（引入核函数），来将线性学习器扩展为非线性学习器。
+% \subsection{核方法}
+% 基于核函数的学习方法统称为核方法。
+% 最常见是通过``核化''（引入核函数），来将线性学习器扩展为非线性学习器。

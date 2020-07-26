@@ -8,14 +8,25 @@
 
 \subsection{k近邻学习}
 k近邻(k-nearest neighbor, kNN)是常用的监督学习方法。
-给定测试样本，基于某种距离度量找出训练集中与其最为靠近的$k$个训练样本，然后基于这$k$个邻居的信息进行预测。
-在分类任务中可以采用投票法，在回归任务中可以采用平均法。
+给定测试样本，基于某种距离度量找出训练集中与\textbf{最为靠近}的$k$个训练样本，然后基于这$k$个邻居的信息进行预测。
+在分类任务中可以采用\textbf{投票法}，在回归任务中可以采用\textbf{平均法}。
 
 kNN是懒惰学习(lazy learning)的著名代表，在训练阶段仅仅将样本保存起来，训练时间开销为0，待收到测试样本才进行处理。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.4\linewidth]{fig/kNN.png}
 \end{figure}
+
+这里距离的选择包括欧氏距离、闵可夫斯基距离、曼哈顿距离等。
+可以通过给每个特征/样本点加权来分配重要性。
+同时为避免属性之间的尺度不均，可以先做归一化$(v_i-\min_j v_j)/(\max_j v_j-\min_j v_j)$，将特征值均映射到$[0,1]$的区间。
+
+$k$太小则对噪声敏感，$k$太大则可能包含其他类别的很多点，经验法则取$k<\sqrt{n}$，$n$为样本数目。
+
+\begin{itemize}
+	\item 优点：直观易理解，可应用到不同分布的数据
+	\item 缺点：分类时间长，$k$玄学选择，需要大规模样本
+\end{itemize}
 
 \subsection{主成分分析}
 主成分分析(Principle Component Analysis, PCA)希望找到这样的超平面具有这样的性质：
