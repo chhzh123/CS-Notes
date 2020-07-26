@@ -747,7 +747,102 @@ $E\to (E_1)$ & $E.val=E_1.val$
 \end{center}
 \end{example}
 
+可以在AST上标注(annotate)两种属性：
 \begin{itemize}
-\item 综合属性(synthesized)：从后代计算得到
 \item 继承属性(inherited)：从语法树的父亲或兄弟中计算得到
+\item 综合属性(synthesized)：从后代计算得到
 \end{itemize}
+
+\forestset{
+sn edges/.style={for tree={edge={-}}}
+}
+
+\begin{example}
+考虑以下语法制导定义：
+\begin{center}
+\begin{tabular}{|l|l|}\hline
+\multicolumn{1}{|c|}{语法规则} & \multicolumn{1}{c|}{语义规则}\\\hline
+$S \to ABCD$ & $S.val = A.val + B.val + C.val + D.val$\\\hline
+$A \to gBa$ & $A.val = B.val * 5$\\\hline
+$B \to B_1b$ & $B.val = B_1.val * 2$\\\hline
+$B \to b$ & $B.val = 2$\\\hline
+$C \to C_1c$ & $C.val = C_1.val * 3$\\\hline
+$C \to c$ & $C.val = 3$\\\hline
+$D \to d$ & $D.val = 1$\\\hline
+\end{tabular}
+\end{center}
+对于输入串$gbbabbccd$构造带注释的分析树(annotated parse tree).
+\end{example}
+\begin{analysis}
+带注释的分析树如下
+\begin{center}
+\begin{forest}
+sn edges
+[{$S.val=20+4+9+1=34$}
+	[{$A.val=4*5=20$}
+		[{$\mathbf{g}$}]
+		[{$B.val=2*2=4$}
+			[{$B.val=2$}
+				[{$\mathbf{b}$}]
+			]
+			[{$\mathbf{b}$}]
+		]
+		[{$\mathbf{a}$}]
+	]
+	[{$B.val=2*2=4$}
+		[{$B.val=2$}
+			[{$\mathbf{b}$}]
+		]
+		[{$\mathbf{b}$}]
+	]
+	[{$C.val=3*3=9$}
+		[{$C.val=3$}
+			[{$\mathbf{c}$}]
+		]
+		[{$\mathbf{c}$}]
+	]
+	[{$D.val=1$}
+		[{$\mathbf{d}$}]
+	]
+]
+\end{forest}
+\end{center}
+\end{analysis}
+
+\begin{example}
+下列文法定义了二进制整数的语法规则
+\[\begin{aligned}
+N &\to SL\\
+L &\to LB\mid B\\
+S &\to +\mid -\\
+B &\to 0\mid 1
+\end{aligned}\]
+给出语法制导定义，求出该二进制整数的十进制值，存在综合属性\verb'val'中
+\begin{center}
+\begin{tabular}{|c|l|l|}\hline
+序号 & 生成式 & 语义规则\\\hline
+1 & $N\to SL$ & $N.val=S.sign*L.val$\\\hline
+2 & $L\to L_1 B$ & $L.val=L_1.val*2+B.val$\\\hline
+3 & $L\to B$ & $L.val=B.val$\\\hline
+4 & $S\to +$ & $S.sign=1$\\\hline
+5 & $S\to -$ & $S.sign=-1$\\\hline
+6 & $B\to 0$ & $B.val=0$\\\hline
+7 & $B\to 1$ & $B.val=1$\\\hline
+\end{tabular}
+\end{center}
+\end{example}
+
+扩展文法：
+\[\begin{array}{rll}
+expr &\to expr_1 + term & \{print('+')\}\\
+expr &\to expr_1 - term & \{print('-')\}\\
+expr &\to term & \\
+term &\to 0    & \{print('0')\}\\
+term &\to 1    & \{print('1')\}\\
+     &\vdots   & \\
+term &\to 9    & \{print('9')\}\\
+\end{array}\]
+大括号中的语句称为动作(action)，这一系列产生式称为翻译模式(translation scheme)。
+
+将动作视为产生式右端的一部分，则可得到扩展的语法树。
+对语法分析树做先序遍历，则可以得到后缀表达式。
