@@ -493,7 +493,7 @@ LR(0)可能存在以下两种冲突：
 \end{itemize}
 
 \subsubsection{SLR分析}
-SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)}用启发式算法提升了LR(0)移进规约的效率，减少冲突。
+SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)。用的是LR(0)项，但是在语法分析时才前看1个输入符号.}用启发式算法提升了LR(0)移进规约的效率，减少冲突。
 \begin{itemize}
 	\item 栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上停在状态$s$
 	\item 当$s$包含$X\to\beta$的项且\textcolor{red}{$t\in FOLLOW(X)$}时进行$X\to\beta$规约
@@ -588,6 +588,147 @@ SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)}用启
 	\end{center}
 \end{enumerate}
 \end{analysis}
+
+\begin{example}
+下面的文法并非SLR(1)
+\[\begin{aligned}
+S &\to L=R\mid R\\
+L &\to *R\mid id\\
+R &\to L
+\end{aligned}\]
+对于$I_2$项：
+\[\begin{aligned}
+S &\to L\cdot=R\\
+R &\to L\cdot
+\end{aligned}\]
+有$ACTION[2,=]$是移进，但$FOLLOW(R)=\{\$,=\}$又会导致在$=$上进行规约，故移进-规约冲突，该文法不是SLR(1)的
+\end{example}
+
+\subsubsection{LR(1)语法}
+\begin{definition}[LR(1)项]
+$[A\to\alpha\cdot\beta,a]$，其中$A\to\alpha\cdot\beta$为该项的核(core)，$A\to\alpha\beta$为生成式，$a$是终端符号或\$，1指项中第二个元素的长度，$a$也被称为前看(lookahead)。
+只有当LR(1)项有$[A\to\alpha\cdot,a]$的形式，\textbf{且下一输入符号为$a$时，才会用$A\to\alpha$进行规约}（这在构造解析表时会用到）。
+$a$总会是$FOLLOW(A)$的子集，但往往是真子集。
+\end{definition}
+
+\begin{myalgorithm}[计算$CLOSURE(I)$]
+对于每一$[A\to\alpha\cdot B\beta,a]\in I$，每一$G'$中的生成式$B\to\gamma$，$\forall b\in FIRST(\textcolor{red}{\beta a})$，将$[B\to\cdot\gamma,b]$加入$I$中。
+
+初始化$\mathcal{C}=\{CLOSURE(\{[S'\to\cdot S,\$]\})\}$。
+\end{myalgorithm}
+\begin{example}
+考虑下面的增量语法
+\[\begin{array}{rrl}
+(1) & S' &\to S\\
+(2) & S &\to C C\\
+(3) & C &\to c C\mid d
+\end{array}\]
+有$FIRST(C)=\{c,d\}$，可以构造得下面的LR(1)自动机。
+以$[S\to\cdot CC,\$]$为例，考虑$FIRST(C\$)=\{c,d\}$，故闭包会新增四项$[C\to\cdot cC,c]$、$[C\to\cdot cC,d]$、$[C\to\cdot d,c]$、$[C\to\cdot d,d]$。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/LR1-eg.jpg}
+\end{figure}
+类似地有规范LR(1)解析表
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}\hline
+  & c  & d  & \$  & S & C \\\hline
+0 & s3 & s4 &     & 1 & 2 \\\hline
+1 &    &    & acc &   &   \\\hline
+2 & s6 & s7 &     &   & 5 \\\hline
+3 & s3 & s4 &     &   & 8 \\\hline
+4 & r3 & r3 &     &   &   \\\hline
+5 &    &    & r1  &   &   \\\hline
+6 & s6 & s7 &     &   & 9 \\\hline
+7 &    &    & r3  &   &   \\\hline
+8 & r2 & r2 &     &   &   \\\hline
+9 &    &    & r2  &   &   \\\hline
+\end{tabular}
+\end{center}
+\end{example}
+
+LR(0)=SLR(1)的表项较少，但LR(1)的表项就指数级上涨。
+
+\subsubsection{LALR分析}
+LALR(Lookahead LR)在实践中很常用，表大小通常远小于规范LR表。
+核心思想是将LR(1)中具有\textbf{相同核}的表项合并。
+
+\begin{example}
+将上面例子中的$I_3$和$I_6$合并得到
+\[\begin{aligned}
+C &\to c\cdot C, c/d/\$\\
+C &\to \cdot cC, c/d/\$\\
+C &\to \cdot d, c/d/\$
+\end{aligned}\]
+$I_4$和$I_7$合并得到
+\[\begin{aligned}
+C &\to d\cdot, c/d/\$
+\end{aligned}\]
+$I_8$和$I_9$合并得到
+\[\begin{aligned}
+C &\to cC\cdot, c/d/\$
+\end{aligned}\]
+进而有LALR解析表
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}\hline
+   & c   & d   & \$  & S & C \\\hline
+0  & s36 & s47 &     & 1 & 2 \\\hline
+1  &     &     & acc &   &   \\\hline
+2  & s36 & s47 &     &   & 5 \\\hline
+36 & s36 & s47 &     &   & 89\\\hline
+47 & r3  & r3  & r3  &   &   \\\hline
+5  &     &     & r1  &   &   \\\hline
+89 & r2  & r2  & r2  &   &   \\\hline
+\end{tabular}
+\end{center}
+\end{example}
+
+合并LR(1)项不会导致新的移进-规约冲突，但可能会产生新的\textbf{规约-规约冲突}。
+
+\begin{example}
+证明下列文法
+\[\begin{aligned}
+S &\to Aa \mid bAc \mid dc \mid bda\\
+A &\to d
+\end{aligned}\]
+是LALR(1)文法但不是SLR(1)文法.
+\end{example}
+\begin{analysis}
+构造增广文法$S'\to\cdot S$，$FIRST(\epsilon\$)=\$$，$FIRST(a\$)=a$，可以得到$I_0$。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/T07-1.pdf}
+\end{figure}
+由上图知，没有相同核心(core)的状态，因此不需要合并，从而LALR分析表不冲突，该文法是LALR(1)文法。
+
+又有$FOLLOW(A)=\{a,c\}$，考虑图中的状态$I4$，当输入符号为$c$时，$c\in FOLLOW(A)$，既有移进$S\to d\cdot c$，又有归约$S\to d\cdot$，因此SLR分析表有冲突，该文法不是SLR(1)文法。
+\end{analysis}
+\begin{example}
+证明下列文法
+\[\begin{aligned}
+S &\to Aa \mid bAc \mid Bc \mid bBa\\
+A &\to d\\
+B &\to d
+\end{aligned}\]
+是LR(1)文法但不是LALR(1)文法.
+\end{example}
+\begin{analysis}
+构造增广文法$S'\to\cdot S$，$FIRST(a\$)=a$，$FIRST(c\$)=c$，可以得到状态$I_0$。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/T07-2.pdf}
+\end{figure}
+由上面的DFA知LR分析表没有冲突，因此该文法是LR(1)文法。
+
+但如果将图中相同核心的状态$I4$和$I9$合并，会有
+\[\begin{aligned}
+A &\to d\cdot,a/c\\
+B &\to d\cdot,a/c
+\end{aligned}\]
+即出现了规约-规约冲突，因此该文法不是LALR(1)文法。
+\end{analysis}
+
+可以在解析表(parsing table)层面来解决语法的二义性，即选择移进/规约的特定操作。
 
 \subsection{语法制导翻译}
 抽象语法树(Abstract Syntax Trees, AST)是将原本语法树中冗余的成分给去除，比如左右括号原本都是各自一个结点，但在AST中不会呈现。
