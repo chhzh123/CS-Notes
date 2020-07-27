@@ -125,7 +125,6 @@ id &\to letter\_(letter|digit)^*
 \end{example}
 
 \subsection{有限自动机}
-\subsubsection{确定性/非确定性有限自动机}
 确定有限自动机(DFA)不可对$\epsilon$进行移动，而且对于每一状态$s$，输入符号$a$，只有唯一一条出边标记为$a$；而非确定性有限自动机(NFA)可能有多种转换路径，而且有$\epsilon$移动。
 有限状态集$S$，状态$s_0\in S$为初始状态(start/initial)，$F\subset S$为终止状态(accepting/final)。
 \begin{example}
@@ -223,6 +222,7 @@ id &\to letter\_(letter|digit)^*
 由正则表达式与DFA的等价性，对于正则表达式$R$，必然存在DFA $M$可以识别$L(R)$，那么将$M$中的接受状态改为非接受状态，将非接受状态改为接收状态，得到新的DFA $M'$可以识别$L(R)$的补集，进而存在$M'$对应的正则表达式$R'$，使得$L(R')$是$L(R)$的补集.
 \end{analysis}
 
+\subsection{正则表达式、DFA与NFA的转换}
 \subsubsection{正则表达式转NFA}
 % https://www3.nd.edu/~kogge/courses/cse30151-fa17/Public/other/tikz_tutorial.pdf
 McNaughton-Yamada-Thompson算法
@@ -448,7 +448,7 @@ $bb\cdots b$
 但由于$s$和$t$走到同一状态，那么它们再走$(n-1)$个$a$也应该到达同一状态，但这个状态既是接受状态又是非接受状态，因此矛盾。
 \end{analysis}
 
-\subsection{Regex转DFA}
+\subsubsection{正则表达式转DFA}
 可以由正则表达式通过NFA转为DFA，本节则讲述直接由正则表达式转为DFA。
 
 构造正则表达式的语法树，以\#结尾。
@@ -530,7 +530,7 @@ star结点$n=c_1^*$ & \textbf{true} & $firstpos(c_1)$ & $followpos(c_1)$\\\hline
 \begin{algorithmic}[1]
 \Require 正则表达式 $r$
 \Ensure DFA $D$可识别$L(r)$
-\State 语法树$T$的根节点为$n_0$，$firstpos(n_0)$是$Dstates$的唯一状态，且未被标记(unmarked)
+\State 语法树$T$的根节点为$n_0$，\textcolor{red}{$firstpos(n_0)$}是$Dstates$的唯一状态，且未被标记(unmarked)
 \While{在$Dstates$中还有未被标记的状态$S$}
 \State 标记$S$
 \For{每一个输入符号$a$}
@@ -545,9 +545,9 @@ star结点$n=c_1^*$ & \textbf{true} & $firstpos(c_1)$ & $followpos(c_1)$\\\hline
 \end{algorithm}
 \begin{example}
 考虑正则表达式
-\begin{tabular}{ccccccccc}
-$($ & $a$ & $|$ & $b$ & $)^*$ & $a$ & $b$ & $b$ & $\#$\\
- & 1 & & 2 & & 3 & 4 & 5 & 6
+\begin{tabular}{cccccccccc}
+$($ & $a$ & $|$ & $b$ & $)$ & ${}^*$ & $a$ & $b$ & $b$ & $\#$\\
+ & 1 & & 2 & & & 3 & 4 & 5 & 6
 \end{tabular}
 \end{example}
 \begin{analysis}
@@ -583,14 +583,15 @@ $6$ & $\varnothing$\\\hline
 (5) edge (6);
 \end{tikzpicture}
 \end{center}
-由正则表达式转DFA的算法可得以下状态转移表
+$firstpos(n_0)$为$\{1,2,3\}$，由正则表达式转DFA的算法可得以下状态转移表。
+比如对于$S=\{1,2,3\}$，$a$的位置是$1$和$3$，那么取$followpos$的并为$\{1,2,3\}\cup\{4\}$。
 \begin{center}
 \begin{tabular}{|c|c|c|}\hline
  & a & b\\\hline
 $\{1,2,3\}$ & $\{1,2,3,4\}$ & $\{1,2,3\}$\\\hline
 $\{1,2,3,4\}$ & $\{1,2,3,4\}$ & $\{1,2,3,5\}$\\\hline
 $\{1,2,3,5\}$ & $\{1,2,3,4\}$ & $\{1,2,3,6\}$\\\hline
-$\{1,2,3,6\}$ & $\{1,2,3,4\}$ & $\{1,2,3\}$\\\hline
+$\{1,2,3,\underline{6}\}$ & $\{1,2,3,4\}$ & $\{1,2,3\}$\\\hline
 \end{tabular}
 \end{center}
 然后可得DFA

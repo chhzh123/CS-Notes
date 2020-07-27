@@ -1,21 +1,22 @@
 % !TEX root = main.tex
 
 \section{语法分析}
-\subsection{上下文无关法}
+\subsection{上下文无关文法}
 语法分析需要解决：从词法分析中获得的每个属性字(token)在语句中承担什么角色，同时检查语句是否符合程序语言的语法。
 
 很多语言并非是正则的，比如匹配的括号串$\{(^i)^i\mid i\geq 0\}$，原因是FA不能记住其访问某一状态的次数，因此需要有更加强大的语言。
 
-\begin{definition}[上下文无关法(context-free gramma, CFG)]
+\subsubsection{基本定义}
+\begin{definition}[上下文无关文法(context-free gramma, CFG)]
 包括四部分
 \begin{itemize}
 	\item 终端符号(terminal)的集合$T$（即token名字）
 	\item 非终端符号的集合$N$
-	\item 唯一的开始符号$S\in N$
+	\item \textbf{唯一的}开始符号$S\in N$
 	\item 若干以下形式的产生式(production)
 	\[X\to Y_1Y_2\ldots Y_n\]
 	其中$X\in N$且$Y_i\in T\cup N\cup\{\epsilon\}$。
-	多个左侧相同的产生式右侧可用$\mid$合并。
+	多个\textbf{左侧相同}的产生式右侧可用$\mid$合并。
 \end{itemize}
 \end{definition}
 \begin{definition}[推导(derivation)]
@@ -87,14 +88,14 @@ E &\to E+T\mid T\\
 T &\to T*F\mid F\\
 F &\to (E)\mid id
 \end{aligned}\]
-其中$E$为Expression，$T$为Term，$F$为Facotr，即可消除二义性（必然得先算乘法）。
+其中$E$为Expression，$T$为Term，$F$为Factor，即可消除二义性（必然得先算乘法）。
 相当于先算$F$，再算$T$，最后算$E$，强行添加了括号/优先级。
 \end{example}
-\begin{example}
-悬挂的if-else：\verb'if E1 then if E2 then E3 else E4'，可以令\verb'else'匹配最近的\verb'then'。
+\begin{example}[悬挂的if-else]
+\verb'if E1 then if E2 then E3 else E4'，可以令\verb'else'匹配最近的\verb'then'。
 \[\begin{array}{rll}
-E &\to MIF &\text{//所有的then都被匹配}\\
-  &\mid UIF &\text{//仅有一些then}\\
+E &\to MIF &\text{// 所有的then都被匹配}\\
+  &\mid UIF &\text{// 仅有一些then}\\
 MIF &\to \text{if } E \text{ then } MIF \text{ else } MIF &\\
   &\mid OTHER &\\
 UIF &\to \text{if } E \text{ then } E &\\
@@ -104,7 +105,7 @@ UIF &\to \text{if } E \text{ then } E &\\
 
 并不是所有上下文无关文法都可以做到无二义，也无法判断一个上下文无关文法是否是二义的。
 
-\subsection{NFA转CFG}
+\subsubsection{NFA转CFG}
 \begin{enumerate}
 	\item 对于NFA的每一状态$i$，创建非终态$A_i$
 	\item 若状态$i$在输入$a$上有转换边到状态$j$，则添加生成式$A_i\to aA_j$；
@@ -134,13 +135,14 @@ UIF &\to \text{if } E \text{ then } E &\\
 \end{itemize}
 都得留到语义分析阶段才解决。
 
-\subsection{递归下降}
-递归下降语法翻译即从顶层的非终端符号$E$开始，顺序尝试$E$的所有规则，不断回溯遍历，完整例子可见\href{http://web.stanford.edu/class/cs143/lectures/lecture06.pdf}{此文档}，但需要先消除左递归。
+\subsection{基础概念与处理}
+对于CFG的预处理包括\textbf{消除左递归}和\textbf{提取左因子}。
 
+\subsubsection{消除左递归}
 \begin{definition}[左递归]
 对于非终端符号$A$有生成式$A\to A\alpha$，则该文法是左递归的。
 \end{definition}
-\begin{example}
+
 消除左递归的方法：先把单元素拎出来放左侧，然后把所有递归移至右侧
 \[A\to A\alpha_1\mid \cdots\mid A\alpha_m\mid\beta_1\mid\cdots\beta_n
 \implies
@@ -148,7 +150,10 @@ UIF &\to \text{if } E \text{ then } E &\\
 A &\to\beta_1 A'\mid\cdots\mid\beta_n A'\\
 A' &\to\alpha_1 A'\mid\cdots\mid\alpha_m A'\mid\textcolor{red}{\epsilon}
 \end{aligned}\]
-如果是多级左递归，则需要先将上级生成式代入到中间级生成式中，再做消除
+
+\begin{example}
+如果是多级左递归，则需要先将上级生成式代入到中间级生成式中，再做消除。
+如下例
 \[\begin{aligned}
 S &\to Aa\mid b\\
 A &\to Ac\mid Sd\mid \epsilon
@@ -161,6 +166,7 @@ A' &\to cA'\mid adA'\mid \epsilon
 \end{aligned}\]
 \end{example}
 
+\subsubsection{提取左因子}
 \begin{definition}[提取左因子(left-factoring)]
 将生成式右侧左部相同的因子部分提取出来，找最长前缀
 \[A\to\alpha\beta_1\mid\alpha\beta_2\mid\cdots\alpha\beta_n\mid\gamma\]
@@ -172,24 +178,7 @@ A' &\to \beta_1\mid\beta_2\mid\cdots\beta_n
 直至没有生成式有相同前缀
 \end{definition}
 
-\begin{algorithm}[H]
-\centering
-\caption{递归下降(top-down parser)}
-\begin{algorithmic}[1]
-\State 选择$A$生成式$A\to X_1X_2\cdots X_k$
-\For{$i=1$ to $k$}
-\If{$X_i$是非终端符号}
-\State 调用$X_i()$
-\Else\If{$X_i$等于当前的输入符号$a$}
-\State 读取下一输入符号
-\Else
-\State $error()$
-\EndIf
-\EndIf
-\EndFor
-\end{algorithmic}
-\end{algorithm}
-
+\subsubsection{FIRST集与FOLLOW集}
 \begin{definition}[FIRST集与FOLLOW集]
 $FIRST(\alpha)$集为从$\alpha$中推导出来的字符串第一个终端符号的集合，若$\alpha\to\epsilon$，则$\epsilon\in FIRST(\alpha)$；若$A\to c\gamma$，则$c\in FIRST(A)$。
 $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
@@ -214,11 +203,12 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 \begin{enumerate}
 	\item 将$\$$放入$FOLLOW(S)$，其中$S$是开始符号
 	\item 如果有生成式$A\to\alpha B\beta$，那么$\forall a\in FIRST(\beta),a \ne\epsilon:\;a\in FOLLOW(B)$
-	\item 如果有生成式$A\to\alpha B$，或生成式$A\to\alpha B\beta$，且$\epsilon\in FIRST(\beta)$，则$\forall a\in FOLLOW(A):\;a\in FOLLOW(B)$
+	\item 如果有生成式$A\to\alpha B$，或\textbf{生成式$A\to\alpha B\beta$且$\epsilon\in FIRST(\beta)$}，则$\forall a\in FOLLOW(A):\;a\in FOLLOW(B)$（注意这里的因果关系）
 \end{enumerate}
 \end{myalgorithm}
 
 简而言之，$FOLLOW$集看下一符号的$FIRST$，\textbf{如果$\epsilon$在下一符号的$FIRST$集中，则看生成式左端的$FOLLOW$集}。
+通常下面的生成式的$FOLLOW$集都会包含上面生成式的$FOLLOW$集。
 
 另一种方式：
 \begin{enumerate}
@@ -235,7 +225,65 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 \end{tabular}
 \end{figure}
 
-\begin{myalgorithm}[构造预测语法表]
+\subsection{自顶向下分析}
+\subsubsection{递归下降}
+递归下降语法翻译即从顶层的非终端符号$E$开始，顺序尝试$E$的所有规则，不断回溯遍历，完整例子可见\href{http://web.stanford.edu/class/cs143/lectures/lecture06.pdf}{此文档}。
+
+\begin{algorithm}[H]
+\centering
+\caption{递归下降(top-down parser)}
+\begin{algorithmic}[1]
+\State 选择$A$生成式$A\to X_1X_2\cdots X_k$
+\For{$i=1$ to $k$}
+\If{$X_i$是非终端符号}
+\State 调用$X_i()$
+\Else\If{$X_i$等于当前的输入符号$a$}
+\State 读取下一输入符号
+\Else
+\State $error()$
+\EndIf
+\EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{LL(1)文法}
+\begin{definition}[LL(1)文法\protect\footnote{第一个L代表输入字符串从左边开始扫描，第二个L代表得到的推导是最左推导，(1)代表向前看1个输入符号（或单词）}]
+语法$G$是LL(1)文法当且仅当对于任意$A\to\alpha\mid\beta$为$G$两个不同的生成式，满足
+\begin{enumerate}
+	\item $\alpha$和$\beta$不会同时推导出由同一终端符号$a$开始的字符串
+	\item $\alpha$和$\beta$中至多一个能获得空字串
+	\item 若$\beta\to\epsilon$，则$\alpha$不能推出任何以$FOLLOW(A)$中终端符号开始的字符串；
+	同样地，若$\alpha\to\epsilon$，则$\beta$不能推出任何以$FOLLOW(A)$中终端符号开始的字符串
+\end{enumerate}
+前两个条件等价于\textcolor{red}{$FIRST(\alpha)\cap FIRST(\beta)=\varnothing$}，第三个条件等价于若$\epsilon\in FIRST(\beta)$，则\textcolor{red}{$FIRST(\alpha)\cap FOLLOW(A)=\varnothing$}，反之同理。
+这三个条件的作用都是\textbf{避免在输入符号上冲突}。
+\end{definition}
+通常没有左递归、无歧义的语法可以是LL(1)。
+
+递归下降在每一步都会有多种生成式的选择，这会导致大量的回溯。
+而在LL(1)文法中，每一步都\textbf{只有一种生成式的选择，避免了回溯}。
+
+\begin{example}
+经典的二义if-else语法（已提取左因子）
+\[\begin{aligned}
+S &\to iEtSS'\mid a\\
+S' &\to eS\mid\epsilon\\
+E &\to b
+\end{aligned}\]
+可以求得
+\[\begin{aligned}
+FIRST(S) &= \{i,a\}\\
+FIRST(S') &= \{\epsilon,e\}\\
+FIRST(E) &= b\\
+FOLLOW(S) &= \{\$\} + FIRST(S')-\{\epsilon\}=\{\$,e\}\\
+FOLLOW(S') &= \{\$\} + FOLLOW(S) = \{\$,\textcolor{red}{e}\}\\
+FOLLOW(E) &= \{\$,t\}
+\end{aligned}\]
+因为$\epsilon\in FIRST(S'\to\epsilon)$里，而$FIRST(S'\to eS)\cap FOLLOW(S')=\{e\}\ne\varnothing$，所以不是LL(1)文法。
+\end{example}
+
+\begin{myalgorithm}[构造LL(1)预测语法表]
 对于每一生成式$A\to\alpha$，
 \begin{enumerate}
 	\item 对于每一终端符号$a\in FIRST(\textcolor{red}{\alpha})$，将$A\to\alpha$添加到$M[A,a]$中。
@@ -243,6 +291,63 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 \end{enumerate}
 注意是生成式右端。
 \end{myalgorithm}
+
+\begin{example}
+考虑以下文法
+\[\begin{aligned}
+E &\to T + E\mid T\\
+T &\to int \mid int * T\mid (E)
+\end{aligned}\]
+提取左因子后即得
+\[\begin{aligned}
+E &\to TX\\
+X &\to +E\mid \epsilon\\
+T &\to int\;Y\mid (E)\\
+Y &\to *T\mid \epsilon
+\end{aligned}\]
+$FIRST$集和$FOLLOW$集的推导可见上面的图，注意$FOLLOW(T)$和$FOLLOW(Y)$很容易推漏
+\[\begin{array}{rlrl}
+FIRST(Y) &=\{*,\epsilon\} & FOLLOW(E) &=\{),\$\}\\
+FIRST(T) &=\{int,(\} & FOLLOW(X) &=\{),\$\}\\
+FIRST(X) &=\{+,\epsilon\} & FOLLOW(T) &=\{+,),\$\}\\
+FIRST(E) &=\{int,(\} & FOLLOW(Y) &=\{+,),\$\}
+\end{array}\]
+有LL(1)语法表，其中最左列为最左非终端符号，最上行为下一输入符号，表格内容为使用的右端生成式。
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}\hline
+ & $int$ & $*$ & $+$ & $($ & $)$ & \$\\\hline
+$E$ & $TX$ & & & $TX$ & & \\\hline
+$X$ &  &  & $+E$ & & $\epsilon$ & $\epsilon$\\\hline
+$T$ & $int\; Y$ & & & $(E)$ & &\\\hline
+$Y$ &  & $*T$ & $\epsilon$ & & $\epsilon$ & $\epsilon$\\\hline
+\end{tabular}
+\end{center}
+\end{example}
+
+基于表的预测语法分析，用栈实现。
+\begin{algorithm}[H]
+\caption{Table-Driven Predictive Parsing}
+\begin{algorithmic}[1]
+\State \verb'ip=0'
+\State \verb'X=stack.top()'
+\While {$X\ne\$$}
+\If {X == w[ip]}
+\State \verb'stack.pop(); ip++;'
+\Else \If {X is a terminal or M[X,a]=$\varnothing$}
+\State Error()
+\Else
+\State Output production \verb'M[X,a]'$=X\to Y_1Y_2\cdots Y_k$
+\State stack.pop()
+\State push $Y_k,Y_{k-1},\ldots,Y_1$ onto the stack
+\EndIf
+\EndIf
+\State \verb'X=stack.top()'
+\EndWhile
+\If {w[ip] != '\$'}
+\State Error()
+\EndIf
+\end{algorithmic}
+\end{algorithm}
 
 \begin{example}
 考虑下面语法
@@ -274,99 +379,14 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 \begin{tabular}{|c|c|c|c|c|c|c|}\hline
  & $id$ & $+$ & $*$ & $($ & $)$ & \$\\\hline
 $E$ & $E\to TE'$ & & & $E\to TE'$ & &\\\hline
-$E'$ & & $E'\to +TE'$ & & & $E'\to\epsilon$ & $E'\to\epsilon$\\\hline
+$E'$ & & $E'\to +TE'$ & & & \textcolor{red}{$E'\to\epsilon$} & \textcolor{red}{$E'\to\epsilon$}\\\hline
 $T$ & $T\to FT'$ & & & $T\to FT'$ & &\\\hline
-$T'$ & & $T'\to\epsilon$ & $T'\to*FT'$ & & $T'\to\epsilon$ & $T'\to\epsilon$\\\hline
+$T'$ & & $T'\to\epsilon$ & $T'\to*FT'$ & & \textcolor{red}{$T'\to\epsilon$} & \textcolor{red}{$T'\to\epsilon$}\\\hline
 $F$ & $F\to id$ & & & $F\to(E)$ & &\\\hline
 \end{tabular}
 \end{center}
+注意上述标红的项为通过第2条规则推导出来的项（$\epsilon\in FIRST(\alpha)$）。
 \end{example}
-
-\subsection{自顶向下分析}
-\begin{definition}[LL(1)文法\protect\footnote{第一个L代表输入字符串从左边开始扫描，第二个L代表得到的推导是最左推导，(1)代表向前看1个输入符号（或单词）}]
-语法$G$是LL(1)文法当且仅当对于任意$A\to\alpha\mid\beta$为$G$两个不同的生成式，满足
-\begin{enumerate}
-	\item $\alpha$和$\beta$不会同时推导出由同一终端符号$a$开始的字符串
-	\item $\alpha$和$\beta$中至多一个能获得空字串
-	\item 若$\beta\to\epsilon$，则$\alpha$不能推出任何以$FOLLOW(A)$中终端符号开始的字符串；
-	同样地，若$\alpha\to\epsilon$，则$\beta$不能推出任何以$FOLLOW(A)$中终端符号开始的字符串
-\end{enumerate}
-前两个条件等价于$FIRST(\alpha)\cap FIRST(\beta)=\varnothing$，第三个条件等价于若$\epsilon\in FIRST(\beta)$，则$FIRST(\alpha)\cap FOLLOW(A)=\varnothing$，反之同理
-\end{definition}
-通常没有左递归、无歧义的语法可以是LL(1)。
-
-递归下降在每一步都会有多种生成式的选择，这会导致大量的回溯。
-而在LL(1)文法中，每一步都只有一种生成式的选择，避免了回溯。
-
-左因子分解(left-factoring)将生成式的\textbf{共同前缀}分解出来。
-\begin{example}
-考虑以下文法
-\[\begin{aligned}
-E &\to T + E\mid T\\
-T &\to int \mid int * T\mid (E)
-\end{aligned}\]
-共同前缀分解后即得
-\[\begin{aligned}
-E &\to TX\\
-X &\to +E\mid \epsilon\\
-T &\to int\;Y\mid (E)\\
-Y &\to *T\mid \epsilon
-\end{aligned}\]
-有LL(1)语法表，其中最左列为最左非终端符号，最上行为下一输入符号，表格内容为使用的右端生成式。
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|c|c|}\hline
- & $int$ & $*$ & $+$ & $($ & $)$ & \$\\\hline
-$E$ & $TX$ & & & $TX$ & & \\\hline
-$X$ &  &  & $+E$ & & $\epsilon$ & $\epsilon$\\\hline
-$T$ & $int\; Y$ & & & $(E)$ & &\\\hline
-$Y$ &  & $*T$ & $\epsilon$ & & $\epsilon$ & $\epsilon$\\\hline
-\end{tabular}
-\end{center}
-\end{example}
-
-\begin{example}
-经典的二义if-else语法（已提取左因子）
-\[\begin{aligned}
-S &\to iEtSS'\mid a\\
-S' &\to eS\mid\epsilon\\
-E &\to b
-\end{aligned}\]
-可以求得
-\[\begin{aligned}
-FIRST(S) &= \{i,a\}\\
-FIRST(S') &= \{\epsilon,e\}\\
-FIRST(E) &= b\\
-FOLLOW(S) &= \{\$\} + FIRST(S')-\{\epsilon\}=\{\$,e\}\\
-FOLLOW(S') &= \{\$\} + FOLLOW(S) = \{\$,\textcolor{red}{e}\}\\
-FOLLOW(E) &= \{\$,t\}
-\end{aligned}\]
-因为$\epsilon\in FIRST(S'\to\epsilon)$里，而$FIRST(S'\to eS)\cap FOLLOW(S')=\{e\}\ne\varnothing$，所以不是LL(1)文法。
-\end{example}
-
-基于表的预测语法分析，用栈实现。
-\begin{algorithm}
-\caption{Table-Driven Predictive Parsing}
-\begin{algorithmic}[1]
-\State \verb'ip=0'
-\State \verb'X=stack.top()'
-\While {$X\ne\$$}
-\If {X == w[ip]}
-\State \verb'stack.pop(); ip++;'
-\Else \If {X is a terminal or M[X,a]=$\varnothing$}
-\State Error()
-\Else
-\State Output production \verb'M[X,a]'$=X\to Y_1Y_2\cdots Y_k$
-\State stack.pop()
-\State push $Y_k,Y_{k-1},\ldots,Y_1$ onto the stack
-\EndIf
-\EndIf
-\State \verb'X=stack.top()'
-\EndWhile
-\If {w[ip] != '\$'}
-\State Error()
-\EndIf
-\end{algorithmic}
-\end{algorithm}
 
 \begin{example}
 考虑以下文法：
@@ -450,7 +470,7 @@ L &\to L, S \mid S
 
 \begin{definition}[句柄(handle)]
 A handle is a string that can be \textbf{reduced} and also allows further reductions back to the start symbol.
-可以理解为当前正在处理的token，用于\textbf{规约}而不是移进。
+可以理解为当前正在处理的token，用于\textbf{规约}（生成式的右端）而不是移进。
 \end{definition}
 
 \begin{definition}[活前缀(viable prefix)]
@@ -460,7 +480,7 @@ $\alpha$是活前缀若存在$\omega$使得$\alpha\mid\omega$是移进-规约语
 LR分析是最通用的\textbf{非回溯}移进-规约语法解析方法，难点在于构建分析表太过麻烦，但Yacc等工具可辅助构建。
 
 \subsubsection{LR(0)语法}
-为构建规范(canoical)LR(0)项，定义增量语法$G'$有生成式$S'\to S$，其中$S$为原语法$G$的开始符号。
+为构建规范(canoical)LR(0)项，\textbf{定义增量语法$G'$有生成式$S'\to S$}，其中$S$为原语法$G$的开始符号。
 这个生成式用于告知parser接受(accept)输入并停止解析，即接受仅发生在要对$S'\to S$进行规约的时候。
 
 \begin{definition}[CLOSURE]
@@ -479,12 +499,13 @@ $I$是项的集合，$X$为输入符号，$GOTO(I,X)$为所有项$[A\to\alpha X\
 除了初始项外所有$\cdot$在左端的项称为非核项（即那些新加入闭包的项）
 \end{definition}
 
-LR(0)语法：
+\begin{definition}[LR(0)语法]
+栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上终止在状态$s$
 \begin{itemize}
-	\item 栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上终止在状态$s$
 	\item 当$s$包含$X\to\beta$的项时进行规约（没有得移进就规约，自动机无对应符号出边）
 	\item 当$s$包含$X\to\beta.t\omega$的项时移进
 \end{itemize}
+\end{definition}
 
 LR(0)可能存在以下两种冲突：
 \begin{itemize}
@@ -493,12 +514,14 @@ LR(0)可能存在以下两种冲突：
 \end{itemize}
 
 \subsubsection{SLR分析}
-SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)。用的是LR(0)项，但是在语法分析时才前看1个输入符号.}用启发式算法提升了LR(0)移进规约的效率，减少冲突。
+SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)。用的是LR(0)项，但是在语法分析时才前看1个输入符号。}用启发式算法提升了LR(0)移进规约的效率，减少冲突。
+\begin{definition}[SLR(1)语法]
+栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上停在状态$s$
 \begin{itemize}
-	\item 栈包含$\alpha$，下一输入是$t$，DFA在输入$\alpha$上停在状态$s$
 	\item 当$s$包含$X\to\beta$的项且\textcolor{red}{$t\in FOLLOW(X)$}时进行$X\to\beta$规约
 	\item 当$s$包含$X\to\beta.t\omega$的项时移进
 \end{itemize}
+\end{definition}
 
 \begin{myalgorithm}[SLR(1)分析表]
 构造$\mathcal{C}=\{I_0,I_1,\ldots,I_n\}$为LR(0)项的集合$G'$
@@ -846,3 +869,23 @@ term &\to 9    & \{print('9')\}\\
 
 将动作视为产生式右端的一部分，则可得到扩展的语法树。
 对语法分析树做先序遍历，则可以得到后缀表达式。
+
+\subsection{总结}
+语法分析分为自顶向下和自底向上两大类，自顶向下是从开始符号出发，根据产生式规则\textbf{推导}给定的句子；自底向上则是由给定的句子\textbf{规约}到文法的开始符号。
+
+其中LL(1)是自顶向下的分析法，LR(0)、SLR(1)、LR(1)、LALR(1)是自底向上的分析法。
+\begin{center}
+\begin{tabular}{|c|c|c|}\\\hline
+文法 & 文法要求 & 构造分析表 \\\hline
+LL(1) & 生成式首符号不能相同 & 将生成式加到首符号项上\\\hline
+LR(0) & LR(0)自动机无冲突 & \\\hline
+SLR(1) & 下一输入$a\in FOLLOW(X)$时进行规约 & ACTION-GOTO表同左\\\hline
+LR(1) & 用$FIRST(\beta a)$确定前看项无冲突 & 下一输入为$a$才规约$[A\to\alpha\cdot,a]$\\\hline
+LALR(1) & 将LR(1)相同核项合并无冲突 & 同上\\\hline
+\end{tabular}
+\end{center}
+
+% LL(1) Matched Stack Input Action
+% LR(0) Stack Symbols Input Action
+
+文法处理能力：LR(0) $<$ SLR(1) $<$ LALR(1) $<$ LR(1)
