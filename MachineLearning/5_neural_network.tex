@@ -39,7 +39,7 @@ Minsky和Papert[1969]证明了若两类模式是线性可分的，则必然存�
 
 用反向传播算法(Back propagation, BP)进行学习。
 
-[Hornik, 1989]证明，只需一个包含足够多神经元的隐层，多层前馈神经网络就能以任意精度逼近任意复杂度的连续函数。
+通用近似定理[Hornik, 1989]证明，只需一个包含足够多神经元的隐层，多层前馈神经网络就能以任意精度逼近任意复杂度的连续函数。
 然而，如何设置神经元的个数却没有固定的标准。
 
 \subsection{深度学习}
@@ -60,6 +60,37 @@ Minsky和Papert[1969]证明了若两类模式是线性可分的，则必然存�
 
 以往机器学习在用于现实任务时，描述样本的特征通常需要人类专家进行设计，这称为特征工程(feature engineering)。
 但现在有了深度学习，则是进一步将特征提取的工作交由机器来做。
+
+\begin{itemize}
+\item 局部最优
+\item 梯度消失：ReLU、ResNet
+\item 过拟合：正则化（Dropout、早停）
+\item 优化：适应性学习率（Momentum、Nesterov、Adagrad、Adadelta、RMSprop、Adam）
+\end{itemize}
+
+\subsection{Transformer}
+\begin{quote}
+Vaswani et al., \emph{Attention Is All You Need}, NeurIPS, 2017
+\end{quote}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/transformer.png}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/attention.png}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/multihead.png}
+\end{figure}
+
+进而有BERT模型
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/bert.png}
+\end{figure}
 
 \subsection{神经网络的历史发展}
 \begin{itemize}

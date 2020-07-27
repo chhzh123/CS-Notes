@@ -1,3 +1,29 @@
 % !TEX root = main.tex
 
 \section{贝叶斯优化}
+\subsection{高斯混合模型}
+最常用的混合模型即高斯混合模型(Gaussian Mixture Model, GMM),
+\[p(\vx)=\sum_{k=1}^K\pi_k\mathcal{N}(\vx\mid\mu_k,\Sigma_k)\]
+代表有$K$个高斯分布进行混合，其中$\pi_k$为混合系数，满足
+\[\sum_{k}=1^K\pi_k=1,\pi_k\geq 0,\forall k\]
+
+求最大似然
+\[\ln p(X\mid\pi,\mu,\Sigma)=\sum_{n=1}^N\ln\lrp{\sum_{k=1}^K\pi_k\mathcal{N}\lrp{\vx^{(n)}\mid\mu_k,\Sigma_k}}\]
+优化变量为$\Theta=\{\pi_k,\mu_k,\Sigma_k\}$。
+
+\subsection{EM算法}
+未观测变量即隐变量(latent variable)，令$X$表示已观测变量集，$Z$表示隐变量集，$\Theta$表示模型参数。
+若对$\Theta$做极大似然估计，则应最大化对数似然
+\[LL(\Theta\mid X,Z)=\ln P(X,Z\mid\Theta)\]
+但由于$Z$是隐变量，上式无法直接求解。
+这时可以通过对$Z$计算期望，来最大化已观测数据的对数边际似然(marginal likelihood)
+\[LL(\Theta\mid X)=\ln P(X\mid\Theta)=\ln\sum_Z P(X,Z\mid\Theta)\]
+
+期望最大化(Expectation-Maximization, EM)算法是常用估计参数隐变量的方法（非梯度优化）。
+\begin{itemize}
+	\item 期望(E)步：利用当前估计的参数值来计算对数似然的期望值
+	\item 最大化(M)步：寻找能使E步产生的似然期望最大化的参数值
+\end{itemize}
+新得到的参数值重新被用于E步，直至收敛至局部最优解。
+
+在GMM上用EM算法与K-means非常类似，只不过EM算法是软指派(soft assignment)，而且每一个中心根据软指派数据的加权平均进行移动。b
