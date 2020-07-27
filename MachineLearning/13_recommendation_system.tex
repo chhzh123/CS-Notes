@@ -1,4 +1,118 @@
 % !TEX root = main.tex
 
 \section{推荐系统}
-$X$为用户的集合，$S$为推荐项的集合，效用函数$u:X\times S\to R$，$R$是评分的集合，全序。
+$X$为用户的集合，$S$为推荐项的集合，效用函数$U:X\times S\to R$，$R$是评分的集合，全序。
+
+效用矩阵$U$往往是稀疏的，大多用户对大多数商品都没有评价、冷启动（新用户/新商品）。
+
+\subsection{基于内容}
+基于内容的(content-based)方法核心思想是推荐与该用户之前评分高的项目相似的项目。
+
+对每一个项目(item)，创建项目特写(profile)，即其特征。
+如电影的导演、名字、演员等。
+选取重要特征的方法，如果从文本中获取可用词频-逆文档频率(term frequency-inverse document frequency, TF-IDF)模型。
+\[\begin{aligned}
+TF &= \frac{\text{单词在句子中出现的频率}}{\text{句子的单词总数}}\\
+IDF &= \frac{\text{总的句子数目}}{\text{包含单词的句子数目}}
+\end{aligned}\]
+用户特写则可通过对项目特写\textbf{取平均}得到。
+
+给定用户特写$\vx$和项目特写$\vi$，可用下式计算相似度
+\[u(\vx,\vi)=\cos(\vx,\vi)=\frac{\vx\cdot\vi}{\norm{\vx}\cdot\norm{\vi}}\]
+
+基于内容方法的优点：
+\begin{itemize}
+	\item 无需其他用户数据
+	\item 能够匹配不同用户独特的taste
+	\item 能够适应新的/非大众项目
+	\item 可解释性强
+\end{itemize}
+缺点：
+\begin{itemize}
+	\item 寻找适合的特征很难
+	\item 如何建立新用户的画像
+	\item 过度专一，不会推荐用户内容以外的东西，无法适应用户多种兴趣
+\end{itemize}
+
+\subsection{协同过滤}
+考虑用户$x，选出$$n$个与$x$的评分相似的用户，基于这些用户的评分，估计$x$的评分。
+相似性可用Jaccard、Cosine、Pearson度量。
+这是用户-用户(user-user)协同过滤的方式。
+
+项-项(item-item)协同过滤定义$s_{ij}$为商品$i$和商品$j$的相似度，选择$i$的$k$个最近邻$N(i;x)$（被用户$x$打分最相近$i$的商品），估计用户$x$在商品$i$上的评分
+\[r_{xi}=b_{xi}+\frac{\sum_{j\in N(i;x)}s_{ij}\cdot(r_{xj}-b_{xj})}{\sum_{j\in N(i;x)s_{ij}}}\]
+其中$b_{xi}=\mu+b_x+b_i$为基线偏移量，$\mu$为评分总平均，$b_x$为用户$x$评分的标准偏差（$\bar{r_x}-\mu$），$b_i$为商品$i$的评分偏差。
+
+优点：适用于任何商品，无需特征选择
+\par缺点：
+\begin{itemize}
+	\item 冷启动：需要有足够的用户来进行匹配
+	\item 稀疏性：很难找到用户同时评分同个商品
+	\item 首评分用户：无法推荐未被评分的商品
+	\item 欢迎度偏差：无法满足个人独特喜好
+	\item 时间复杂度：$k$个最相似用户计算量大，需要先降维或聚类
+\end{itemize}
+
+利用插值方法构造可学习权重
+\[\hat{r_{xi}}=b_{xi}+\sum_{j\in N(i;x)}w_{ij}(r_{xj}-b_{xj})\]
+
+混合方法：
+\begin{itemize}
+\item 使用多种推荐方式，并混合预测（用线性模型）
+\item 添加基于内容的方法来做协同过滤
+\begin{itemize}
+	\item 商品特写用以新商品问题
+	\item 人口统计特性用以解决新用户问题
+\end{itemize}
+\end{itemize}
+
+\subsection{隐因子模型}
+隐因子模型(latent factor model, LFM)采用SVD对矩阵进行分解
+\[R\approx Q\cdot P^\T\]
+$R\in\rr^{m\times n}$为评分矩阵，$m$为商品数目，$n$为用户数目；
+$Q\in\rr^{m\times k}$为项-因子矩阵；
+$P^\T\in\rr^{k\times n}$为因子-用户矩阵。
+
+由于SVD能够给出最小重构误差
+\[\min_{U,V,\Sigma}\sum_{ij\in A}(A_{ij}-[U\Sigma V^\T]_{ij})^2\]
+
+目标是找到$P$和$Q$使得
+\[\min_{P,Q}\sum_{(i,x)\in R}(r_{xi}-q_i\cdot p_x)^2\]
+但我们目标却是使上式在未见过的测试数据上最小化，而我们能做的只是在训练集上最小化，故需要避免过拟合。
+添加正则项
+\[\min_{P,Q}\sum_{training}(r_{xi}-q_ip_x)^2+\lrs{\lambda_1\sum_x\norm{p_x}^2+\lambda_2\sum_i\norm{q_i}^2}\]
+利用随机梯度下降(SGD)进行求解。
+
+\subsection{冷启动}
+解决冷启动的思路\footnote{参考自推荐系统冷启动 - gongyouliu的文章 - 知乎\url{https://zhuanlan.zhihu.com/p/79950668}}：
+\begin{itemize}
+	\item 提供非个性化的推荐（用户冷启动）
+	\item 利用用户注册时提供的信息（用户冷启动、系统冷启动）
+	\item 基于内容做推荐（用户冷启动、系统冷启动）
+	\item 利用标的物的metadata信息做推荐（标的物冷启动）
+	\item 采用快速试探策略（用户冷启动、标的物冷启动）
+	\item 采用兴趣迁移策略（用户冷启动、系统冷启动）
+	\item 采用基于关系传递的策略（标的物冷启动）
+\end{itemize}
+
+用户冷启动：
+\begin{itemize}
+	\item 利用先验数据做推荐：直接推荐新的最热门的东西
+	\item 给用户多样化选择：新用户注册的信息
+	\begin{itemize}
+		\item 人口统计学数据：年龄、性别、地域、学历、职业
+		\item 社交关系：好友推荐
+		\item 用户自行填写兴趣点：内容推荐、快速试探、兴趣迁移
+	\end{itemize}
+\end{itemize}
+
+物品冷启动：
+\begin{itemize}
+	\item 利用标的物的metadata信息做推荐
+	\begin{itemize}
+		\item 利用标的物跟用户行为的相似性
+		\item 利用标的物跟标的物的相似性
+	\end{itemize}
+	\item 采用快速试探策略
+	\item 采用基于关系传递的策略：A与B相似，B与C相似，则A与C相似
+\end{itemize}
