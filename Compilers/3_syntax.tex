@@ -51,6 +51,8 @@ CFG定义语言的能力比正则表达式强很大原因是它引入了\textcol
 	-(id+id)\]
 \end{itemize}
 
+事实上逆向的最右推导即自底向上分析法。
+
 \begin{definition}[二义性]
 如果对于一个文法，存在一个句子，对这个句子可以构造两棵不同的分析树，那么我们称这个文法为二义的。
 \end{definition}
@@ -464,7 +466,7 @@ L &\to L, S \mid S
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/shift-reduce.jpg}
+\includegraphics[width=0.6\linewidth]{fig/shift-reduce.jpg}
 \end{figure}
 移进将终端符号移入栈中，规约将生成式的右端符号弹出，将生成式的左端\textbf{非终端}符号推入。
 
@@ -476,6 +478,30 @@ A handle is a string that can be \textbf{reduced} and also allows further reduct
 \begin{definition}[活前缀(viable prefix)]
 $\alpha$是活前缀若存在$\omega$使得$\alpha\mid\omega$是移进-规约语法分析器的状态。
 \end{definition}
+
+\begin{example}
+考虑以下CFG\footnote{例子来源于\url{https://gatecse.in/viable-prefixes-and-handle-in-lr-parsing/}}
+\[\begin{aligned}
+S &\to XX\\
+X &\to aX\mid b
+\end{aligned}\]
+对$aabb$做最右推导有
+\begin{center}
+\begin{tabular}{|cc|}\hline
+a & abb\\
+aa & bb\\
+aa\textbf{b} & b\\
+a\textbf{aX} & b\\
+\textbf{aX} & b\\
+X & b\\
+X\textbf{b} & \\
+\textbf{XX} & \\
+S & \\\hline
+\end{tabular}
+\end{center}
+上面加粗被代替的字符串称为句柄，而句柄左侧（含句柄本身）的子字符串称为活前缀，包括
+\[\{a,aa,aab\}\cup \{a,aa,aaX\} \cup \{a,aX\} \cup \{X,Xb\} \cup \{X,XX\}\]
+\end{example}
 
 LR分析是最通用的\textbf{非回溯}移进-规约语法解析方法，难点在于构建分析表太过麻烦，但Yacc等工具可辅助构建。
 
@@ -512,6 +538,7 @@ LR(0)可能存在以下两种冲突：
 	\item 规约-规约冲突：$X\to\beta.$且$Y\to\omega.$
 	\item 移进-规约冲突：$X\to\beta.$且$Y\to\omega.t\delta$
 \end{itemize}
+注意\textbf{接受-移进不是冲突}！
 
 \subsubsection{SLR分析}
 SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)。用的是LR(0)项，但是在语法分析时才前看1个输入符号。}用启发式算法提升了LR(0)移进规约的效率，减少冲突。
@@ -875,7 +902,7 @@ term &\to 9    & \{print('9')\}\\
 
 其中LL(1)是自顶向下的分析法，LR(0)、SLR(1)、LR(1)、LALR(1)是自底向上的分析法。
 \begin{center}
-\begin{tabular}{|c|c|c|}\\\hline
+\begin{tabular}{|c|c|c|}\hline
 文法 & 文法要求 & 构造分析表 \\\hline
 LL(1) & 生成式首符号不能相同 & 将生成式加到首符号项上\\\hline
 LR(0) & LR(0)自动机无冲突 & \\\hline
