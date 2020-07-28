@@ -205,7 +205,7 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 \begin{enumerate}
 	\item 将$\$$放入$FOLLOW(S)$，其中$S$是开始符号
 	\item 如果有生成式$A\to\alpha B\beta$，那么$\forall a\in FIRST(\beta),a \ne\epsilon:\;a\in FOLLOW(B)$
-	\item 如果有生成式$A\to\alpha B$，或\textbf{生成式$A\to\alpha B\beta$且$\epsilon\in FIRST(\beta)$}，则$\forall a\in FOLLOW(A):\;a\in FOLLOW(B)$（注意这里的因果关系）
+	\item 如果有生成式$A\to\alpha B$，或\underline{生成式$A\to\alpha B\beta$且$\epsilon\in FIRST(\beta)$}，则$\forall a\in FOLLOW(A):\;a\in FOLLOW(B)$（注意这里的因果关系）
 \end{enumerate}
 \end{myalgorithm}
 
@@ -214,7 +214,7 @@ $FOLLOW(A)$集为可以出现在$A$右侧的终端符号的集合。
 
 另一种方式：
 \begin{enumerate}
-	\item \$$\in FOLLOW(S)$
+	\item $\$ \in FOLLOW(S)$
 	\item $\forall A\to\alpha X\beta:\;FIRST(\beta)-\{\epsilon\}\subset FOLLOW(X)$
 	\item $\forall A\to\alpha X\beta,\epsilon\in FIRST(\beta):\;FOLLOW(A)\subset FOLLOW(X)$
 \end{enumerate}
@@ -539,6 +539,7 @@ LR(0)可能存在以下两种冲突：
 	\item 移进-规约冲突：$X\to\beta.$且$Y\to\omega.t\delta$
 \end{itemize}
 注意\textbf{接受-移进不是冲突}！
+LR(0)可以直接处理左递归。
 
 \subsubsection{SLR分析}
 SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)。用的是LR(0)项，但是在语法分析时才前看1个输入符号。}用启发式算法提升了LR(0)移进规约的效率，减少冲突。
@@ -615,7 +616,7 @@ SLR(simple left-to-right scan)\footnote{或SLR(1)分析，通常省略(1)。用�
 	9 & s4 & s5 & r1 &    & r1  &   &   & 7 \\\hline
 	\end{tabular}
 	\end{center}
-	\item 依上述ACTION-GOTO表，可得以下过程
+	\item 依上述ACTION-GOTO表，可得以下过程（注意弹出后要跳转，红色标注的为栈顶弹出多项的情况）
 	\begin{center}
 	\begin{tabular}{|r|l|l|r|l|}\hline
 		& STACK & SYMBOLS & INPUT      & ACTION\\\hline
@@ -667,6 +668,7 @@ $a$总会是$FOLLOW(A)$的子集，但往往是真子集。
 初始化$\mathcal{C}=\{CLOSURE(\{[S'\to\cdot S,\$]\})\}$。
 \end{myalgorithm}
 \begin{example}
+\label{example:lr1}
 考虑下面的增量语法
 \[\begin{array}{rrl}
 (1) & S' &\to S\\
@@ -702,6 +704,10 @@ LR(0)=SLR(1)的表项较少，但LR(1)的表项就指数级上涨。
 \subsubsection{LALR分析}
 LALR(Lookahead LR)在实践中很常用，表大小通常远小于规范LR表。
 核心思想是将LR(1)中具有\textbf{相同核}的表项合并。
+
+\begin{definition}[核(core)]
+LR(1)项中第一部分的集合，如例\ref{example:lr1}中$I_0$的核为$\{S'\to\cdot S, S\to\cdot CC, C\to\cdot cC, C\to \cdot d\}$
+\end{definition}
 
 \begin{example}
 将上面例子中的$I_3$和$I_6$合并得到
@@ -912,7 +918,11 @@ LALR(1) & 将LR(1)相同核项合并无冲突 & 同上\\\hline
 \end{tabular}
 \end{center}
 
+判断是否符合文法，LL(1)看下一输入符号是否冲突，自底向上则看是否有移进/规约冲突。
+
 % LL(1) Matched Stack Input Action
 % LR(0) Stack Symbols Input Action
 
 文法处理能力：LR(0) $<$ SLR(1) $<$ LALR(1) $<$ LR(1)
+
+即是右边的文法不一定是左边的文法。

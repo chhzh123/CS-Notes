@@ -27,7 +27,7 @@ x = *y
 *x = y
 \end{lstlisting}
 
-\verb'top'指代当前的符号表，\verb'gen'代表生成中间代码，\verb'||'代表代码的连接。
+\verb'top'指代当前的符号表，\verb'gen'代表生成中间代码，\verb'||'代表代码的连接，\verb'next'定义执行完$S$之后紧跟的指令。
 \begin{center}
 \begin{tabular}{|l|l|}\hline
 $S \to id = E$ & \verb"S.code = E.code || gen(top.get(id.lexeme) '=' E.addr)"\\\hline
@@ -152,3 +152,18 @@ $x   = t_9$
 \end{tabular}
 \end{center}
 \end{analysis}
+
+注意区别语法分析树(parse tree)和抽象语法树(AST)，前者从CFG得到，后者直接由源码得到。
+下面例子源自\href{https://en.wikipedia.org/wiki/Abstract_syntax_tree}{Wiki}。
+\begin{lstlisting}
+while b != 0
+  if a > b
+    a = a - b
+  else
+    b = b - a
+return a
+\end{lstlisting}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{fig/AST.png}
+\end{figure}
