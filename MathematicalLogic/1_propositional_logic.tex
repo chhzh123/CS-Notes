@@ -72,3 +72,79 @@
 \begin{definition}[可证明等价性(provably equivalent)]
 令$\phi$和$\psi$为命题逻辑公式，$\phi$和$\psi$是可证明等价的当且仅当序列$\phi\vdash\psi$和$\psi\vdash\phi$都是合法的，或者$\phi\dashv\vdash\psi$
 \end{definition}
+
+\subsection{形式语言}
+\begin{definition}[良定公式(well-formed formula)]
+原子、与或非、蕴含均为良定公式
+\end{definition}
+良定公式可用BNF(Backus Naur Form)定义
+\[\phi::=p\mid
+\lnot\phi\mid
+\phi\land\psi\mid
+\phi\lor\psi\mid
+\phi\to\psi\mid
+(\phi)\]
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/well-formed_formula.jpg}
+\end{figure}
+
+\subsection{语义}
+\begin{definition}[模型(model)]
+在前提$\phi_1,\phi_2,\ldots,\phi_n$和结论$\psi$上定义另一关系，记作
+\[\phi_1,\phi_2,\ldots,\phi_n\models\psi\]
+真值包括两个元素$T$和$F$，公式$\phi$的模型(model)或估值(valuation)是指对$\phi$中的每一原子命题都有一个真值指派(assignment)。
+对$\phi_1,\phi_2,\ldots,\phi_n$的真值指派决定了$\psi$的真值，称为$\psi$的解释(interpretation)，可表示为真值表中的一行。
+
+如果对于所有$\phi_1,\phi_2,\ldots,\phi_n$的估值都为$T$，$\psi$也估值为$T$，那么称
+\[\phi_1,\phi_2,\ldots,\phi_n\models\psi\]
+成立(hold)，且称$\models$为语义包含(semantic entailment)关系。
+\end{definition}
+\begin{theorem}[正确性(soundness)]
+令$\phi_1,\phi_2,\ldots,\phi_n$和$\psi$都是命题逻辑公式，若$\phi_1,\phi_2,\ldots,\phi_n\vdash\psi$是合法的\footnote{假设$\phi_1,\ldots,\phi_n$为真，可以推出$\psi$为真}，那么$\phi_1,\phi_2,\ldots,\phi_n\models\psi$成立。（事实上这两者是等价关系）
+\end{theorem}
+
+\begin{definition}[恒真式(tautology)/矛盾式(contradiction)]
+命题逻辑$\phi$被称为恒真式当且仅当它在所有估值下都取值为$T$，也即$\models\phi$。
+若在某个估值/解释$I_0$下值为$T$，则称其可满足。
+若所有估值均为$F$，则为矛盾式。
+\end{definition}
+\begin{theorem}
+若$\models\eta$成立，则$\vdash\eta$是合法的。
+换句话说，若$\eta$是永真式，则$\eta$是定理。
+\end{theorem}
+
+\subsection{规范形式}
+\begin{definition}[语义等价]
+$\phi$和$\psi$都是命题逻辑的公式，称其等价当且仅当$\phi\models\psi$和$\psi\models\phi$成立，记作$\phi\equiv\psi$，也等价于$\models(\phi\to\psi)\land(\psi\to\phi)$成立。
+\end{definition}
+\begin{definition}[合取范式(conjunction normal form, CNF)]
+BNF定义如下：
+\begin{itemize}
+	\item 文字(literal)：$L::=p\mid\lnot p$
+	\item 句子(clause)：$D::=L\mid L\lor D$
+	\item 公式(formula)：$C::=D\mid(D)\mid D\land C$
+\end{itemize}
+例子如
+\[(p \lor r) \land (\lnot p \lor r) \land (p \lor \lnot r)\]
+\end{definition}
+
+\begin{definition}[霍尔公式(Horn formula)]
+若命题逻辑公式$\phi$能用下面的语法，表示成$H$的一个示例
+\[P::=\bot\mid\top\mid p\qquad
+A::=P\mid P\land A
+C::=A\to P
+H::=C\mid C\land H\]
+则称$C$的每个实例为霍尔从句(clause)。
+\end{definition}
+
+\subsection{SAT求解器}
+线性求解器只接受以下几种形式的公式
+\[\phi::=p\mid(\lnot\phi)\mid(\phi\land\phi)\]
+\begin{example}
+$\phi=p\land\lnot(q\lor\lnot p)$，计算$T(\phi)=p\land\lnot\lnot(\lnot q\land\lnot\lnot p)$，则有语法树和DAG如下
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{fig/parse_tree_dag_eg.jpg}
+\end{figure}
+\end{example}
