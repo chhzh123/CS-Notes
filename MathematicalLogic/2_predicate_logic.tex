@@ -72,15 +72,86 @@ BNF定义如下
 \end{theorem}
 
 \subsection{语义}
+记$\Gamma$为公式$\phi_1,\ldots,\phi_n$，要证明$\Gamma\vdash\psi$是合法的，则只需从$\Gamma$中提供$\psi$的证明。
+而如果要证明$\Gamma$推不出$\psi$，从\textbf{证明论}(proof theory)的角度是困难的。
+
+但从语义(semantics)的角度，只需找到一个模型(model)满足所有$\phi_i$都为真，而$\psi$为假，即可得到$\Gamma$推不出$\psi$；相反地，要证明$\Gamma$推出$\psi$则是困难的，因为对于谓词逻辑来说有无穷多种估值/模型，只有全部验证了才能得知$\Gamma\models\psi$（$\psi$被$\Gamma$语义蕴含entail）。
+
+因此证明论和模型论两者都是重要的。
+
 \begin{definition}[模型(model)]
-令$\mathcal{F}$为函数符号的集合，$\mathcal{P}$为谓词符号的集合。
+令$\mathcal{F}$为函数符号的集合，$\mathcal{P}$为谓词符号的集合\footnote{函数符号是一个算子，作用在项上并生成一个新的项/实体(object)，比如$+$和$\times$；而谓词符号也是一个算子，作用在项上并生成一个谓词/宣称(claim)，比如$<$和$>$。}。
 关于$(\mathcal{F},\mathcal{P})$的模型$\mathcal{M}$包含以下数据：
 \begin{itemize}
-	\item 非空集合$A$
+	\item 非空集合$A$：具体值的全集
 	\item 对于每一空函数符号$f\in\mathcal{F},f^{\mathcal{M}}\in A$
 	\item 对于每一$f\in\mathcal{F}$且元$n>0$，具体函数$f^{\mathcal{M}}:A^n\to A$
 	\item 对于每一$P\in\mathcal{P}$且元$n>0$，子集$P^\mathcal{M}\subset A^n$
 \end{itemize}
+也就是说$f$和$P$仅仅是\textbf{抽象的符号}，而$f^{\mathcal{M}}$和$P^{\mathcal{M}}$为\textbf{具体的函数/元素}。
+也可以说模型给出了一个解释(interpretation)。
+\end{definition}
+\begin{example}
+令$\mF\eqdef\{i\}$，$\mP\eqdef\{R,F\}$，其中$i$是一个常数，$F$是一元谓词符号，$R$是二元谓词符号。
+一个模型可以是
+\[\begin{aligned}
+A &\eqdef\{a,b,c\}\\
+i^{\mM} &\eqdef a\\
+R^{\mM} &\eqdef\{(a,a),(a,b),(a,c),(b,c),(c,c)\}\\
+F^{\mM} &\eqdef\{b,c\}
+\end{aligned}\]
+那么有$\exists yR(i,y)$为真，$\lnot F(i)$为真。
+\end{example}
+
+上面给出了模型的定义，并且使得我们可以直接从$(\mathcal{F},\mathcal{P})$中计算出真值，但我们仍需讨论如何处理全称量词$\forall x\phi$及特称量词$\exists x\phi$，需要检查$\phi$是否对于所有模型中的$a$都成立。
+尽管我们可以用$\phi[a/x]$表示，但是$\phi[a/x]$并不是一个逻辑公式，因为$a$不是一个项(term)而是模型中的一个元素。
+
+因此需要限定公式是关于一个环境的(relative to an environment)。
+\begin{definition}[环境(environment)/查找表(look-up table)]
+对于全集$A$具体值的环境是一个函数$l:var\to A$，定义$l[x\mapsto a]$为从$x$映射到$a$的查找表。
 \end{definition}
 
-\subsection{不可判定性}
+\begin{definition}[满足关系(satisfaction)]
+给定$\mathcal{M}(\mF,\mP)$及环境$l$，定义满足关系$\mM\models_l\phi$。
+若$\mM\models_l$成立(hold)，则称$\phi$在关于环境$l$的模型$\mM$中计算为$T$。
+\end{definition}
+
+\begin{example}
+令$F\eqdef\{alma\},P\eqdef\{loves\}$，其中$alma$是常数，$loves(\cdot,\cdot)$是谓词符号。
+模型$\mM$包含集合
+\[A\eqdef\{a,b,c\},alma^\mM\eqdef a,loves^\mM\eqdef\{(a,a),(b,a),(c,a)\}\]
+检查模型$\mM$是否满足
+\[\text{None of Alma's lovers' lovers love her.}\]
+\[\phi:\forall x\forall y(loves(x,alma)\land loves(y,x)\to\lnot loves(y,alma))\]
+令$x\mapsto a$及$y\mapsto b$，又$alma^{\mM}\eqdef a$，得到
+\[loves(a,a)\land loves(b,a)\to\lnot loves(b,alma)\]
+不成立，故$\mM\not\models\phi$
+\end{example}
+
+在命题逻辑中，$\phi_1,\ldots,\phi_n\models\psi$\footnote{$\models$代表语义蕴含(semantic entailment)}当且仅当$\phi_1,\ldots,\phi_n$都估值为$T$，同时$\psi$也估值为$T$。
+
+\begin{definition}
+令$\Gamma$为谓词逻辑的公式集合，$\psi$为谓词逻辑的公式
+\begin{enumerate}
+	\item 语义蕴含$\Gamma\models\psi$成立当且仅当对于\textbf{所有}的模型$\mM$和查找表$l$，只要$\forall \phi\in\Gamma:\mM\models_l\phi$成立，$\mM\models_l\psi$也成立
+	\item $\psi$是可满足的(satisfiable)当且仅当\textbf{存在}模型$\mM$和环境$l$使得$\mM\models_l\psi$成立
+	\item $\psi$是合法的(valid)当且仅当$\mM\models_l\psi$对于\textbf{所有}模型$\mM$和环境$l$都成立
+\end{enumerate}
+\end{definition}
+\begin{example}
+考虑以下语义蕴含关系
+\[\forall x(P(x)\to Q(x))\models\forall xP(x)\to\forall xQ(x)\]
+令$\mM$为满足$\forall x(P(x)\to Q(x))$的模型，需要证明$\mM$也满足$\forall xP(x)\to\forall xQ(x)$
+\begin{itemize}
+	\item 若不是每个$\mM$中的元素都满足$P$，则前件为假，显然成立
+	\item 若每个$\mM$中的元素都满足$P$，则每一元素都满足$Q$，因为$\mM$满足$\forall x(P(x)\to Q(x))$
+\end{itemize}
+进而$\mM\models\forall xP(x)\to\forall xQ(x)$
+\end{example}
+\begin{example}
+考虑以下语义蕴含关系
+\[\forall xP(x)\to\forall xQ(x)\models\forall x(P(x)\to Q(x))\]
+令$A\eqdef\{a,b\},P^\mM\eqdef\{a\},Q^\mM\eqdef\{b\}$，则$\mM\models\forall xP(x)\to\forall xQ(x)$，但$\mM\not\models\forall x(P(x)\to Q(x))$
+\end{example}
+
+% \subsection{不可判定性}

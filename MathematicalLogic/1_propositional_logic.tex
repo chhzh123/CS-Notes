@@ -15,6 +15,13 @@
 这一表达式称为一个序列(sequent)，若一个证明可以被找到则称它是合法的(valid)。
 \end{definition}
 
+注意$\vdash$读作推出(deduce/derive)/逻辑后承，而$\implies$读作实质蕴涵\footnote{参考以下资料：
+\begin{itemize}
+	\item \url{https://math.stackexchange.com/questions/2903877/to-vs-vdash-in-logic}
+	\item 逻辑学中，前提为假而命题为真的推论如何解释？ - 罗心澄的回答 - 知乎 \url{https://www.zhihu.com/question/21020308/answer/16917222}
+\end{itemize}}。
+可以理解为$\vdash$左侧是一些公理(axiom)，右侧是陈述(statement)
+
 推理的基本规则：
 \begin{itemize}
 	\item and-introduction ($\land i$)：前提与前提为真
@@ -74,10 +81,15 @@
 \end{definition}
 
 \subsection{形式语言}
-\begin{definition}[良定公式(well-formed formula)]
-原子、与或非、蕴含均为良定公式
+\begin{definition}[合式公式(well-formed formula, WFF)]
+一个WFF是
+\begin{itemize}
+	\item 一个原子公式（无论是命题常元还是命题变元）
+	\item 形如$(\lnot\phi)$的公式，其中$\phi$是一个WFF
+	\item 形如$(\phi\lor\psi)$的公式，即由二元连接词连接的两个WFF
+\end{itemize}
 \end{definition}
-良定公式可用BNF(Backus Naur Form)定义
+合式公式可用BNF(Backus Naur Form)定义
 \[\phi::=p\mid
 \lnot\phi\mid
 \phi\land\psi\mid
