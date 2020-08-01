@@ -1,0 +1,153 @@
+% !TEX root = main.tex
+
+\section{程序验证}
+\begin{definition}[霍尔三元组(Hoare triple)]
+\[\hoare{\phi}P\hoare{\psi}\]
+代表若程序$P$在满足$\phi$的状态下运行，则执行完$P$的状态会满足$\psi$。
+$\phi$称为先验条件(precondition)，$\psi$称为后验条件(postcondition)。
+存储变量$x$记为$l(x)$。
+\end{definition}
+\begin{example}
+若输入$x$是正数，则求出一个数字它的平方小于$x$。\\
+记程序为$P$，则Hoare三元组为
+\[\hoare{x>0}P\hoare{y\cdot y<x}\]
+一个可行的程序$P$可以是
+\begin{lstlisting}
+y = 0;
+while (y * y < x) { y = y + 1; }
+y = y - 1;
+\end{lstlisting}
+\end{example}
+\begin{definition}[部分正确性(partial correctness)]
+若对于\textbf{所有}满足先验条件$\phi$的状态，\textbf{只要$P$需要能停止(terminate)}，经过$P$的执行，都满足后验条件$\psi$，则$\hoare{\phi}P\hoare{\psi}$满足部分正确性。
+若$\models_{par}\hoare{\phi}P\hoare{\psi}$成立，则称$\models_{par}$为部分正确性关系。
+全部正确性(total correctness)则是保证了$P$一定会停止。
+\end{definition}
+\begin{example}
+考虑下面求阶乘的程序Fac1：
+\begin{lstlisting}
+y = 1;
+z = 0;
+while (z != x) {
+  z = z + 1;
+  y = y * z;
+}
+\end{lstlisting}
+\begin{itemize}
+\item $\models_{tot}\hoare{x \geq 0 } Fac1\hoare{y = x! }$成立，只要$x \geq 0$，Fac1一定会停止，并且有结果$y = x!$
+\item $\models_{tot}\hoare{\top } Fac1\hoare{y = x! }$不保证成立，因为Fac1对于$x$的负数值不会停止
+\item $\models_{par}\hoare{x \geq 0 } Fac1\hoare{y = x! }$和$\models_{par}\hoare{\top} Fac1\hoare{y = x!}$成立
+\end{itemize}
+\end{example}
+\begin{definition}[逻辑变量(logical variable)]
+逻辑变量在$\phi$或$\psi$是自由的，且不出现在$P$中
+\end{definition}
+\begin{example}
+$\hoare{x=x_0\land x\geq 0}Sum\hoare{z=x_0(x_0+1)/2}$
+\begin{lstlisting}
+z = 0;
+while (x != 0) {
+  z = z + x;
+  x = x - 1;
+}
+\end{lstlisting}
+\end{example}
+
+\subsection{证明论}
+\begin{itemize}
+	\item Composition
+	\[\frac{\htriple{\phi}{C_1}{\eta}\qquad\htriple{\eta}{C_2}{\psi}}{\htriple{\phi}{C_1;C_2}{\psi}}\]
+	\item Assignment
+	\[\frac{}{\htriple{\psi[E/x]}{x=E}{\psi}}\]
+	注意这条公式相当tricky，是在先验条件中将$x$换为$E$（即恢复$x=E$的赋值），在具体证明中往往是反过来用
+	\item If-statement
+	\[\frac{\htriple{\phi\land B}{C_1}{\psi}\qquad\htriple{\phi\land\lnot B}{C_2}{\psi}}{\htriple{\phi}{\text{if }B\{C_1\}\text{ else }\{C_2\}}{\psi}}\]
+	\item Partial-while
+	\[\frac{\htriple{\psi\land B}{C}{\psi}}{\htriple{\psi}{\text{while }B\{C\}}{\psi\land\lnot B}}\]
+	\item Implied
+	\[\frac{\vdash_{AR}\phi'\to\phi\qquad\htriple{\phi}{C}{\psi}\qquad\vdash_{AR}\psi\to\psi'}{\htriple{\phi'}{C}{\psi'}}\]
+	基本谓词逻辑演算及算术表达都满足
+\end{itemize}
+\begin{example}[表格证明(proof tableaux)]
+$\vdash_{par}\htriple{y<3}{y=y+1}{y<4}$
+\[\begin{array}{ll}
+\hoare{y<3} &\\
+\hoare{y+1 < 4} & \text{Implied}\\
+y = y+1 &\\
+\hoare{y<4} &\text{Assignment}
+\end{array}\]
+\end{example}
+
+\[\htriple{\phi}{\text{if }(B)\{C_1\}\text{ else }\{C_2\}}{\psi}\]
+\begin{itemize}
+	\item 将$\psi$反推$C_1$，结果记为$\phi_1$
+	\item 将$\psi$反推$C_2$，结果记为$\phi_2$
+	\item 令$\phi=(B\to\phi_1)\land(\lnot B\to\phi_2)$
+\end{itemize}
+\begin{example}
+考虑程序$Succ$
+\begin{lstlisting}
+a = x + 1;
+if (a-1 == 0) { y = 1; } else { y = a; }
+\end{lstlisting}
+证明$\vdash_{par}\htriple{\top}{Succ}{y=x+1}$合法
+\end{example}
+\begin{analysis}
+可以自底向上分析
+\begin{lstlisting}[language=c++]
+  `\textcolor{red}{$\hoare{\top}$}'
+  `\textcolor{red}{$\hoare{(x+1-1=0\to1=x+1)\land(\lnot(x+1-1=0)\to x+1=x+1)}$ Implied}'
+a = x + 1;
+  `\textcolor{red}{$\hoare{(a-1=0\to 1=x+1)\land(\lnot(a-1=0)\to a=x+1)}$ Assignment}'
+if (a - 1 == 0) {
+    `\textcolor{red}{$\hoare{1=x+1}$ If-statements}'
+  y = 1;
+    `\textcolor{red}{$\hoare{y=x+1}$ Assignment}'
+} else {
+    `\textcolor{red}{$\hoare{a=x+1}$ If-statements}'
+  y = a;
+    `\textcolor{red}{$\hoare{y=x+1}$ Assignment}'
+}
+    `\textcolor{red}{$\hoare{y=x+1}$ If-statements}'
+\end{lstlisting}
+\end{analysis}
+
+\[\htriple{\phi}{\text{while }B\{C\}}{\psi}\]
+需要找到合适的不变量(invariant)$\eta$使得
+\begin{itemize}
+	\item $\models_{AR}\phi\to\eta$
+	\item $\models_{AR}\eta\land\lnot B\to\psi$
+	\item $\models_{par}\hoare{\eta}$ while $(B)\{C\}\hoare{\eta\land\lnot B}$
+\end{itemize}
+\begin{example}
+考虑程序$Fac1$
+\begin{lstlisting}[language=c++]
+y = 1;
+z = 0;
+while (z != x) { // L1
+  z = z + 1;
+  y = y * z;
+} // L2
+\end{lstlisting}
+证明
+\[\models_{AR}(y=1\land z=0)\to(y=z!)\qquad
+\models_{AR}(y=z!\land x=z)\to(y=x!)\]
+\begin{lstlisting}[language=c++]
+  `\textcolor{red}{$\hoare{\top}$}'
+  `\textcolor{red}{$\hoare{1=0!}$ Implied}'
+y = 1;
+  `\textcolor{red}{$\hoare{y=0!}$ Assignment}'
+z = 0;
+  `\textcolor{red}{$\hoare{y=z!}$ Assignment}'
+while (z != x) {
+    `\textcolor{red}{$\hoare{y=z!\land z\ne x}$ Invariant Hyp. $\land$ guard}'
+    `\textcolor{red}{$\hoare{y\cdot(z+1)=(z+1)!}$ Implied}'
+  z = z + 1;
+    `\textcolor{red}{$\hoare{y\cdot z=z!}$ Assignment}'
+  y = y * z;
+    `\textcolor{red}{$\hoare{y=z!}$ Assignment}'
+}
+  `\textcolor{red}{$\hoare{y=z!\land\lnot(z\ne x)}$ Partial-while}'
+  `\textcolor{red}{$\hoare{y=x!}$ Implied}'
+\end{lstlisting}
+\end{example}
