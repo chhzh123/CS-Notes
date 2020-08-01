@@ -21,15 +21,27 @@ $0$ & $0$ & $1$
 	\item 每一个非终端结点有两条边，一条虚边(dashed)指向0，一条实边(solid)指向1
 \end{itemize}
 
-简化法则：
+简化法则\footnote{图源来自Cornell ECE5775: \url{https://www.csl.cornell.edu/courses/ece5775/pdf/lecture05.pdf}}：
 \begin{itemize}
-	\item 去除重复终端(terminal)
-	\item 去除冗余测试：若结点$n$出边都指向同个结点$m$，则消除$n$
-	\item 去除重复非终端符号：第一条是本条的特例
+	\item 合并等价叶子结点（只留0和1各一个）
+	\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/bdd_reduction1.jpg}
+	\end{figure}
+	\item 去除冗余测试(test)
+	\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/bdd_reduction2.jpg}
+	\end{figure}
+	\item 合并同构结点
+	\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{fig/bdd_reduction3.jpg}
+	\end{figure}
 \end{itemize}
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\linewidth]{fig/shortcut_bdd.jpg}
+\includegraphics[width=0.6\linewidth]{fig/shortcut_bdd.jpg}
 \end{figure}
 
 \begin{definition}[有序BDD]
@@ -37,9 +49,15 @@ $0$ & $0$ & $1$
 \begin{itemize}
 	\item 令$V(B)$为OBDD的变量集，即$V(B)=\{x_1,x_2,\ldots,x_n\}$
 	\item $O_B(x_i)$是$\forall x_i\in V(B)$的序
-	\item $\forall x_i,x_j\in V(B),O_B(x_i)<O_B(x_j)$为在$B$中任一路径每一个$x_i$跟随$x_j$
+	\item $\forall x_i,x_j\in V(B),O_B(x_i)<O_B(x_j)$，$B$中任一路径上$x_j$都在$x_i$后面
 \end{itemize}
 \end{definition}
+
+不同的序会带来不同的OBDD图，导致效率差异。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/bdd_limitation.jpg}
+\end{figure}
 
 \subsection{约简规则}
 \begin{definition}
@@ -68,6 +86,11 @@ f \op g &\equiv(\bar{x}\cdot f[0/x]+x\cdot f[1/x])\op(\bar{x}\cdot g[0/x]+x\cdot
 &\equiv\bar{x}\cdot(f[0/x]\op g[0/x])+x\cdot(f[1/x]\op g[1/x])
 \end{aligned}\]
 
+\subsection{总结}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{fig/restrict_alg.jpg}
+\end{figure}
 \begin{itemize}
 \item 特称规则：
 \[\exists x.f\eqdef f[0/x]+f[1/x]\]

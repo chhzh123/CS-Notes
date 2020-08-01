@@ -23,19 +23,25 @@ BNF定义如下
 (\phi\to\psi)\mid
 (\forall x\phi)\mid
 (\exists x\phi)\]
+运算符优先级如下
+\begin{itemize}
+	\item $\lnot,\forall,\exists$
+	\item $\lor,\land$
+	\item $\to$
+\end{itemize}
 \end{definition}
 \begin{definition}[自由(free)/约束(bound)变量]
 语法树叶结点往上不会经过$\forall x$或$\exists x$结点，则为自由变量。
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.5\linewidth]{fig/free_bound_var.jpg}
+\includegraphics[width=0.4\linewidth]{fig/free_bound_var.jpg}
 \end{figure}
 \end{definition}
 \begin{definition}[替代(substituion)]
 给定变量$x$、项$t$和公式$\phi$，定义$\phi[t/x]$为将$\phi$中所有自由$x$用$t$代替
 \end{definition}
 
-\subsection{逻辑证明}
+\subsection{证明论}
 \begin{itemize}
 	\item equality ($=i$)
 	\[\frac{}{t=t}=i\]
@@ -88,7 +94,7 @@ BNF定义如下
 	\item 对于每一$f\in\mathcal{F}$且元$n>0$，具体函数$f^{\mathcal{M}}:A^n\to A$
 	\item 对于每一$P\in\mathcal{P}$且元$n>0$，子集$P^\mathcal{M}\subset A^n$
 \end{itemize}
-也就是说$f$和$P$仅仅是\textbf{抽象的符号}，而$f^{\mathcal{M}}$和$P^{\mathcal{M}}$为\textbf{具体的函数/元素}。
+也就是说$f$和$P$仅仅是\textbf{抽象的符号}，而$f^{\mathcal{M}}$和$P^{\mathcal{M}}$为\textbf{具体的函数/元素}。\\
 也可以说模型给出了一个解释(interpretation)。
 \end{definition}
 \begin{example}

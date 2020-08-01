@@ -1,11 +1,13 @@
 % !TEX root = main.tex
 
 \section{程序验证}
+\subsection{框架}
 \begin{definition}[霍尔三元组(Hoare triple)]
 \[\hoare{\phi}P\hoare{\psi}\]
 代表若程序$P$在满足$\phi$的状态下运行，则执行完$P$的状态会满足$\psi$。
 $\phi$称为先验条件(precondition)，$\psi$称为后验条件(postcondition)。
 存储变量$x$记为$l(x)$。
+有函数符号的公式$\phi$：$-$(unary), $+$, $-$, $*$(binary), $<$, $=$
 \end{definition}
 \begin{example}
 若输入$x$是正数，则求出一个数字它的平方小于$x$。\\
@@ -18,8 +20,8 @@ while (y * y < x) { y = y + 1; }
 y = y - 1;
 \end{lstlisting}
 \end{example}
-\begin{definition}[部分正确性(partial correctness)]
-若对于\textbf{所有}满足先验条件$\phi$的状态，\textbf{只要$P$需要能停止(terminate)}，经过$P$的执行，都满足后验条件$\psi$，则$\hoare{\phi}P\hoare{\psi}$满足部分正确性。
+\begin{definition}[正确性]
+若对于\textbf{所有}满足先验条件$\phi$的状态，\textbf{只要$P$需要能停止(terminate)}，经过$P$的执行，都满足后验条件$\psi$，则$\hoare{\phi}P\hoare{\psi}$满足部分正确性(partial correctness)。
 若$\models_{par}\hoare{\phi}P\hoare{\psi}$成立，则称$\models_{par}$为部分正确性关系。
 全部正确性(total correctness)则是保证了$P$一定会停止。
 \end{definition}
@@ -78,7 +80,7 @@ y = y+1 &\\
 \end{array}\]
 \end{example}
 
-\[\htriple{\phi}{\text{if }(B)\{C_1\}\text{ else }\{C_2\}}{\psi}\]
+$\htriple{\phi}{\text{if }(B)\{C_1\}\text{ else }\{C_2\}}{\psi}$
 \begin{itemize}
 	\item 将$\psi$反推$C_1$，结果记为$\phi_1$
 	\item 将$\psi$反推$C_2$，结果记为$\phi_2$
@@ -112,7 +114,7 @@ if (a - 1 == 0) {
 \end{lstlisting}
 \end{analysis}
 
-\[\htriple{\phi}{\text{while }B\{C\}}{\psi}\]
+$\htriple{\phi}{\text{while }B\{C\}}{\psi}$\\
 需要找到合适的不变量(invariant)$\eta$使得
 \begin{itemize}
 	\item $\models_{AR}\phi\to\eta$
@@ -132,6 +134,9 @@ while (z != x) { // L1
 证明
 \[\models_{AR}(y=1\land z=0)\to(y=z!)\qquad
 \models_{AR}(y=z!\land x=z)\to(y=x!)\]
+\end{example}
+\begin{analysis}
+自底向上分析
 \begin{lstlisting}[language=c++]
   `\textcolor{red}{$\hoare{\top}$}'
   `\textcolor{red}{$\hoare{1=0!}$ Implied}'
@@ -150,4 +155,4 @@ while (z != x) {
   `\textcolor{red}{$\hoare{y=z!\land\lnot(z\ne x)}$ Partial-while}'
   `\textcolor{red}{$\hoare{y=x!}$ Implied}'
 \end{lstlisting}
-\end{example}
+\end{analysis}
