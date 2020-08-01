@@ -3,8 +3,12 @@
 \usepackage{footnote}
 \makesavenoteenv{tabular}
 \usepackage{csquotes}
+\usepackage{stmaryrd}
 \renewcommand{\mkbegdispquote}[2]{\kaiti}
-
+\newcommand{\hoare}[1]{\llparenthesis #1\rrparenthesis}
+\newcommand{\htriple}[3]{\hoare{#1}\;#2\;\hoare{#3}}
+\newcommand{\op}{\ \mathop{op}\ }
+% \newcommand{\eqdef}{\stackrel{def}{=}}
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 
 \title{数理逻辑笔记}
@@ -23,6 +27,9 @@
 \bigskip\bigskip
 
 \input{1_propositional_logic}
-% \input{6_bdd}
+\input{2_predicate_logic}
+\input{3_verification}
+\input{4_program_verification}
+\input{6_bdd}
 
 \end{document}
