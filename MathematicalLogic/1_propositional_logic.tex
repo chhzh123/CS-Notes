@@ -53,21 +53,22 @@ $\Gamma\vdash\phi$ & $\Gamma\models\phi$\\\hline
 	\[\frac{\lnot\lnot\phi}{\phi}\lnot\lnot e\]
 	\item implication-elimination $\to e$
 	\[\frac{\phi\quad \phi\to\psi}{\psi}\to e\]
-	\item implies-introduction $\to i$
+	\item implies-introduction $\to i$：其中$\phi$为暂时的假设(assumption)，只在盒子内生效
 	\[\dfrac{\fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\psi$\end{tabular}}}{\phi\to\psi}\to i\]
-	\item or-introduction $\lor e$
+	\item or-introduction $\lor i_1,\lor i_2$
 	\[\frac{\phi}{\phi\lor\psi}\lor i_1\qquad
-	\frac{\psi}{\phi\lor\psi}\lnot\lnot i_2\qquad
-	\frac{\phi\lor\psi\quad \fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\chi$\end{tabular}}\quad \fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\chi$\end{tabular}}}{\chi}\lor e\]
+	\frac{\psi}{\phi\lor\psi}\lor i_2\]
+	\item or-elimination $\lor e$
+	\[\frac{\phi\lor\psi\quad \fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\chi$\end{tabular}}\quad \fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\chi$\end{tabular}}}{\chi}\lor e\]
 	\item bottom-elimination
 	\[\frac{\bot}{\phi}\bot e\]
 	\item not-elimination
 	\[\frac{\phi\qquad\lnot\phi}{\bot}\lnot e\]
 	\item negation
 	\[\frac{\fbox{\begin{tabular}{c}$\phi$\\$\vdots$\\$\bot$\end{tabular}}}{\lnot \phi}\lnot i\]
-	\item 拒取式(modus tollens, MT)
+	\item 假言易位/拒取式(modus tollens, MT)
 	\[\frac{\phi\to\psi\quad \lnot\psi}{\lnot\phi} MT\]
-	\item 反证法(proof by contradition, PBC)
+	\item 反证法(proof by contradition, PBC)：与negation比较
 	\[\frac{\fbox{\begin{tabular}{c}$\lnot\phi$\\$\vdots$\\$\bot$\end{tabular}}}{\phi} PBC\]
 	\item 排中律(the law of the excluded middle, LEM)
 	\[\phi\lor\lnot\phi\text{必有一个为真}\]
@@ -150,6 +151,9 @@ WFF可用BNF(Backus Naur Form)定义
 命题逻辑$\phi$被称为恒真式当且仅当它在所有估值下都取值为$T$，也即$\models\phi$。
 若所有估值均为$F$，则为矛盾式。
 \end{definition}
+\begin{definition}[可满足的(satisfiable)]
+令$\phi$为命题逻辑公式，$\phi$是可满足的当且仅当$\lnot\phi$不是有效的。
+\end{definition}
 \begin{theorem}
 若$\models\eta$成立，则$\vdash\eta$是有效的。
 换句话说，若$\eta$是永真式，则$\eta$是定理。
@@ -179,8 +183,8 @@ $p\to q$更像是一个数字（如$2+2$），而不是一个判断，它只表�
 要断定它，更应该说“$p\to q$为真”才行。
 
 \subsection{范式}
-\begin{definition}[语义等价]
-$\phi$和$\psi$都是命题逻辑的公式，称其等价当且仅当$\phi\models\psi$和$\psi\models\phi$成立，记作$\phi\equiv\psi$，也等价于$\models(\phi\to\psi)\land(\psi\to\phi)$成立。
+\begin{definition}[语义等价(semantic equivalence)]
+$\phi$和$\psi$都是命题逻辑的公式，称其等价当且仅当$\phi\models\psi$和$\psi\models\phi$成立，记作$\phi\equiv\psi$，也等价于$\models(\phi\to\psi)\land(\psi\to\phi)$成立，也即同时取真或同时取假。
 \end{definition}
 \begin{definition}[合取范式(conjunction normal form, CNF)]
 BNF定义如下：
@@ -192,17 +196,14 @@ BNF定义如下：
 例子如
 \[(p \lor r) \land (\lnot p \lor r) \land (p \lor \lnot r)\]
 \end{definition}
-\begin{definition}[可满足的(satisfiable)]
-令$\phi$为命题逻辑公式，$\phi$是可满足的当且仅当$\lnot\phi$不是有效的。
-\end{definition}
 
 \begin{definition}[霍尔公式(Horn formula)]
 若命题逻辑公式$\phi$能用下面的语法，表示成$H$的一个示例
 \[P::=\bot\mid\top\mid p\qquad
-A::=P\mid P\land A
-C::=A\to P
+A::=P\mid P\land A\qquad
+C::=A\to P\qquad
 H::=C\mid C\land H\]
-则称$C$的每个实例为霍尔从句(clause)。
+则称$C$的每个实例为霍尔子句(clause)。
 \end{definition}
 
 \subsection{SAT求解器}

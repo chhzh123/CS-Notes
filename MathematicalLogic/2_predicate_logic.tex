@@ -38,7 +38,7 @@ BNF定义如下
 \end{figure}
 \end{definition}
 \begin{definition}[替代(substituion)]
-给定变量$x$、项$t$和公式$\phi$，定义$\phi[t/x]$为将$\phi$中所有自由$x$用$t$代替
+给定变量$x$、项$t$和公式$\phi$，定义$\phi[t/x]$为将$\phi$中所有\textbf{自由的}$x$用$t$代替
 \end{definition}
 
 \subsection{证明论}
@@ -47,12 +47,12 @@ BNF定义如下
 	\[\frac{}{t=t}=i\]
 	\item substitution ($=e$)
 	\[\frac{t_1=t_2\qquad \phi[t_1/x]}{\phi[t_2/x]}=e\]
-	\item for-eliminating ($\forall x\quad e$)
-	\[\frac{\forall x\phi}{\phi[t/x]}\forall x\quad e\]
-	\item for-introduction ($\forall x\quad i$)
+	\item for-eliminating ($\forall x\; e$)
+	\[\frac{\forall x\phi}{\phi[t/x]}\forall x\; e\]
+	\item for-introduction ($\forall x\; i$)
 	\[\frac{\fbox{\begin{tabular}{c}$x_0$(fresh/dummy var)\\$\vdots$\\$\phi[x_0/x]$\end{tabular}}}{\forall x\phi}\forall x\quad i\]
-	\item exists-introduction ($\exists x\quad i$)
-	\[\frac{\phi[t/x]}{\exists x\phi}\exists x\quad i\]
+	\item exists-introduction ($\exists x\; i$)
+	\[\frac{\phi[t/x]}{\exists x\phi}\exists x\; i\]
 	\item exists-elimination ($\exists e$)
 	\[\frac{\exists x\phi\quad \fbox{\begin{tabular}{c}$x_0$\quad $\phi[x_0/x]$\\$\vdots$\\$\chi$\end{tabular}}}{\chi}\exists e\]
 \end{itemize}
@@ -76,6 +76,17 @@ BNF定义如下
 令$\phi$和$\psi$都为谓词逻辑的公式，有以下等价性
 \[\lnot\forall x\phi\dashv\vdash\exists x\lnot\phi,\qquad\lnot\exists x\phi\dashv\vdash\forall x\lnot\phi\]
 \end{theorem}
+
+对于自然语言的形式化，有几点需要注意\footnote{摘自中山大学周晓聪老师的《离散数学》课程}：
+\begin{enumerate}
+	\item 在自然语言命题中，如果是对个体类的全体判断具有某个性质，而且有提取对应个体类的谓词，通常这个谓词与对应性质的谓词之间的逻辑联结关系是\textbf{蕴涵}。
+	例如“老师上课很认真”中的“$x$是老师”的$P(x)$和“$x$上课很认真”的$Q(x)$之间是蕴涵关系“对任意的$x$，如果$x$是老师，则$x$上课很认真”，符号化为$\forall x(P(x)\to Q(x))$。
+	也许部分同学觉得应该符号化为$\forall x(P(x)\land Q(x))$，但这是错误的，如果论域是所有的人构成的集合，并且存在不是老师的人，那么在这个论域中$\forall x(P(x)\land Q(x))$的真值为假，因为对于不是老师的元素$a$，$P(a)\land Q(a)$为假，而原来的命题则无论论域是什么，只是对老师进行判断，其真值应该只与老师上课是否认真有关，而不应该由人是否老师确定。
+	\item 对偶地，如果是对各类的一个或多个不确定的个体判断具有某个性质，而且有提取对应个体类的谓词，通常这个谓词与对应性质的谓词之间的逻辑联结关系是\textbf{合取}。
+	例如命题“有的学生在讲小话”，如果设$S(x)$表示“$x$是学生”，$T(x)$表示“$x$在讲小话”，则整个命题的相当于：“存在$x$，$x$是学生，而且$x$在讲小话”，符号化为$\exists x(S(x)\land T(x))$。
+	注意不能符号化为$\exists x(S(x) \to T(x))$，因为当论域中存在不是学生的元素$a$，即$S(a)$为假，那么根据蕴涵联结词的真值计算，$S(a) \to T(a)$总为真，从而公式$\exists x(S(x) \to T(x))$的真值就是真，而原命题的真值显然只应该取决于是否有学生在讲小话，而不应该由是否存在不是学生的元素决定。
+\end{enumerate}
+类似地，对于数学上常用的带有受限论域的量词公式，如$\forall x < 0(x^2 > 0)$和$\exists z > 0(z^2 = 2)$要记住其含义分别$\forall x(x < 0 \to x^2 > 0)$和$\exists z(z > 0 \land z^2 = 2)$，使用全称量词约束就是蕴涵的关系，而使用存在量词就是合取的关系！
 
 \subsection{语义}
 记$\Gamma$为公式$\phi_1,\ldots,\phi_n$，要证明$\Gamma\vdash\psi$是合法的，则只需从$\Gamma$中提供$\psi$的证明。
